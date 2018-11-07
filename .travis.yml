@@ -1,0 +1,14 @@
+language: python
+python:
+    - "3.2"
+    - "3.3"
+    - "3.4"
+    - "3.5"
+    - "nightly"
+install:
+    - pip install python-coveralls pytest-cov
+    - pip install .
+script: 
+    - py.test tests --cov bio96
+after_success:
+    - coveralls
