@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from bio96 import *
+from pytest import raises
 
 def test_one_well():
     config = {
@@ -8,8 +9,9 @@ def test_one_well():
                 'A1': {'x': 1},
             },
     }
-    wells = wells_from_config(config)
-    assert wells['A1']['x'] == 1
+    assert wells_from_config(config) == {
+            'A1': {'x': 1},
+    }
 
 def test_multiple_wells():
     config = {
@@ -18,9 +20,98 @@ def test_multiple_wells():
                 'B2': {'x': 2},
             },
     }
-    wells = wells_from_config(config)
-    assert wells['A1']['x'] == 1
-    assert wells['B2']['x'] == 2
+    assert wells_from_config(config) == {
+            'A1': {'x': 1},
+            'B2': {'x': 2},
+    }
+
+def test_one_block():
+    config_err = {
+            'block': {
+                'err': {}
+            },
+    }
+    with raises(ConfigError):
+        wells_from_config(config_err)
+
+    config_1x1 = {
+            'block': {
+                '1x1': {
+                    'A1': {'x': 1},
+                },
+            },
+    }
+    assert wells_from_config(config_1x1) == {
+            'A1': {'x': 1},
+    }
+
+    config_1x2 = {
+            'block': {
+                '1x2': {
+                    'A1': {'x': 1},
+                },
+            },
+    }
+    assert wells_from_config(config_1x2) == {
+            'A1': {'x': 1},
+            'B1': {'x': 1},
+    }
+
+    config_2x1 = {
+            'block': {
+                '2x1': {
+                    'A1': {'x': 1},
+                },
+            },
+    }
+    assert wells_from_config(config_2x1) == {
+            'A1': {'x': 1},
+            'A2': {'x': 1},
+    }
+
+    config_2x2 = {
+            'block': {
+                '2x2': {
+                    'A1': {'x': 1},
+                },
+            },
+    }
+    assert wells_from_config(config_2x2) == {
+            'A1': {'x': 1},
+            'A2': {'x': 1},
+            'B1': {'x': 1},
+            'B2': {'x': 1},
+    }
+
+def test_multiple_blocks():
+    config = {
+            'block': {
+                '1x1': {
+                    'A1': {'x': 1},
+                    'B2': {'x': 2},
+                },
+            },
+    }
+    assert wells_from_config(config) == {
+            'A1': {'x': 1},
+            'B2': {'x': 2},
+    }
+
+    config = {
+            'block': {
+                '2x1': {
+                    'A1': {'x': 1},
+                },
+                '1x2': {
+                    'A1': {'y': 1},
+                },
+            },
+    }
+    assert wells_from_config(config) == {
+            'A1': {'x': 1, 'y': 1},
+            'A2': {'x': 1        },
+            'B1': {        'y': 1},
+    }
 
 def test_one_row_col():
     config = {
@@ -31,8 +122,9 @@ def test_one_row_col():
                 '1': {'y': 1},
             },
     }
-    wells = wells_from_config(config)
-    assert wells['A1']['x'] == 1 and wells['A1']['y'] == 1
+    assert wells_from_config(config) == {
+            'A1': {'x': 1, 'y': 1},
+    }
 
 def test_multiple_rows():
     config = {
@@ -44,9 +136,10 @@ def test_multiple_rows():
                 '1': {'y': 1},
             },
     }
-    wells = wells_from_config(config)
-    assert wells['A1']['x'] == 1 and wells['A1']['y'] == 1
-    assert wells['B1']['x'] == 2 and wells['B1']['y'] == 1
+    assert wells_from_config(config) == {
+            'A1': {'x': 1, 'y': 1},
+            'B1': {'x': 2, 'y': 1},
+    }
 
 def test_multiple_cols():
     config = {
@@ -58,9 +151,10 @@ def test_multiple_cols():
                 '2': {'y': 2},
             },
     }
-    wells = wells_from_config(config)
-    assert wells['A1']['x'] == 1 and wells['A1']['y'] == 1
-    assert wells['A2']['x'] == 1 and wells['A2']['y'] == 2
+    assert wells_from_config(config) == {
+            'A1': {'x': 1, 'y': 1},
+            'A2': {'x': 1, 'y': 2},
+    }
 
 def test_interleaved_row():
     config = {
@@ -72,9 +166,10 @@ def test_interleaved_row():
                 '2': {'y': 2},
             },
     }
-    wells = wells_from_config(config)
-    assert wells['A1']['x'] == 1 and wells['A1']['y'] == 1
-    assert wells['B2']['x'] == 1 and wells['B2']['y'] == 2
+    assert wells_from_config(config) == {
+            'A1': {'x': 1, 'y': 1},
+            'B2': {'x': 1, 'y': 2},
+    }
 
     config = {
             'irow': {
@@ -85,9 +180,11 @@ def test_interleaved_row():
                 '2': {'y': 2},
             },
     }
-    wells = wells_from_config(config)
-    assert wells['B1']['x'] == 2 and wells['B1']['y'] == 1
-    assert wells['A2']['x'] == 2 and wells['A2']['y'] == 2
+    assert wells_from_config(config) == {
+            'B1': {'x': 2, 'y': 1},
+            'A2': {'x': 2, 'y': 2},
+    }
+
 def test_interleaved_col():
     config = {
             'row': {
@@ -98,9 +195,10 @@ def test_interleaved_col():
                 '1': {'y': 1},
             },
     }
-    wells = wells_from_config(config)
-    assert wells['A1']['x'] == 1 and wells['A1']['y'] == 1
-    assert wells['B2']['x'] == 2 and wells['B2']['y'] == 1
+    assert wells_from_config(config) == {
+            'A1': {'x': 1, 'y': 1},
+            'B2': {'x': 2, 'y': 1},
+    }
 
     config = {
             'row': {
@@ -111,15 +209,48 @@ def test_interleaved_col():
                 '2': {'y': 2},
             },
     }
-    wells = wells_from_config(config)
-    assert wells['A2']['x'] == 1 and wells['A2']['y'] == 2
-    assert wells['B1']['x'] == 2 and wells['B1']['y'] == 2
+    assert wells_from_config(config) == {
+            'A2': {'x': 1, 'y': 2},
+            'B1': {'x': 2, 'y': 2},
+    }
 
 def test_top_level_params():
     config = {
             'x': 1,
             'well': {'A1': {}},
     }
-    wells = wells_from_config(config)
-    assert wells['A1']['x'] == 1
+    assert wells_from_config(config) == {
+            'A1': {'x': 1},
+    }
 
+def test_precedence():
+    config = {
+            'well': {
+                'A1': {'a': 1},
+            },
+            'block': {
+                '1x1': {
+                    'A1': {'a': 2, 'b': 2},
+                },
+            },
+            'row': {
+                'A': {'a': 3, 'b': 3, 'c': 3},
+            },
+            'col': {
+                '1': {'a': 4, 'b': 4, 'd': 4},
+            },
+
+            'a': 5,
+            'b': 5,
+            'c': 5,
+            'd': 5,
+            'e': 5,
+    }
+    wells = wells_from_config(config)
+    assert wells['A1'] == {
+            'a': 1,
+            'b': 2,
+            'c': 3,
+            'd': 4,
+            'e': 5,
+    }

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import toml
-import itertools
+import re, itertools
 import pandas as pd
 from pathlib import Path
 from .util import *
@@ -83,7 +83,7 @@ def wells_from_config(config, label=None):
     config = configdict(config)
     wells = config.wells.copy()
 
-    # Create new wells implied by the 'row' and 'col' blocks.
+    # Create new wells implied by the 'row', 'col' blocks.
     for row, col in itertools.product(config.rows, config.cols):
         key = well_from_row_col(row, col)
         wells.setdefault(key, {})
@@ -95,17 +95,37 @@ def wells_from_config(config, label=None):
     for row, icol in itertools.product(config.rows, config.icols):
         key = well_from_row_icol(row, icol)
         wells.setdefault(key, {})
+
+    # Create new wells implied by the "block" blocks:
+    blocks = {}
+    pattern = re.compile('(\d+)x(\d+)')
+
+    for size in config.blocks:
+        match = pattern.match(size)
+        if not match:
+            raise ConfigError("unknown block size '{size}', expected 'WxH' (where W and H are both positive integers).")
+
+        width, height = map(int, match.groups())
+        for top_left in config.blocks[size]:
+            for key in iter_wells_in_block(top_left, width, height):
+                wells.setdefault(key, {})
+                blocks.setdefault(key, [])
+                blocks[key].append(config.blocks[size][top_left])
     
     # Update any existing wells.
     for key in wells:
         row, col = row_col_from_well(key)
         irow, icol = irow_icol_from_well(key)
 
-        recursive_merge(wells[key], config.user)
+        # Merge in order of precedence: [block], [row/col], top-level
+        for block in blocks.get(key, {}):
+            recursive_merge(wells[key], block)
+
         recursive_merge(wells[key], config.rows.get(row, {}))
         recursive_merge(wells[key], config.cols.get(col, {}))
         recursive_merge(wells[key], config.irows.get(irow, {}))
         recursive_merge(wells[key], config.icols.get(icol, {}))
+        recursive_merge(wells[key], config.user)
 
     return wells
     
@@ -147,6 +167,12 @@ def recursive_merge(config, defaults, overwrite=False):
 
     # Modified in-place, but also returned for convenience.
     return config
+
+def iter_wells_in_block(top_left, width, height):
+    top, left = ij_from_well(top_left)
+    for dx in range(width):
+        for dy in range(height):
+            yield well_from_ij(top + dy, left + dx)
 
 class PathManager:
 
@@ -244,6 +270,7 @@ class configdict(dict):
             'irows': 'irow',
             'cols': 'col',
             'icols': 'icol',
+            'blocks': 'block',
             'wells': 'well',
     }
 
