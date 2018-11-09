@@ -3,8 +3,8 @@ python:
     - "3.6"
 install:
     - pip install coverage hypothesis pytest-cov python-coveralls 
-    - pip install .
+    - pip install -e .
 script: 
-    - py.test --cov bio96
+    - py.test tests --cov bio96
 after_success:
     - coveralls
