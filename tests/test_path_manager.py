@@ -54,7 +54,7 @@ def test_index_for_only_plate():
     # `z.dat` doesn't exist.
     pm = PathManager('z.dat', None, DIR/'z.toml')
     with raises(ConfigError):
-        pprint(pm.get_index_for_only_plate())
+        pm.get_index_for_only_plate()
 
 def test_index_for_only_plate__ambiguous():
     # Don't need `paths` to be specified; it's ambiguous to even be defined.
@@ -86,7 +86,7 @@ def test_index_for_named_plate():
     # `z.dat` doesn't exist.
     pm = PathManager('z.dat', None, DIR/'z.toml')
     with raises(ConfigError):
-        pprint(pm.get_index_for_only_plate())
+        pm.get_index_for_only_plate()
 
 
 def test_index_for_named_plate__dict():
