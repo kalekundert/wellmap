@@ -1,10 +1,8 @@
 language: python
 python:
     - "3.6"
-    - "3.7"
-    - "nightly"
 install:
-    - pip install coverage pytest-cov python-coveralls 
+    - pip install coverage hypothesis pytest-cov python-coveralls 
     - pip install .
 script: 
     - py.test tests --cov bio96
