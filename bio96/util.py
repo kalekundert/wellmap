@@ -72,4 +72,9 @@ def interleave(a, b):
     else:
         return a - b % 2
 
+def iter_wells_in_block(top_left, width, height):
+    top, left = ij_from_well(top_left)
+    for dx in range(width):
+        for dy in range(height):
+            yield well_from_ij(top + dy, left + dx)
 

@@ -83,20 +83,7 @@ def wells_from_config(config, label=None):
     config = configdict(config)
     wells = config.wells.copy()
 
-    # Create new wells implied by the 'row', 'col' blocks.
-    for row, col in itertools.product(config.rows, config.cols):
-        key = well_from_row_col(row, col)
-        wells.setdefault(key, {})
-
-    for irow, col in itertools.product(config.irows, config.cols):
-        key = well_from_irow_col(irow, col)
-        wells.setdefault(key, {})
-
-    for row, icol in itertools.product(config.rows, config.icols):
-        key = well_from_row_icol(row, icol)
-        wells.setdefault(key, {})
-
-    # Create new wells implied by the "block" blocks:
+    # Create new wells implied by any 'block' blocks:
     blocks = {}
     pattern = re.compile('(\d+)x(\d+)')
 
@@ -112,7 +99,20 @@ def wells_from_config(config, label=None):
                 blocks.setdefault(key, [])
                 blocks[key].append(config.blocks[size][top_left])
     
-    # Update any existing wells.
+    # Create new wells implied by any 'row' & 'col' blocks.
+    for row, col in itertools.product(config.rows, config.cols):
+        key = well_from_row_col(row, col)
+        wells.setdefault(key, {})
+
+    for irow, col in itertools.product(config.irows, config.cols):
+        key = well_from_irow_col(irow, col)
+        wells.setdefault(key, {})
+
+    for row, icol in itertools.product(config.rows, config.icols):
+        key = well_from_row_icol(row, icol)
+        wells.setdefault(key, {})
+
+    # Fill in any wells created above.
     for key in wells:
         row, col = row_col_from_well(key)
         irow, icol = irow_icol_from_well(key)
@@ -168,11 +168,6 @@ def recursive_merge(config, defaults, overwrite=False):
     # Modified in-place, but also returned for convenience.
     return config
 
-def iter_wells_in_block(top_left, width, height):
-    top, left = ij_from_well(top_left)
-    for dx in range(width):
-        for dy in range(height):
-            yield well_from_ij(top + dy, left + dx)
 
 class PathManager:
 
