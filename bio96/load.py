@@ -111,10 +111,12 @@ def wells_from_config(config, label=None):
     
 def table_from_wells(wells, index):
     table = []
+    user_cols = []
 
     for key in wells:
         row, col = row_col_from_well(key)
         row_i, col_j = ij_from_well(key)
+        user_cols += [x for x in wells[key] if x not in user_cols]
 
         table += [{
                 **wells[key],
@@ -124,7 +126,11 @@ def table_from_wells(wells, index):
                 'row_i': row_i, 'col_j': col_j,
         }]
 
-    return pd.DataFrame(table)
+    # Make an effort to put the columns in a reasonable order:
+    columns = ['well', 'row', 'col', 'row_i', 'col_j']
+    columns += list(index) + user_cols
+
+    return pd.DataFrame(table, columns=columns)
 
 
 def recursive_merge(config, defaults, overwrite=False):
