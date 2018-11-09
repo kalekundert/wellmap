@@ -111,8 +111,8 @@ on any of these steps.
    experimental condition referenced in the config file::
 
       >>> import bio96
-      >>> labels = bio96.load('path/to/config.toml')
-      >>> labels
+      >>> conditions = bio96.load('path/to/config.toml')
+      >>> conditions
          well row col  row_i  col_j  antibiotic     strain  replicate  conc_ng_mL
       0    A1   A   1      0      0  penicillin    E. coli          1           0
       1    A2   A   2      0      1  penicillin    E. coli          1           1
@@ -136,7 +136,7 @@ on any of these steps.
    For example, if we were doing a plate reader assay, we might have OD600 
    measurements for each well at regular timepoints::
 
-      >>> od600s 
+      >>> measurements 
          well      time   od600
       0    A1   0:00:00   0.057
       1    A1   0:05:00   0.058
@@ -153,7 +153,7 @@ on any of these steps.
 4. Merge the two data frames together, to get a single data frame linking the 
    experimental conditions to the measurements::
    
-      >>> df = pd.merge(labels, data, on="well")
+      >>> df = pd.merge(conditions, measurements, on="well")
       >>> df
          well row col  row_i  col_j  antibiotic     strain  replicate  conc_ng_mL      time   od600
       0    A1   A   1      0      0  penicillin    E. coli          1           0   0:00:00   0.057
