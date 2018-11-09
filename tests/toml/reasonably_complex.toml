@@ -1,0 +1,30 @@
+author = "Kale Kundert"
+
+[plate.A]
+x = 1
+[plate.A.row.A]
+y = 5
+
+[plate.B]
+x = 2
+[plate.B.col.1]
+z = 5
+
+[row.A]
+  y = 1
+[row.B]
+  y = 2
+[row.C]
+  y = 3
+[row.D]
+  y = 4
+
+[col.1]
+  z = 1
+[col.2]
+  z = 2
+[col.3]
+  z = 3
+[col.4]
+  z = 4
+

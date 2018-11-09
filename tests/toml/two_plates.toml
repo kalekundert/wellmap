@@ -1,0 +1,8 @@
+[meta]
+paths = 'two_plates_{}.dat'
+
+[plate.a.well.A1]
+x = 1
+
+[plate.b.well.A1]
+x = 2

@@ -1,0 +1,5 @@
+[meta.paths]
+a = 'one_plate.dat'
+
+[plate.a.well.A1]
+x = 1
