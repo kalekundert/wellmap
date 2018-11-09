@@ -77,7 +77,7 @@ def table_from_config(config, paths):
             index = paths.get_index_for_named_plate(key)
             tables += [table_from_wells(wells, index)]
 
-        return pd.concat(tables)
+        return pd.concat(tables, sort=True)
 
 def wells_from_config(config, label=None):
     config = configdict(config)
