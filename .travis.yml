@@ -5,6 +5,6 @@ install:
     - pip install coverage hypothesis pytest-cov python-coveralls 
     - pip install .
 script: 
-    - py.test tests --cov bio96
+    - py.test --cov bio96
 after_success:
     - coveralls
