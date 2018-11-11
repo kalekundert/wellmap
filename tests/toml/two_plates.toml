@@ -1,5 +1,5 @@
 [meta]
-paths = 'two_plates_{}.dat'
+paths = 'two_plates_{}.xlsx'
 
 [plate.a.well.A1]
 x = 1

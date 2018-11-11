@@ -47,6 +47,13 @@ def test_check_named_plates():
     with raises(ConfigError):
         pm.check_named_plates([])
 
+def test_str():
+    # These shouldn't raise.
+    str(PathManager('a.dat', {}, DIR/'z.toml'))
+    str(PathManager(None, {'a': 'a.dat'}, DIR/'z.toml'))
+    str(PathManager(None, {'a': 'a.dat', 'b': 'b.dat'}, DIR/'z.toml'))
+
+
 def test_index_for_only_plate():
     pm = PathManager('a.dat', None, DIR/'z.toml')
     assert pm.get_index_for_only_plate() == {'path': DIR/'a.dat'}
@@ -79,6 +86,10 @@ def test_index_for_only_plate__no_path():
     pm = PathManager(None, None, DIR/'z.toml')
     assert pm.get_index_for_only_plate() == {}
 
+    pm = PathManager(None, None, DIR/'z.toml', path_required=True)
+    with raises(ConfigError):
+        pm.get_index_for_only_plate()
+
 def test_index_for_named_plate():
     pm = PathManager('a.dat', None, DIR/'z.toml')
     assert pm.get_index_for_only_plate() == {'path': DIR/'a.dat'}
@@ -94,15 +105,27 @@ def test_index_for_named_plate__dict():
     assert pm.get_index_for_named_plate('a') == {'plate': 'a', 'path': DIR/'a.dat'}
     assert pm.get_index_for_named_plate('b') == {'plate': 'b', 'path': DIR/'b.dat'}
 
+    with raises(ConfigError):
+        pm.get_index_for_named_plate('c')
+
 def test_index_for_named_plate__str():
     pm = PathManager(None, '{}.dat', DIR/'z.toml')
     assert pm.get_index_for_named_plate('a') == {'plate': 'a', 'path': DIR/'a.dat'}
     assert pm.get_index_for_named_plate('b') == {'plate': 'b', 'path': DIR/'b.dat'}
 
+    with raises(ConfigError):
+        pm.get_index_for_named_plate('c')
+
 def test_index_for_named_plate__no_paths():
     pm = PathManager(None, None, DIR/'z.toml')
     assert pm.get_index_for_named_plate('a') == {'plate': 'a'}
     assert pm.get_index_for_named_plate('b') == {'plate': 'b'}
+
+    pm = PathManager(None, None, DIR/'z.toml', path_required=True)
+    with raises(ConfigError):
+        pm.get_index_for_named_plate('a')
+    with raises(ConfigError):
+        pm.get_index_for_named_plate('b')
 
 def test_index_for_named_plate__unknown_type():
     pm = PathManager(None, ['a'], DIR/'z.toml')

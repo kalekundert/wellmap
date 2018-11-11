@@ -24,11 +24,48 @@ from .util import *
 #   represents a well, and each column represents one of the fields in the well 
 #   dictionaries.  Columns identifying the plate and well are also added.
 
-def load(toml_path, path_guess=None):
-    config, paths = config_from_toml(toml_path, path_guess)
-    return table_from_config(config, paths)
+def load(toml_path, path_guess=None, path_required=False,
+        data_loader=None, merge_cols=None):
 
-def config_from_toml(toml_path, path_guess=None):
+    # Parse the TOML file:
+    config, paths = config_from_toml(toml_path, path_guess,
+            path_required or data_loader)
+    labels = table_from_config(config, paths)
+
+    # Load the data associated with each well.
+    if data_loader is None:
+        if merge_cols is not None:
+            raise ValueError("Specified columns to merge, but no function to load data!")
+        return labels
+
+    data = pd.DataFrame()
+
+    for path in labels['path'].unique():
+       df = data_loader(path)
+       df['path'] = path
+       data = data.append(df)
+
+    # Merge the labels and the data into a single data frame.
+    if merge_cols is None:
+        return labels, data
+
+    def check_merge_cols(cols, known_cols, attr):
+        unknown_cols = set(cols) - set(known_cols)
+        if unknown_cols:
+            raise ValueError("Cannot merge on {','.join(unknown_cols)}.  `merge_cols` {attr} must be in {','.join(known_cols)}.")
+        return list(cols)
+
+    left_ok = 'well', 'row', 'col', 'row_i', 'col_i'
+    left_on = check_merge_cols(merge_cols.keys(), left_ok, 'keys')
+    right_on = check_merge_cols(merge_cols.values(), data.columns, 'values')
+
+    return pd.merge(
+            labels, data,
+            left_on=left_on + ['path'],
+            right_on=right_on + ['path'],
+    )
+
+def config_from_toml(toml_path, path_guess=None, require_path=False):
     toml_path = Path(toml_path).resolve()
     config = configdict(toml.load(str(toml_path)))
 
@@ -38,16 +75,18 @@ def config_from_toml(toml_path, path_guess=None):
             config.meta.get('paths'),
             toml_path,
             path_guess,
+            require_path,
     )
 
     # Include one or more remote files if any are specified.  
     if 'include' in config.meta:
         includes = config.meta['include']
         if isinstance(includes, str):
-            includes = list(includes)
+            includes = [includes]
 
-        for include_path in reversed(includes):
-            defaults, _ = config_from_toml(include_path)
+        for include in reversed(includes):
+            path = resolve_path(toml_path, include)
+            defaults, _ = config_from_toml(path)
             recursive_merge(config, defaults)
 
     # Print out any messages contained in the file.
@@ -77,7 +116,10 @@ def table_from_config(config, paths):
             index = paths.get_index_for_named_plate(key)
             tables += [table_from_wells(wells, index)]
 
-        return pd.concat(tables, sort=True)
+        # Make an effort to keep the columns in a reasonable order.  I don't 
+        # know why `pd.concat()` doesn't do this on its own...
+        cols = tables[-1].columns
+        return pd.concat(tables, sort=True)[cols]
 
 def wells_from_config(config, label=None):
     config = configdict(config)
@@ -168,14 +210,23 @@ def recursive_merge(config, defaults, overwrite=False):
     # Modified in-place, but also returned for convenience.
     return config
 
+def resolve_path(parent_path, child_path):
+    parent_dir = Path(parent_path).parent
+    child_path = Path(child_path)
+
+    if child_path.is_absolute():
+        return child_path
+    else:
+        return parent_dir / child_path
 
 class PathManager:
 
-    def __init__(self, path, paths, toml_path, path_guess=None):
+    def __init__(self, path, paths, toml_path, path_guess=None, path_required=False):
         self.path = path
         self.paths = paths
         self.toml_path = Path(toml_path)
         self.path_guess = path_guess
+        self.path_required = path_required
 
     def __str__(self):
         return str({
@@ -183,8 +234,8 @@ class PathManager:
             'paths': self.paths,
             'toml_path': self.toml_path,
             'path_guess': self.path_guess,
+            'path_required': self.path_required,
         })
-
 
     def check_overspecified(self):
         if self.path and self.paths:
@@ -200,7 +251,6 @@ class PathManager:
             if set(names) != set(self.paths):
                 raise ConfigError("The keys in `meta.paths` ({','.join(sorted(self.paths))}) don't match the `[plate]` blocks ({','.join(sorted(names))})")
         
-
     def get_index_for_only_plate(self):
         # If there is only one plate:
         # - Have `paths`: Ambiguous, complain.
@@ -209,9 +259,7 @@ class PathManager:
         # - Don't have anything: Don't put path in the index
 
         def make_index(path):
-            path = Path(path)
-            if not path.is_absolute():
-                path = self.toml_path.parent / path
+            path = resolve_path(self.toml_path, path)
             if not path.exists():
                 raise ConfigError(f"'{path}' does not exist")
             return {'path': path}
@@ -227,6 +275,9 @@ class PathManager:
         if self.path_guess:
             return make_index(self.path_guess.format(self.toml_path))
 
+        if self.path_required:
+            raise ConfigError(f"'{self.toml_path}' doesn't specify a path to any data files.")
+
         return {}
 
     def get_index_for_named_plate(self, name):
@@ -239,20 +290,23 @@ class PathManager:
         # - Don't have `paths`: Put the name in the index without a path.
         
         def make_index(name, path):
-            path = Path(path)
-            if not path.is_absolute():
-                path = self.toml_path.parent / path
-            if not path.exists:
+            path = resolve_path(self.toml_path, path)
+            if not path.exists():
                 raise ConfigError(f"'{path}' for plate '{name}' does not exist")
             return {'plate': name, 'path': path}
 
         if self.paths is None:
-            return {'plate': name}
+            if self.path_required:
+                raise ConfigError(f"'{self.toml_path}' doesn't specify paths to any data files.")
+            else:
+                return {'plate': name}
 
         if isinstance(self.paths, str):
             return make_index(name, self.paths.format(name))
 
         if isinstance(self.paths, dict):
+            if name not in self.paths:
+                raise ConfigError(f"'{self.toml_path}' doesn't specify a path for plate '{name}'")
             return make_index(name, self.paths[name])
 
         raise ConfigError("{self.toml_path}: expected `meta.paths` to be dict or str, got {type(self.paths)}: {self.paths}")
