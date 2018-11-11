@@ -24,8 +24,8 @@ from .util import *
 #   represents a well, and each column represents one of the fields in the well 
 #   dictionaries.  Columns identifying the plate and well are also added.
 
-def load(toml_path, path_guess=None, path_required=False,
-        data_loader=None, merge_cols=None):
+def load(toml_path, data_loader=None, merge_cols=None,
+        path_guess=None, path_required=False):
 
     # Parse the TOML file:
     config, paths = config_from_toml(toml_path, path_guess,

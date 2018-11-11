@@ -18,7 +18,7 @@ def test_one_well():
             x=1,
     )
 
-    labels = bio96.load(DIR/'one_well.toml', '{0.stem}.xlsx')
+    labels = bio96.load(DIR/'one_well.toml', path_guess='{0.stem}.xlsx')
     assert row(labels, 'well == "A1"') == dict(
             path=DIR/'one_well.xlsx',
             well='A1',
@@ -34,8 +34,8 @@ def test_one_well():
 
     labels, data = bio96.load(
             DIR/'one_well.toml',
-            path_guess='{0.stem}.xlsx',
             data_loader=pd.read_excel,
+            path_guess='{0.stem}.xlsx',
     )
     assert row(labels, 'well == "A1"') == dict(
             path=DIR/'one_well.xlsx',
@@ -52,9 +52,9 @@ def test_one_well():
 
     df = bio96.load(
             DIR/'one_well.toml',
-            path_guess='{0.stem}.xlsx',
             data_loader=pd.read_excel,
             merge_cols={'well': 'Well'},
+            path_guess='{0.stem}.xlsx',
     )
     assert row(df, 'well == "A1"') == dict(
             path=DIR/'one_well.xlsx',
