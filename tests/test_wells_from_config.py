@@ -156,6 +156,24 @@ def test_multiple_cols():
             'A2': {'x': 1, 'y': 2},
     }
 
+def test_row_without_col():
+    config = {
+            'row': {
+                'A': {'x': 1},
+            },
+    }
+    with raises(ConfigError):
+        wells_from_config(config)
+
+def test_col_without_row():
+    config = {
+            'col': {
+                '1': {'y': 1},
+            },
+    }
+    with raises(ConfigError):
+        wells_from_config(config)
+
 def test_interleaved_row():
     config = {
             'irow': {
@@ -214,6 +232,24 @@ def test_interleaved_col():
             'B1': {'x': 2, 'y': 2},
     }
 
+def test_irow_without_col():
+    config = {
+            'irow': {
+                'A': {'x': 1},
+            },
+    }
+    with raises(ConfigError):
+        wells_from_config(config)
+
+def test_icol_without_row():
+    config = {
+            'icol': {
+                '1': {'y': 1},
+            },
+    }
+    with raises(ConfigError):
+        wells_from_config(config)
+
 def test_top_level_params():
     config = {
             'x': 1,
@@ -254,3 +290,4 @@ def test_precedence():
             'd': 4,
             'e': 5,
     }
+

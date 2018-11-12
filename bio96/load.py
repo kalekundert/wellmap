@@ -4,6 +4,7 @@ import toml
 import re, itertools
 import pandas as pd
 from pathlib import Path
+from nonstdlib import plural
 from .util import *
 
 # Data Structures
@@ -27,43 +28,47 @@ from .util import *
 def load(toml_path, data_loader=None, merge_cols=None,
         path_guess=None, path_required=False):
 
-    # Parse the TOML file:
-    config, paths = config_from_toml(toml_path, path_guess,
-            path_required or data_loader)
-    labels = table_from_config(config, paths)
+    try:
+        # Parse the TOML file:
+        config, paths = config_from_toml(toml_path, path_guess,
+                path_required or data_loader)
+        labels = table_from_config(config, paths)
 
-    # Load the data associated with each well.
-    if data_loader is None:
-        if merge_cols is not None:
-            raise ValueError("Specified columns to merge, but no function to load data!")
-        return labels
+        # Load the data associated with each well.
+        if data_loader is None:
+            if merge_cols is not None:
+                raise ValueError("Specified columns to merge, but no function to load data!")
+            return labels
 
-    data = pd.DataFrame()
+        data = pd.DataFrame()
 
-    for path in labels['path'].unique():
-       df = data_loader(path)
-       df['path'] = path
-       data = data.append(df)
+        for path in labels['path'].unique():
+           df = data_loader(path)
+           df['path'] = path
+           data = data.append(df)
 
-    # Merge the labels and the data into a single data frame.
-    if merge_cols is None:
-        return labels, data
+        # Merge the labels and the data into a single data frame.
+        if merge_cols is None:
+            return labels, data
 
-    def check_merge_cols(cols, known_cols, attr):
-        unknown_cols = set(cols) - set(known_cols)
-        if unknown_cols:
-            raise ValueError("Cannot merge on {','.join(unknown_cols)}.  `merge_cols` {attr} must be in {','.join(known_cols)}.")
-        return list(cols)
+        def check_merge_cols(cols, known_cols, attr):
+            unknown_cols = set(cols) - set(known_cols)
+            if unknown_cols:
+                raise ValueError("Cannot merge on {','.join(unknown_cols)}.  `merge_cols` {attr} must be in {','.join(known_cols)}.")
+            return list(cols)
 
-    left_ok = 'well', 'row', 'col', 'row_i', 'col_i'
-    left_on = check_merge_cols(merge_cols.keys(), left_ok, 'keys')
-    right_on = check_merge_cols(merge_cols.values(), data.columns, 'values')
+        left_ok = 'well', 'row', 'col', 'row_i', 'col_i'
+        left_on = check_merge_cols(merge_cols.keys(), left_ok, 'keys')
+        right_on = check_merge_cols(merge_cols.values(), data.columns, 'values')
 
-    return pd.merge(
-            labels, data,
-            left_on=left_on + ['path'],
-            right_on=right_on + ['path'],
-    )
+        return pd.merge(
+                labels, data,
+                left_on=left_on + ['path'],
+                right_on=right_on + ['path'],
+        )
+    except ConfigError as err:
+        err.toml_path = toml_path
+        raise
 
 def config_from_toml(toml_path, path_guess=None, require_path=False):
     toml_path = Path(toml_path).resolve()
@@ -132,7 +137,7 @@ def wells_from_config(config, label=None):
     for size in config.blocks:
         match = pattern.match(size)
         if not match:
-            raise ConfigError("unknown block size '{size}', expected 'WxH' (where W and H are both positive integers).")
+            raise ConfigError(f"Unknown [block] size '{size}', expected 'WxH' (where W and H are both positive integers).")
 
         width, height = map(int, match.groups())
         for top_left in config.blocks[size]:
@@ -142,14 +147,23 @@ def wells_from_config(config, label=None):
                 blocks[key].append(config.blocks[size][top_left])
     
     # Create new wells implied by any 'row' & 'col' blocks.
+
+    def sanity_check(dim1, *dim2s):
+        if config.get(dim1) and not any(config.get(x) for x in dim2s):
+            raise ConfigError(f"Found {plural(len(config[dim1])):? [{dim1}] block/s}, but no [{'/'.join(dim2s)}] blocks.  No wells defined.")
+
+    sanity_check('row', 'col', 'icol')
+    sanity_check('col', 'row', 'irow')
     for row, col in itertools.product(config.rows, config.cols):
         key = well_from_row_col(row, col)
         wells.setdefault(key, {})
 
+    sanity_check('irow', 'col')
     for irow, col in itertools.product(config.irows, config.cols):
         key = well_from_irow_col(irow, col)
         wells.setdefault(key, {})
 
+    sanity_check('icol', 'row')
     for row, icol in itertools.product(config.rows, config.icols):
         key = well_from_row_icol(row, icol)
         wells.setdefault(key, {})
@@ -239,17 +253,17 @@ class PathManager:
 
     def check_overspecified(self):
         if self.path and self.paths:
-            raise ConfigError("{self.toml_path} specified both `meta.path` and `meta.paths`; ambiguous.")
+            raise ConfigError(f"Both `meta.path` and `meta.paths` specified; ambiguous.")
 
     def check_named_plates(self, names):
         self.check_overspecified()
 
         if self.path is not None:
-            raise ConfigError(f"'{self.toml_path}' specifies `meta.path`, but also one or more `[plate]` blocks ({','.join(names)}).  Did you mean to use `meta.paths`?")
+            raise ConfigError(f"`meta.path` specified with one or more [plate] blocks ({', '.join(names)}).  Did you mean to use `meta.paths`?")
 
         if isinstance(self.paths, dict):
             if set(names) != set(self.paths):
-                raise ConfigError("The keys in `meta.paths` ({','.join(sorted(self.paths))}) don't match the `[plate]` blocks ({','.join(sorted(names))})")
+                raise ConfigError(f"The keys in `meta.paths` ({', '.join(sorted(self.paths))}) don't match the [plate] blocks ({', '.join(sorted(names))})")
         
     def get_index_for_only_plate(self):
         # If there is only one plate:
@@ -267,7 +281,7 @@ class PathManager:
         self.check_overspecified()
 
         if self.paths is not None:
-            raise ConfigError(f"'{self.toml_path}' specifies `meta.paths` ({self.paths if isinstance(self.paths, str) else ','.join(self.paths)}), but no `[plate]` blocks.  Did you mean to use `meta.path`?")
+            raise ConfigError(f"`meta.paths` ({self.paths if isinstance(self.paths, str) else ', '.join(self.paths)}) without any [plate] blocks.  Did you mean to use `meta.path`?")
 
         if self.path is not None:
             return make_index(self.path)
@@ -276,7 +290,7 @@ class PathManager:
             return make_index(self.path_guess.format(self.toml_path))
 
         if self.path_required:
-            raise ConfigError(f"'{self.toml_path}' doesn't specify a path to any data files.")
+            raise ConfigError(f"Analysis requires a data file, but none was specified and none could be inferred.  Did you mean to set `meta.path`?")
 
         return {}
 
@@ -297,7 +311,7 @@ class PathManager:
 
         if self.paths is None:
             if self.path_required:
-                raise ConfigError(f"'{self.toml_path}' doesn't specify paths to any data files.")
+                raise ConfigError(f"Analysis requires a data file for each plate, but none were specified.  Did you mean to set `meta.paths`?")
             else:
                 return {'plate': name}
 
@@ -306,10 +320,10 @@ class PathManager:
 
         if isinstance(self.paths, dict):
             if name not in self.paths:
-                raise ConfigError(f"'{self.toml_path}' doesn't specify a path for plate '{name}'")
+                raise ConfigError(f"No data file path specified for plate '{name}'")
             return make_index(name, self.paths[name])
 
-        raise ConfigError("{self.toml_path}: expected `meta.paths` to be dict or str, got {type(self.paths)}: {self.paths}")
+        raise ConfigError(f"Expected `meta.paths` to be dict or str, got {type(self.paths)}: {self.paths}")
 
 class configdict(dict):
     special = {
@@ -342,4 +356,13 @@ class configdict(dict):
         }
 
 class ConfigError(Exception):
-    pass
+
+    def __init__(self, message):
+        self.message = message
+        self.toml_path = None
+
+    def __str__(self):
+        if self.toml_path:
+            return f"{self.toml_path}: {self.message}"
+        else:
+            return self.message
