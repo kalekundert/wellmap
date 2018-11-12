@@ -34,6 +34,36 @@ def test_one_block():
     with raises(ConfigError):
         wells_from_config(config_err)
 
+    config_0x0 = {
+            'block': {
+                '0x0': {
+                    'A1': {'x': 1},
+                },
+            },
+    }
+    with raises(ConfigError):
+        wells_from_config(config_0x0)
+
+    config_0x1 = {
+            'block': {
+                '0x1': {
+                    'A1': {'x': 1},
+                },
+            },
+    }
+    with raises(ConfigError):
+        wells_from_config(config_0x1)
+
+    config_1x0 = {
+            'block': {
+                '1x0': {
+                    'A1': {'x': 1},
+                },
+            },
+    }
+    with raises(ConfigError):
+        wells_from_config(config_1x0)
+
     config_1x1 = {
             'block': {
                 '1x1': {

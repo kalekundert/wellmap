@@ -140,6 +140,11 @@ def wells_from_config(config, label=None):
             raise ConfigError(f"Unknown [block] size '{size}', expected 'WxH' (where W and H are both positive integers).")
 
         width, height = map(int, match.groups())
+        if width == 0:
+            raise ConfigError(f"[block.{size}] has no width.  No wells defined.")
+        if height == 0:
+            raise ConfigError(f"[block.{size}] has no height.  No wells defined.")
+
         for top_left in config.blocks[size]:
             for key in iter_wells_in_block(top_left, width, height):
                 wells.setdefault(key, {})

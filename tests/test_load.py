@@ -27,10 +27,13 @@ def test_one_well():
             x=1,
     )
 
-    with raises(ConfigError):
+    with raises(ConfigError) as err:
         bio96.load(DIR/'one_well.toml', path_required=True)
-    with raises(ConfigError):
+    assert 'one_well.toml' in str(err.value)
+
+    with raises(ConfigError) as err:
         bio96.load(DIR/'one_well.toml', data_loader=pd.read_excel)
+    assert 'one_well.toml' in str(err.value)
 
     labels, data = bio96.load(
             DIR/'one_well.toml',
