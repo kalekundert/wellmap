@@ -1,6 +1,6 @@
-****************************************
-Bio96 --- Parse data from 96 well plates
-****************************************
+***************************************************
+``bio96`` --- File format for 96-well plate layouts
+***************************************************
 
 Many medium-throughput experiments produce data in 24-, 96-, or 384-well plate 
 format.  However, it can be a challenge to keep track of which wells (e.g. A1, 
