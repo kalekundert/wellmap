@@ -29,6 +29,7 @@ setup(
     install_requires=[
         'toml',
         'pandas',
+        'nonstdlib',
     ],
     license='MIT',
     zip_safe=False,
