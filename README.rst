@@ -171,8 +171,8 @@ __ `https://github.com/toml-lang/toml`
   .. note::
       All paths specified in this section can either be absolute (if they begin 
       with a '/') or relative (if they don't).  Relative paths are considered 
-      relative to the path to the TOML file itself, regardless of what the 
-      current working directory is.
+      relative to the directory containing the TOML file itself, regardless of 
+      what the current working directory is.
 
   ``path``
     The path to the file containing the actual data for this layout.  The 
