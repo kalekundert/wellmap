@@ -37,12 +37,11 @@ Installation
 
 Example Usage
 =============
-For the sake of example, imagine that we are interested in testing the 
-effectiveness of penicillin against eight different strains of pathogenic 
-bacteria.  To do so, we will grow 96-well plates with a different strain in 
-each row and a different concentration of antibiotic in each column.  
-Furthermore, we will do the experiment in triplicate, with each replicate on 
-it's own plate.
+Imagine that we are interested in testing the effectiveness of penicillin 
+against eight different strains of pathogenic bacteria.  To do so, we will grow 
+96-well plates with a different strain in each row and a different 
+concentration of antibiotic in each column.  Furthermore, we will do the 
+experiment in triplicate, with each replicate on it's own plate.
 
 The file describing this plate might look something like this::
 
@@ -114,7 +113,7 @@ The file describing this plate might look something like this::
    [col.12]
      conc_ng_mL = 1024
 
-We could then parse this file (and others like it) from python like so::
+We could then parse this file (and others like it) from python::
 
    #!/usr/bin/env python3
 
@@ -155,14 +154,12 @@ We could then parse this file (and others like it) from python like so::
 
 File Format
 ===========
-The file format is based on TOML, so refer to the `TOML documentation`__ for a 
-complete description of the basic syntax.  The blocks listed in this section 
-identify wells in your experimental layout.  Any ``key = value`` tags within 
-those blocks are assumed to describe the experimental conditions within those 
-wells.  These tags can be anything, and are included as columns in the data 
-frame returned by ``load()``.
-
-__ `https://github.com/toml-lang/toml`
+The file format is based on TOML, so refer to the `TOML documentation 
+<https://github.com/toml-lang/toml>`_ for a complete description of the basic 
+syntax.  The blocks listed in this section identify wells in your experimental 
+layout.  Any ``key = value`` tags within those blocks are assumed to describe 
+the experimental conditions within those wells.  These tags can be anything, 
+and are included as columns in the data frame returned by ``load()``.
 
 ``[meta]``
   Miscellaneous fields that affect how ``bio96`` parses the file.  This is the 
