@@ -227,13 +227,14 @@ __ `https://github.com/toml-lang/toml`
    specified outside of a plate block.
 
 ``[row.A]``
-   Define conditions for all the wells in the specified row.  Rows must be 
-   specified using uppercase letters.  Currently, rows beyond "Z" are not 
-   supported.
+   Define conditions for all the wells in the specified row ("A" in the example 
+   above).  Rows must be specified using uppercase letters.  Currently, rows 
+   beyond "Z" are not supported.
 
 ``[col.1]``
-   Define conditions for all the wells in the specified column.  Rows must be 
-   specified using integer numbers, starting from 1.
+   Define conditions for all the wells in the specified column ("1" in the 
+   example above).  Rows must be specified using integer numbers, starting from 
+   1.
 
 ``[irow.A]``
    Similar to ``[row.A]``, but "interleaved" with the row above or below it.  
@@ -265,25 +266,22 @@ __ `https://github.com/toml-lang/toml`
 
 ``[block.WxH.A1]``
    Define conditions for a block of wells W wells wide, H columns tall, and 
-   with the given well in the top-left corner.
+   with the given well ("A1" in the example above) in the top-left corner.
 
 ``[well.A1]``
-  Define conditions for the specified well.
+  Define conditions for the specified well ("A1" in the example above).
 
 Python API
 ==========
-``bio96.load(
-          toml_path,
-          data_loader=None, merge_cols=None,
-          path_guess=None, path_required=False)``
+``bio96.load(toml_path, data_loader=None, merge_cols=None, path_guess=None, path_required=False)``
 
    Parse the given TOML file and return a ``pd.DataFrame`` with a row for each 
    well and a column for each experimental condition specified in that file.  
    If the ``data_loader`` and ``merge_cols`` arguments are provided, that data 
    frame will also contain columns for any data associated with each well.
 
-   Arguments:
-
+   Arguments
+   ---------
    ``toml_path``
       The path to a file describing the layout of one or more plates.  See the 
       `File Format`_ section for details about this file.
@@ -299,7 +297,7 @@ Python API
 
       The data frame loaded from the TOML file has 7 columns which identify the 
       wells (``plate``, ``path``, ``well``, ``row``, ``col``, ``row_i``, 
-      ``row_j``, see the "Returns" section below for more details).  Each key 
+      ``row_j``, see the `Returns`_ section below for more details).  Each key 
       in this mapping must be one of these columns, but the ``path`` column is 
       implied and does not need to be specified.
 
@@ -322,8 +320,8 @@ Python API
       A boolean indicating whether or not the given TOML file must reference 
       one or more data files.  
 
-   Returns:
-
+   Returns
+   -------
    - If neither ``data_loader`` nor ``merge_cols`` was provided:
 
      A data frame containing the information about the plate layout parsed from 
