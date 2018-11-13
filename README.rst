@@ -274,14 +274,13 @@ __ `https://github.com/toml-lang/toml`
 Python API
 ==========
 ``bio96.load(toml_path, data_loader=None, merge_cols=None, path_guess=None, path_required=False)``
-
    Parse the given TOML file and return a ``pd.DataFrame`` with a row for each 
    well and a column for each experimental condition specified in that file.  
    If the ``data_loader`` and ``merge_cols`` arguments are provided, that data 
    frame will also contain columns for any data associated with each well.
 
-   Arguments
-   ---------
+   **Arguments:**
+   
    ``toml_path``
       The path to a file describing the layout of one or more plates.  See the 
       `File Format`_ section for details about this file.
@@ -297,7 +296,7 @@ Python API
 
       The data frame loaded from the TOML file has 7 columns which identify the 
       wells (``plate``, ``path``, ``well``, ``row``, ``col``, ``row_i``, 
-      ``row_j``, see the `Returns`_ section below for more details).  Each key 
+      ``row_j``, see the "Returns" section below for more details).  Each key 
       in this mapping must be one of these columns, but the ``path`` column is 
       implied and does not need to be specified.
 
@@ -320,8 +319,8 @@ Python API
       A boolean indicating whether or not the given TOML file must reference 
       one or more data files.  
 
-   Returns
-   -------
+   **Returns:**
+   
    - If neither ``data_loader`` nor ``merge_cols`` was provided:
 
      A data frame containing the information about the plate layout parsed from 
@@ -357,5 +356,5 @@ Python API
 
 Contributing
 ============
-`Bug reports <https://github.com/kalekundert/bio96/issues>` and `pull requests 
-<https://github.com/kalekundert/bio96/pulls>` are always welcome!
+`Bug reports <https://github.com/kalekundert/bio96/issues>`_ and `pull requests 
+<https://github.com/kalekundert/bio96/pulls>`_ are always welcome!
