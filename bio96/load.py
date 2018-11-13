@@ -286,7 +286,7 @@ class PathManager:
         self.check_overspecified()
 
         if self.paths is not None:
-            raise ConfigError(f"`meta.paths` ({self.paths if isinstance(self.paths, str) else ', '.join(self.paths)}) without any [plate] blocks.  Did you mean to use `meta.path`?")
+            raise ConfigError(f"`meta.paths` ({self.paths if isinstance(self.paths, str) else ', '.join(self.paths)}) specified without any [plate] blocks.  Did you mean to use `meta.path`?")
 
         if self.path is not None:
             return make_index(self.path)

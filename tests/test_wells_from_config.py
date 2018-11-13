@@ -31,7 +31,7 @@ def test_one_block():
                 'err': {}
             },
     }
-    with raises(ConfigError):
+    with raises(ConfigError, match="err"):
         wells_from_config(config_err)
 
     config_0x0 = {
@@ -41,7 +41,7 @@ def test_one_block():
                 },
             },
     }
-    with raises(ConfigError):
+    with raises(ConfigError, match="0x0"):
         wells_from_config(config_0x0)
 
     config_0x1 = {
@@ -51,7 +51,7 @@ def test_one_block():
                 },
             },
     }
-    with raises(ConfigError):
+    with raises(ConfigError, match="0x1"):
         wells_from_config(config_0x1)
 
     config_1x0 = {
@@ -61,7 +61,7 @@ def test_one_block():
                 },
             },
     }
-    with raises(ConfigError):
+    with raises(ConfigError, match="1x0"):
         wells_from_config(config_1x0)
 
     config_1x1 = {
@@ -192,7 +192,7 @@ def test_row_without_col():
                 'A': {'x': 1},
             },
     }
-    with raises(ConfigError):
+    with raises(ConfigError, match="row"):
         wells_from_config(config)
 
 def test_col_without_row():
@@ -201,7 +201,7 @@ def test_col_without_row():
                 '1': {'y': 1},
             },
     }
-    with raises(ConfigError):
+    with raises(ConfigError, match="col"):
         wells_from_config(config)
 
 def test_interleaved_row():
@@ -268,7 +268,7 @@ def test_irow_without_col():
                 'A': {'x': 1},
             },
     }
-    with raises(ConfigError):
+    with raises(ConfigError, match="irow"):
         wells_from_config(config)
 
 def test_icol_without_row():
@@ -277,7 +277,7 @@ def test_icol_without_row():
                 '1': {'y': 1},
             },
     }
-    with raises(ConfigError):
+    with raises(ConfigError, match="icol"):
         wells_from_config(config)
 
 def test_top_level_params():
