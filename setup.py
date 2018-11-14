@@ -6,17 +6,12 @@ try:
 except ImportError:
     from distutils.core import setup
 
-import re
-with open('bio96/__init__.py') as file:
-    version_pattern = re.compile("__version__ = '(.*)'")
-    version = version_pattern.search(file.read()).group(1)
-
 with open('README.rst') as file:
     readme = file.read()
 
 setup(
     name='bio96',
-    version=version,
+    version='0.2.0',
     author='Kale Kundert',
     author_email='kale@thekunderts.net',
     description="File format for 96-well plate layouts",
