@@ -85,7 +85,7 @@ def test_two_concats():
 
 def test_alert(capsys):
     config, paths, concats = config_from_toml(DIR/'alert.toml')
-    assert capsys.readouterr().out == "Hello world!\n"
+    assert "Hello world" in capsys.readouterr().out
 
 
 
