@@ -1,0 +1,5 @@
+[meta]
+concat = 'one_well_xy.toml'
+
+[well.A1]
+x = 2

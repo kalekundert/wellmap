@@ -124,6 +124,7 @@ We could then parse this file (and others like it) from python::
 
    import docopt
    import bio96
+   import pandas as pd
 
    args = docopt.docopt(__doc__)
 
@@ -206,6 +207,13 @@ and are included as columns in the data frame returned by ``load()``.
     precedence over the earlier files.  This is useful if you want to share the 
     same basic plate layout between multiple experiments, but want to specify 
     different paths or tweak certain wells for each one.
+
+  ``concat``
+    A path or list of paths that should be loaded independently of this file 
+    and concatenated to the resulting data frame.  Unlike ``include``, the 
+    referenced paths have no effect on how this file is parsed, and are not 
+    themselves affected by anything in this file.  This is useful if you want 
+    to use data from multiple independent experiments in a single analysis.
 
   ``alert``
     A message that should be printed to the terminal every time this file is 

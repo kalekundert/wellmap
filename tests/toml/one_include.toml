@@ -1,5 +1,5 @@
 [meta]
-include = 'one_well.toml'
+include = 'one_well_xy.toml'
 
 [well.A1]
-y = 1
+x = 2

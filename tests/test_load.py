@@ -10,60 +10,64 @@ from test_table_from_wells import row
 DIR = Path(__file__).parent/'toml'
 
 def test_one_well():
-    labels = bio96.load(DIR/'one_well.toml')
+    labels = bio96.load(DIR/'one_well_xy.toml')
     assert row(labels, 'well == "A1"') == dict(
             well='A1',
             row='A', col='1',
             row_i=0, col_j=0,
             x=1,
+            y=1,
     )
 
-    labels = bio96.load(DIR/'one_well.toml', path_guess='{0.stem}.xlsx')
+    labels = bio96.load(DIR/'one_well_xy.toml', path_guess='{0.stem}.xlsx')
     assert row(labels, 'well == "A1"') == dict(
-            path=DIR/'one_well.xlsx',
+            path=DIR/'one_well_xy.xlsx',
             well='A1',
             row='A', col='1',
             row_i=0, col_j=0,
             x=1,
+            y=1,
     )
 
-    with raises(ConfigError, match='one_well.toml'):
-        bio96.load(DIR/'one_well.toml', path_required=True)
-    with raises(ConfigError, match='one_well.toml'):
-        bio96.load(DIR/'one_well.toml', data_loader=pd.read_excel)
+    with raises(ConfigError, match='one_well_xy.toml'):
+        bio96.load(DIR/'one_well_xy.toml', path_required=True)
+    with raises(ConfigError, match='one_well_xy.toml'):
+        bio96.load(DIR/'one_well_xy.toml', data_loader=pd.read_excel)
 
     labels, data = bio96.load(
-            DIR/'one_well.toml',
+            DIR/'one_well_xy.toml',
             data_loader=pd.read_excel,
             path_guess='{0.stem}.xlsx',
     )
     assert row(labels, 'well == "A1"') == dict(
-            path=DIR/'one_well.xlsx',
+            path=DIR/'one_well_xy.xlsx',
             well='A1',
             row='A', col='1',
             row_i=0, col_j=0,
             x=1,
+            y=1,
     )
     assert row(data, 'Well == "A1"') == dict(
             Well='A1',
-            path=DIR/'one_well.xlsx',
-            Data=0,
+            path=DIR/'one_well_xy.xlsx',
+            Data='xy',
     )
 
     df = bio96.load(
-            DIR/'one_well.toml',
+            DIR/'one_well_xy.toml',
             data_loader=pd.read_excel,
             merge_cols={'well': 'Well'},
             path_guess='{0.stem}.xlsx',
     )
     assert row(df, 'well == "A1"') == dict(
-            path=DIR/'one_well.xlsx',
+            path=DIR/'one_well_xy.xlsx',
             well='A1',
             Well='A1',
             row='A', col='1',
             row_i=0, col_j=0,
             x=1,
-            Data=0,
+            y=1,
+            Data='xy',
     )
 
 def test_one_plate():
@@ -104,6 +108,15 @@ def test_two_plates():
             Data=1,
 
     )
+
+def test_concat():
+    labels = bio96.load(DIR/'one_concat.toml')
+    print(labels)
+    assert len(labels) == 2
+
+    labels = bio96.load(DIR/'two_concats.toml')
+    print(labels)
+    assert len(labels) == 3
 
 def test_reasonably_complex():
     df = bio96.load(DIR/'reasonably_complex.toml')

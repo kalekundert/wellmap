@@ -1,0 +1,9 @@
+[meta]
+include = [
+  'one_well_xyz.toml',
+  'one_well_xy.toml',
+]
+
+[well.A1]
+x = 2
+

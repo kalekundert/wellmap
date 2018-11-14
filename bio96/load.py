@@ -30,9 +30,10 @@ def load(toml_path, data_loader=None, merge_cols=None,
 
     try:
         # Parse the TOML file:
-        config, paths = config_from_toml(toml_path, path_guess,
+        config, paths, concats = config_from_toml(toml_path, path_guess,
                 path_required or data_loader)
         labels = table_from_config(config, paths)
+        labels = pd.concat([labels, *concats], sort=False)
 
         # Load the data associated with each well.
         if data_loader is None:
@@ -70,9 +71,19 @@ def load(toml_path, data_loader=None, merge_cols=None,
         err.toml_path = toml_path
         raise
 
-def config_from_toml(toml_path, path_guess=None, require_path=False):
+def config_from_toml(toml_path, path_guess=None, path_required=False):
     toml_path = Path(toml_path).resolve()
     config = configdict(toml.load(str(toml_path)))
+
+    def iter_paths_from_meta(key):
+        if key not in config.meta:
+            yield from []
+        else:
+            paths = config.meta[key]
+            if isinstance(paths, str):
+                paths = [paths]
+            for path in paths:
+                yield resolve_path(toml_path, path)
 
     # Synthesize any available path information.
     paths = PathManager(
@@ -80,26 +91,30 @@ def config_from_toml(toml_path, path_guess=None, require_path=False):
             config.meta.get('paths'),
             toml_path,
             path_guess,
-            require_path,
+            path_required,
     )
 
     # Include one or more remote files if any are specified.  
-    if 'include' in config.meta:
-        includes = config.meta['include']
-        if isinstance(includes, str):
-            includes = [includes]
+    for path in reversed(list(iter_paths_from_meta('include'))):
+        defaults, *_ = config_from_toml(path)
+        recursive_merge(config, defaults)
 
-        for include in reversed(includes):
-            path = resolve_path(toml_path, include)
-            defaults, _ = config_from_toml(path)
-            recursive_merge(config, defaults)
+    # Load any files to be concatenated.
+    concats = []
+    for path in iter_paths_from_meta('concat'):
+        print(path)
+        df = load(path, path_guess=path_guess, path_required=path_required)
+        print(df)
+        concats.append(df)
+        print(len(concats))
+        print()
 
     # Print out any messages contained in the file.
     if 'alert' in config.meta:
         print(config.meta['alert'])
 
     config.pop('meta', None)
-    return config, paths
+    return config, paths, concats
 
 def table_from_config(config, paths):
     config = configdict(config)
