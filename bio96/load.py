@@ -102,12 +102,8 @@ def config_from_toml(toml_path, path_guess=None, path_required=False):
     # Load any files to be concatenated.
     concats = []
     for path in iter_paths_from_meta('concat'):
-        print(path)
         df = load(path, path_guess=path_guess, path_required=path_required)
-        print(df)
         concats.append(df)
-        print(len(concats))
-        print()
 
     # Print out any messages contained in the file.
     if 'alert' in config.meta:
