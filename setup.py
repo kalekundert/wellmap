@@ -19,7 +19,7 @@ setup(
     version=version,
     author='Kale Kundert',
     author_email='kale@thekunderts.net',
-    description='',
+    description="File format for 96-well plate layouts",
     long_description=readme,
     url='https://github.com/kalekundert/bio96',
     packages=[
@@ -37,11 +37,11 @@ setup(
         'bio96',
     ],
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3.6',
-        'Topic :: Software Development :: Libraries',
+        'Topic :: Scientific/Engineering :: Bio-Informatics',
     ],
 )
