@@ -46,7 +46,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
         for path in labels['path'].unique():
            df = data_loader(path)
            df['path'] = path
-           data = data.append(df)
+           data = data.append(df, sort=False)
 
         # Merge the labels and the data into a single data frame.
         if merge_cols is None:
@@ -136,7 +136,7 @@ def table_from_config(config, paths):
         # Make an effort to keep the columns in a reasonable order.  I don't 
         # know why `pd.concat()` doesn't do this on its own...
         cols = tables[-1].columns
-        return pd.concat(tables, sort=True)[cols]
+        return pd.concat(tables, sort=False)[cols]
 
 def wells_from_config(config, label=None):
     config = configdict(config)
