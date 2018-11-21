@@ -111,16 +111,44 @@ def test_two_plates():
 
 def test_concat():
     labels = bio96.load(DIR/'one_concat.toml')
-    print(labels)
     assert len(labels) == 2
 
+    with raises(ConfigError, match="Did you mean to set `meta.path`?"):
+        bio96.load(DIR/'one_concat.toml', path_required=True)
+
     labels = bio96.load(DIR/'two_concats.toml')
-    print(labels)
     assert len(labels) == 3
+
+    with raises(ConfigError, match="Did you mean to set `meta.path`?"):
+        bio96.load(DIR/'two_concats.toml', path_required=True)
+
+    # Should not raise.  It's ok that `just_concat.xlsx` doesn't exist, because
+    # `just_concat.toml` doesn't specify any wells.
+    labels = bio96.load(
+            DIR/'just_concat.toml',
+            path_guess='{0.stem}.xlsx',
+            path_required=True,
+    )
+    assert len(labels) == 1
 
 def test_reasonably_complex():
     df = bio96.load(DIR/'reasonably_complex.toml')
     assert len(df) == 32
+
+def test_no_wells():
+    with raises(ConfigError, match="No wells defined"):
+        bio96.load(DIR/"empty.toml")
+
+    # The following examples actually trigger a different (and more specific) 
+    # exception, but it still has "No wells defined" in the message.
+    with raises(ConfigError, match="No wells defined"):
+        bio96.load(DIR/"row_without_col.toml")
+    with raises(ConfigError, match="No wells defined"):
+        bio96.load(DIR/"irow_without_col.toml")
+    with raises(ConfigError, match="No wells defined"):
+        bio96.load(DIR/"col_without_row.toml")
+    with raises(ConfigError, match="No wells defined"):
+        bio96.load(DIR/"icol_without_row.toml")
 
 def test_bad_args():
 
@@ -142,3 +170,4 @@ def test_bad_args():
                 data_loader=pd.read_excel,
                 merge_cols={'well': 'xxx'},
         )
+

@@ -86,11 +86,6 @@ def test_index_for_only_plate__no_path():
     pm = PathManager(None, None, DIR/'z.toml')
     assert pm.get_index_for_only_plate() == {}
 
-    pm = PathManager(None, None, DIR/'z.toml', path_required=True)
-    with raises(ConfigError, match="none was specified"):
-        pm.get_index_for_only_plate()
-
-
 def test_index_for_named_plate__dict():
     pm = PathManager(None, {'a': 'a.dat', 'b': 'b.dat'}, DIR/'z.toml')
     assert pm.get_index_for_named_plate('a') == {'plate': 'a', 'path': DIR/'a.dat'}
@@ -111,12 +106,6 @@ def test_index_for_named_plate__no_paths():
     pm = PathManager(None, None, DIR/'z.toml')
     assert pm.get_index_for_named_plate('a') == {'plate': 'a'}
     assert pm.get_index_for_named_plate('b') == {'plate': 'b'}
-
-    pm = PathManager(None, None, DIR/'z.toml', path_required=True)
-    with raises(ConfigError, match="none were specified"):
-        pm.get_index_for_named_plate('a')
-    with raises(ConfigError, match="none were specified"):
-        pm.get_index_for_named_plate('b')
 
 def test_index_for_named_plate__unknown_type():
     pm = PathManager(None, ['a'], DIR/'z.toml')

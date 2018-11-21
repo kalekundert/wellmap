@@ -29,13 +29,19 @@ def load(toml_path, data_loader=None, merge_cols=None,
         path_guess=None, path_required=False):
 
     try:
-        # Parse the TOML file:
-        config, paths, concats = config_from_toml(toml_path, path_guess,
-                path_required or data_loader)
+        ## Parse the TOML file:
+        config, paths, concats = config_from_toml(toml_path, path_guess)
         labels = table_from_config(config, paths)
         labels = pd.concat([labels, *concats], sort=False)
 
-        # Load the data associated with each well.
+        if path_required or data_loader:
+            if 'path' not in labels or labels['path'].isnull().any():
+                raise paths.missing_path_error
+
+        if len(labels) == 0:
+            raise ConfigError("No wells defined.")
+
+        ## Load the data associated with each well:
         if data_loader is None:
             if merge_cols is not None:
                 raise ValueError("Specified columns to merge, but no function to load data!")
@@ -48,7 +54,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
            df['path'] = path
            data = data.append(df, sort=False)
 
-        # Merge the labels and the data into a single data frame.
+        ## Merge the labels and the data into a single data frame:
         if merge_cols is None:
             return labels, data
 
@@ -71,7 +77,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
         err.toml_path = toml_path
         raise
 
-def config_from_toml(toml_path, path_guess=None, path_required=False):
+def config_from_toml(toml_path, path_guess=None):
     toml_path = Path(toml_path).resolve()
     config = configdict(toml.load(str(toml_path)))
 
@@ -91,7 +97,6 @@ def config_from_toml(toml_path, path_guess=None, path_required=False):
             config.meta.get('paths'),
             toml_path,
             path_guess,
-            path_required,
     )
 
     # Include one or more remote files if any are specified.  
@@ -102,7 +107,7 @@ def config_from_toml(toml_path, path_guess=None, path_required=False):
     # Load any files to be concatenated.
     concats = []
     for path in iter_paths_from_meta('concat'):
-        df = load(path, path_guess=path_guess, path_required=path_required)
+        df = load(path, path_guess=path_guess)
         concats.append(df)
 
     # Print out any messages contained in the file.
@@ -118,7 +123,11 @@ def table_from_config(config, paths):
 
     if not config.plates:
         wells = wells_from_config(config)
-        index = paths.get_index_for_only_plate()
+        # Getting the index can raise errors we might not care about if there 
+        # aren't any wells (e.g. it doesn't matter if a path doesn't exist if 
+        # it won't be associated with any wells).  Skipping the call is a bit 
+        # of a hacky way to avoid these errors, but it works.
+        index = paths.get_index_for_only_plate() if wells else {}
         return table_from_wells(wells, index)
 
     else:
@@ -130,7 +139,7 @@ def table_from_config(config, paths):
             plate_config = recursive_merge(plate_config.copy(), config)
             wells = wells_from_config(plate_config)
 
-            index = paths.get_index_for_named_plate(key)
+            index = paths.get_index_for_named_plate(key) if wells else {}
             tables += [table_from_wells(wells, index)]
 
         # Make an effort to keep the columns in a reasonable order.  I don't 
@@ -252,12 +261,12 @@ def resolve_path(parent_path, child_path):
 
 class PathManager:
 
-    def __init__(self, path, paths, toml_path, path_guess=None, path_required=False):
+    def __init__(self, path, paths, toml_path, path_guess=None):
         self.path = path
         self.paths = paths
         self.toml_path = Path(toml_path)
         self.path_guess = path_guess
-        self.path_required = path_required
+        self.missing_path_error = None
 
     def __str__(self):
         return str({
@@ -265,7 +274,6 @@ class PathManager:
             'paths': self.paths,
             'toml_path': self.toml_path,
             'path_guess': self.path_guess,
-            'path_required': self.path_required,
         })
 
     def check_overspecified(self):
@@ -306,9 +314,7 @@ class PathManager:
         if self.path_guess:
             return make_index(self.path_guess.format(self.toml_path))
 
-        if self.path_required:
-            raise ConfigError(f"Analysis requires a data file, but none was specified and none could be inferred.  Did you mean to set `meta.path`?")
-
+        self.missing_path_error = ConfigError(f"Analysis requires a data file, but none was specified and none could be inferred.  Did you mean to set `meta.path`?")
         return {}
 
     def get_index_for_named_plate(self, name):
@@ -327,10 +333,8 @@ class PathManager:
             return {'plate': name, 'path': path}
 
         if self.paths is None:
-            if self.path_required:
-                raise ConfigError(f"Analysis requires a data file for each plate, but none were specified.  Did you mean to set `meta.paths`?")
-            else:
-                return {'plate': name}
+            self.missing_path_error = ConfigError(f"Analysis requires a data file for each plate, but none were specified.  Did you mean to set `meta.paths`?")
+            return {'plate': name}
 
         if isinstance(self.paths, str):
             return make_index(name, self.paths.format(name))
