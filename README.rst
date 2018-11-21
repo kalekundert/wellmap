@@ -270,8 +270,8 @@ and are included as columns in the data frame returned by ``load()``.
    while 3 would interleave with 4, etc.
 
 ``[block.WxH.A1]``
-   Define conditions for a block of wells W wells wide, H columns tall, and 
-   with the given well ("A1" in the example above) in the top-left corner.
+   Define conditions for a block of wells W columns wide, H rows tall, and with 
+   the given well ("A1" in the example above) in the top-left corner.
 
 ``[well.A1]``
   Define conditions for the specified well ("A1" in the example above).
