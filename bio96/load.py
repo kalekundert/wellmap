@@ -112,7 +112,8 @@ def config_from_toml(toml_path, path_guess=None):
 
     # Print out any messages contained in the file.
     if 'alert' in config.meta:
-        print(f"{toml_path.relative_to(Path.cwd())}:")
+        try: print(f"{toml_path.relative_to(Path.cwd())}:")
+        except ValueError: print(f"{toml_path}:")
         print(config.meta['alert'])
 
     config.pop('meta', None)
