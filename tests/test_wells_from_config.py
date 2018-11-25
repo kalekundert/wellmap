@@ -10,7 +10,7 @@ def test_one_well():
             },
     }
     assert wells_from_config(config) == {
-            'A1': {'x': 1},
+            (0,0): {'x': 1},
     }
 
 def test_multiple_wells():
@@ -21,8 +21,8 @@ def test_multiple_wells():
             },
     }
     assert wells_from_config(config) == {
-            'A1': {'x': 1},
-            'B2': {'x': 2},
+            (0,0): {'x': 1},
+            (1,1): {'x': 2},
     }
 
 def test_one_block():
@@ -72,7 +72,7 @@ def test_one_block():
             },
     }
     assert wells_from_config(config_1x1) == {
-            'A1': {'x': 1},
+            (0,0): {'x': 1},
     }
 
     config_1x2 = {
@@ -83,8 +83,8 @@ def test_one_block():
             },
     }
     assert wells_from_config(config_1x2) == {
-            'A1': {'x': 1},
-            'B1': {'x': 1},
+            (0,0): {'x': 1},
+            (1,0): {'x': 1},
     }
 
     config_2x1 = {
@@ -95,8 +95,8 @@ def test_one_block():
             },
     }
     assert wells_from_config(config_2x1) == {
-            'A1': {'x': 1},
-            'A2': {'x': 1},
+            (0,0): {'x': 1},
+            (0,1): {'x': 1},
     }
 
     config_2x2 = {
@@ -107,10 +107,10 @@ def test_one_block():
             },
     }
     assert wells_from_config(config_2x2) == {
-            'A1': {'x': 1},
-            'A2': {'x': 1},
-            'B1': {'x': 1},
-            'B2': {'x': 1},
+            (0,0): {'x': 1},
+            (0,1): {'x': 1},
+            (1,0): {'x': 1},
+            (1,1): {'x': 1},
     }
 
 def test_multiple_blocks():
@@ -123,8 +123,8 @@ def test_multiple_blocks():
             },
     }
     assert wells_from_config(config) == {
-            'A1': {'x': 1},
-            'B2': {'x': 2},
+            (0,0): {'x': 1},
+            (1,1): {'x': 2},
     }
 
     config = {
@@ -138,9 +138,9 @@ def test_multiple_blocks():
             },
     }
     assert wells_from_config(config) == {
-            'A1': {'x': 1, 'y': 1},
-            'A2': {'x': 1        },
-            'B1': {        'y': 1},
+            (0,0): {'x': 1, 'y': 1},
+            (0,1): {'x': 1        },
+            (1,0): {        'y': 1},
     }
 
 def test_one_row_col():
@@ -153,7 +153,7 @@ def test_one_row_col():
             },
     }
     assert wells_from_config(config) == {
-            'A1': {'x': 1, 'y': 1},
+            (0,0): {'x': 1, 'y': 1},
     }
 
 def test_multiple_rows():
@@ -167,8 +167,8 @@ def test_multiple_rows():
             },
     }
     assert wells_from_config(config) == {
-            'A1': {'x': 1, 'y': 1},
-            'B1': {'x': 2, 'y': 1},
+            (0,0): {'x': 1, 'y': 1},
+            (1,0): {'x': 2, 'y': 1},
     }
 
 def test_multiple_cols():
@@ -182,8 +182,8 @@ def test_multiple_cols():
             },
     }
     assert wells_from_config(config) == {
-            'A1': {'x': 1, 'y': 1},
-            'A2': {'x': 1, 'y': 2},
+            (0,0): {'x': 1, 'y': 1},
+            (0,1): {'x': 1, 'y': 2},
     }
 
 def test_row_without_col():
@@ -215,8 +215,8 @@ def test_interleaved_row():
             },
     }
     assert wells_from_config(config) == {
-            'A1': {'x': 1, 'y': 1},
-            'B2': {'x': 1, 'y': 2},
+            (0,0): {'x': 1, 'y': 1},
+            (1,1): {'x': 1, 'y': 2},
     }
 
     config = {
@@ -229,8 +229,8 @@ def test_interleaved_row():
             },
     }
     assert wells_from_config(config) == {
-            'B1': {'x': 2, 'y': 1},
-            'A2': {'x': 2, 'y': 2},
+            (1,0): {'x': 2, 'y': 1},
+            (0,1): {'x': 2, 'y': 2},
     }
 
 def test_interleaved_col():
@@ -244,8 +244,8 @@ def test_interleaved_col():
             },
     }
     assert wells_from_config(config) == {
-            'A1': {'x': 1, 'y': 1},
-            'B2': {'x': 2, 'y': 1},
+            (0,0): {'x': 1, 'y': 1},
+            (1,1): {'x': 2, 'y': 1},
     }
 
     config = {
@@ -258,8 +258,8 @@ def test_interleaved_col():
             },
     }
     assert wells_from_config(config) == {
-            'A2': {'x': 1, 'y': 2},
-            'B1': {'x': 2, 'y': 2},
+            (0,1): {'x': 1, 'y': 2},
+            (1,0): {'x': 2, 'y': 2},
     }
 
 def test_irow_without_col():
@@ -286,7 +286,7 @@ def test_top_level_params():
             'well': {'A1': {}},
     }
     assert wells_from_config(config) == {
-            'A1': {'x': 1},
+            (0,0): {'x': 1},
     }
 
 def test_precedence():
@@ -313,7 +313,7 @@ def test_precedence():
             'e': 5,
     }
     wells = wells_from_config(config)
-    assert wells['A1'] == {
+    assert wells[0,0] == {
             'a': 1,
             'b': 2,
             'c': 3,
@@ -329,6 +329,49 @@ def test_multi_letter_well():
             },
     }
     assert wells_from_config(config) == {
-            'AA1': {'x': 1},
+            (26,0): {'x': 1},
     }
 
+    config = {
+            'well': {
+                'AA01': {'x': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (26,0): {'x': 1},
+    }
+
+def test_redundant_well_names():
+    config = {
+            'well': {
+                'A1': {'x': 1},
+                'A01': {'y': 1},
+            },
+    }
+
+    with raises(ConfigError, match="[well.(A1|A01)]"):
+        wells_from_config(config)
+
+    config = {
+            'row': {
+                'A': {},
+            },
+            'col': {
+                '1': {'x': 1},
+                '01': {'y': 1},
+            },
+    }
+    with raises(ConfigError, match="[col.(1|01)]"):
+        wells_from_config(config)
+
+    config = {
+            'row': {
+                'A': {'x': 1},
+                'a': {'y': 1},
+            },
+            'col': {
+                '1': {},
+            },
+    }
+    with raises(ConfigError, match="[row.(A|a)]"):
+        wells_from_config(config)

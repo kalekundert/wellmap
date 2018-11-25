@@ -13,6 +13,7 @@ def test_one_well():
     labels = bio96.load(DIR/'one_well_xy.toml')
     assert row(labels, 'well == "A1"') == dict(
             well='A1',
+            well0='A01',
             row='A', col='1',
             row_i=0, col_j=0,
             x=1,
@@ -23,6 +24,7 @@ def test_one_well():
     assert row(labels, 'well == "A1"') == dict(
             path=DIR/'one_well_xy.xlsx',
             well='A1',
+            well0='A01',
             row='A', col='1',
             row_i=0, col_j=0,
             x=1,
@@ -42,6 +44,7 @@ def test_one_well():
     assert row(labels, 'well == "A1"') == dict(
             path=DIR/'one_well_xy.xlsx',
             well='A1',
+            well0='A01',
             row='A', col='1',
             row_i=0, col_j=0,
             x=1,
@@ -63,6 +66,7 @@ def test_one_well():
             path=DIR/'one_well_xy.xlsx',
             well='A1',
             Well='A1',
+            well0='A01',
             row='A', col='1',
             row_i=0, col_j=0,
             x=1,
@@ -76,6 +80,7 @@ def test_one_plate():
             path=DIR/'one_plate.xlsx',
             plate='a',
             well='A1',
+            well0='A01',
             row='A', col='1',
             row_i=0, col_j=0,
             x=1,
@@ -92,6 +97,7 @@ def test_two_plates():
             plate='a',
             well='A1',
             Well='A1',
+            well0='A01',
             row='A', col='1',
             row_i=0, col_j=0,
             x=1,
@@ -102,6 +108,7 @@ def test_two_plates():
             plate='b',
             well='A1',
             Well='A1',
+            well0='A01',
             row='A', col='1',
             row_i=0, col_j=0,
             x=2,

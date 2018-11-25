@@ -31,6 +31,7 @@ def test_one_concat():
     }
     assert row(concats[0], 'well == "A1"') == dict(
             well='A1',
+            well0='A01',
             row='A', col='1',
             row_i=0, col_j=0,
             x=1,
@@ -49,6 +50,7 @@ def test_one_concat():
     assert row(concats[0], 'well == "A1"') == dict(
             path=DIR/'one_well_xy.xlsx',
             well='A1',
+            well0='A01',
             row='A', col='1',
             row_i=0, col_j=0,
             x=1,
@@ -68,6 +70,7 @@ def test_two_concats():
     assert row(concats[0], 'well == "A1"') == dict(
             path=DIR/'one_well_xy.xlsx',
             well='A1',
+            well0='A01',
             row='A', col='1',
             row_i=0, col_j=0,
             x=1,
@@ -76,6 +79,7 @@ def test_two_concats():
     assert row(concats[1], 'well == "A1"') == dict(
             path=DIR/'one_well_xyz.xlsx',
             well='A1',
+            well0='A01',
             row='A', col='1',
             row_i=0, col_j=0,
             x=0,

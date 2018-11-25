@@ -5,6 +5,7 @@ import re, itertools
 import pandas as pd
 from pathlib import Path
 from nonstdlib import plural
+from copy import deepcopy
 from .util import *
 
 # Data Structures
@@ -150,7 +151,14 @@ def table_from_config(config, paths):
 
 def wells_from_config(config, label=None):
     config = configdict(config)
-    wells = config.wells.copy()
+    wells = {}
+
+    # Create and fill in any explicit wells.
+    for well in config.wells:
+        ij = ij_from_well(well)
+        if ij in wells:
+            raise ConfigError(f"[well.{well}] defined more than once.")
+        wells[ij] = deepcopy(config.wells[well])
 
     # Create new wells implied by any 'block' blocks:
     blocks = {}
@@ -168,69 +176,91 @@ def wells_from_config(config, label=None):
             raise ConfigError(f"[block.{size}] has no height.  No wells defined.")
 
         for top_left in config.blocks[size]:
-            for key in iter_wells_in_block(top_left, width, height):
-                wells.setdefault(key, {})
-                blocks.setdefault(key, [])
-                blocks[key].append(config.blocks[size][top_left])
+            for ij in iter_ij_in_block(top_left, width, height):
+                wells.setdefault(ij, {})
+                blocks.setdefault(ij, [])
+                blocks[ij].append(config.blocks[size][top_left])
     
     # Create new wells implied by any 'row' & 'col' blocks.
+
+    def normalize(dim, index_getter):
+        normed = {}
+        
+        for key, params in config.get(dim, {}).items():
+            i = index_getter(key)
+            if i in normed:
+                raise ConfigError(f"[{dim}.{key}] defined more than once.")
+            normed[i] = params
+
+        return normed
 
     def sanity_check(dim1, *dim2s):
         if config.get(dim1) and not any(config.get(x) for x in dim2s):
             raise ConfigError(f"Found {plural(len(config[dim1])):? [{dim1}] block/s}, but no [{'/'.join(dim2s)}] blocks.  No wells defined.")
 
+    rows = normalize('row', i_from_row)
+    cols = normalize('col', j_from_col)
+    irows = normalize('irow', i_from_row)
+    icols = normalize('icol', j_from_col)
+
     sanity_check('row', 'col', 'icol')
     sanity_check('col', 'row', 'irow')
-    for row, col in itertools.product(config.rows, config.cols):
-        key = well_from_row_col(row, col)
-        wells.setdefault(key, {})
+    for ij in itertools.product(rows, cols):
+        wells.setdefault(ij, {})
 
     sanity_check('irow', 'col')
-    for irow, col in itertools.product(config.irows, config.cols):
-        key = well_from_irow_col(irow, col)
-        wells.setdefault(key, {})
+    for ii, j in itertools.product(irows, cols):
+        ij = interleave(ii, j), j
+        wells.setdefault(ij, {})
 
     sanity_check('icol', 'row')
-    for row, icol in itertools.product(config.rows, config.icols):
-        key = well_from_row_icol(row, icol)
-        wells.setdefault(key, {})
+    for i, jj in itertools.product(rows, icols):
+        ij = i, interleave(i, jj)
+        wells.setdefault(ij, {})
 
     # Fill in any wells created above.
-    for key in wells:
-        row, col = row_col_from_well(key)
-        irow, icol = irow_icol_from_well(key)
+    pprint(wells)
+    for ij in wells:
+        i, j = ij
+        ii = interleave(i, j)
+        jj = interleave(j, i)
 
         # Merge in order of precedence: [block], [row/col], top-level
-        for block in blocks.get(key, {}):
-            recursive_merge(wells[key], block)
+        # [well] is already accounted for.
+        for block in blocks.get(ij, {}):
+            recursive_merge(wells[ij], block)
 
-        recursive_merge(wells[key], config.rows.get(row, {}))
-        recursive_merge(wells[key], config.cols.get(col, {}))
-        recursive_merge(wells[key], config.irows.get(irow, {}))
-        recursive_merge(wells[key], config.icols.get(icol, {}))
-        recursive_merge(wells[key], config.user)
+        recursive_merge(wells[ij], rows.get(i, {}))
+        recursive_merge(wells[ij], cols.get(j, {}))
+        recursive_merge(wells[ij], irows.get(ii, {}))
+        recursive_merge(wells[ij], icols.get(jj, {}))
+        recursive_merge(wells[ij], config.user)
 
     return wells
     
 def table_from_wells(wells, index):
     table = []
     user_cols = []
-
-    for key in wells:
-        row, col = row_col_from_well(key)
-        row_i, col_j = ij_from_well(key)
-        user_cols += [x for x in wells[key] if x not in user_cols]
+    max_j = max([12] + [j for i,j in wells])
+    digits = len(str(max_j + 1))
+    
+    for i, j in wells:
+        row, col = row_col_from_ij(i, j)
+        well = well_from_ij(i, j)
+        well0 = well0_from_well(well, digits=digits)
+        user_cols += [x for x in wells[i,j] if x not in user_cols]
 
         table += [{
-                **wells[key],
+                **wells[i,j],
                 **index,
-                'well': key,
+                'well': well,
+                'well0': well0,
                 'row': row, 'col': col,
-                'row_i': row_i, 'col_j': col_j,
+                'row_i': i, 'col_j': j,
         }]
 
     # Make an effort to put the columns in a reasonable order:
-    columns = ['well', 'row', 'col', 'row_i', 'col_j']
+    columns = ['well', 'well0', 'row', 'col', 'row_i', 'col_j']
     columns += list(index) + user_cols
 
     return pd.DataFrame(table, columns=columns)
@@ -243,7 +273,7 @@ def recursive_merge(config, defaults, overwrite=False):
                 config.setdefault(key, {})
                 recursive_merge(config[key], default, overwrite)
             elif overwrite:
-                config[key] = default.copy()
+                config[key] = deepcopy(default)
         else:
             if overwrite or key not in config:
                 config[key] = default
@@ -377,14 +407,3 @@ class configdict(dict):
                 if k not in self.special.values()
         }
 
-class ConfigError(Exception):
-
-    def __init__(self, message):
-        self.message = message
-        self.toml_path = None
-
-    def __str__(self):
-        if self.toml_path:
-            return f"{self.toml_path}: {self.message}"
-        else:
-            return self.message
