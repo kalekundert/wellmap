@@ -6,6 +6,14 @@ from pytest import raises
 def test_one_well():
     config = {
             'well': {
+                'XXX': {'x': 1},
+            },
+    }
+    with raises(ConfigError, match='XXX'):
+        wells_from_config(config)
+
+    config = {
+            'well': {
                 'A1': {'x': 1},
             },
     }
@@ -23,6 +31,27 @@ def test_multiple_wells():
     assert wells_from_config(config) == {
             (0,0): {'x': 1},
             (1,1): {'x': 2},
+    }
+
+def test_well_range():
+    config = {
+            'well': {
+                'A1,A2': {'x': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1},
+            (0,1): {'x': 1},
+    }
+
+    config = {
+            'well': {
+                'A1,A3': {'x': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1},
+            (0,2): {'x': 1},
     }
 
 def test_one_block():
@@ -143,7 +172,44 @@ def test_multiple_blocks():
             (1,0): {        'y': 1},
     }
 
+def test_block_range():
+    config_1x2 = {
+            'block': {
+                '2x1': {
+                    'A1,C1': {'x': 1},
+                },
+            },
+    }
+    assert wells_from_config(config_1x2) == {
+            (0,0): {'x': 1},
+            (0,1): {'x': 1},
+            (2,0): {'x': 1},
+            (2,1): {'x': 1},
+    }
+
 def test_one_row_col():
+    config = {
+            'row': {
+                '1': {'x': 1},
+            },
+            'col': {
+                '1': {'y': 1},
+            },
+    }
+    with raises(ConfigError, match='1'):
+        wells_from_config(config)
+
+    config = {
+            'row': {
+                'A': {'x': 1},
+            },
+            'col': {
+                'A': {'y': 1},
+            },
+    }
+    with raises(ConfigError, match='A'):
+        wells_from_config(config)
+
     config = {
             'row': {
                 'A': {'x': 1},
@@ -184,6 +250,62 @@ def test_multiple_cols():
     assert wells_from_config(config) == {
             (0,0): {'x': 1, 'y': 1},
             (0,1): {'x': 1, 'y': 2},
+    }
+
+def test_row_range():
+    config = {
+            'row': {
+                'A,C': {'x': 1},
+            },
+            'col': {
+                '1': {'y': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (2,0): {'x': 1, 'y': 1},
+    }
+
+    config = {
+            'row': {
+                'A-C': {'x': 1},
+            },
+            'col': {
+                '1': {'y': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (1,0): {'x': 1, 'y': 1},
+            (2,0): {'x': 1, 'y': 1},
+    }
+
+def test_col_range():
+    config = {
+            'row': {
+                'A': {'x': 1},
+            },
+            'col': {
+                '1,3': {'y': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (0,2): {'x': 1, 'y': 1},
+    }
+
+    config = {
+            'row': {
+                'A': {'x': 1},
+            },
+            'col': {
+                '1-3': {'y': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (0,1): {'x': 1, 'y': 1},
+            (0,2): {'x': 1, 'y': 1},
     }
 
 def test_row_without_col():
@@ -348,8 +470,7 @@ def test_redundant_well_names():
                 'A01': {'y': 1},
             },
     }
-
-    with raises(ConfigError, match="[well.(A1|A01)]"):
+    with raises(ConfigError, match='[well.(A1|A01)]'):
         wells_from_config(config)
 
     config = {
@@ -358,20 +479,24 @@ def test_redundant_well_names():
             },
             'col': {
                 '1': {'x': 1},
-                '01': {'y': 1},
+                '1,2': {'y': 1},
             },
     }
-    with raises(ConfigError, match="[col.(1|01)]"):
-        wells_from_config(config)
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (0,1): {        'y': 1},
+    }
 
     config = {
             'row': {
                 'A': {'x': 1},
-                'a': {'y': 1},
+                'A,B': {'y': 1},
             },
             'col': {
                 '1': {},
             },
     }
-    with raises(ConfigError, match="[row.(A|a)]"):
-        wells_from_config(config)
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (1,0): {        'y': 1},
+    }

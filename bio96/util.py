@@ -62,7 +62,7 @@ def row_col_from_well(well):
 
 def i_from_row(row):
     if not row.isalpha():
-        raise ConfigError("Cannot parse row '{row}'")
+        raise ConfigError(f"Cannot parse row '{row}'")
 
     i = 0
     D = len(row) - 1
@@ -76,7 +76,7 @@ def i_from_row(row):
 
 def j_from_col(col):
     if not col.isdigit():
-        raise ConfigError("Cannot parse column '{col}'")
+        raise ConfigError(f"Cannot parse column '{col}'")
 
     return int(col) - 1
 

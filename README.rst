@@ -233,12 +233,18 @@ and are included as columns in the data frame returned by ``load()``.
 
 ``[row.A]``
    Define conditions for all the wells in the specified row ("A" in the example 
-   above).  Rows must be specified using uppercase letters.
+   above).  Row must be specified as letters (upper or lower case).  You can 
+   specify multiple rows, e.g. ``[row.'A,C-E']`` would specify the rows "A", 
+   "C", "D", and "E".  Note that the quotes are necessary because TOML doesn't 
+   allow unquoted keys to contain ",".  Rows beyond "Z" can be specified with 
+   multiple letters (e.g. "AA", "AB", etc.) if necessary.
 
 ``[col.1]``
    Define conditions for all the wells in the specified column ("1" in the 
-   example above).  Rows must be specified using integer numbers, starting from 
-   1.
+   example above).  Columns must be specified using integer numbers, starting 
+   from 1.  You can specify multiple columns, e.g. ``[col.'1,3-5']`` would 
+   specify the columns "1", "3", "4", and "5".  Note that the quotes are 
+   necessary because TOML doesn't allow unquoted keys to contain ",".
 
 ``[irow.A]``
    Similar to ``[row.A]``, but "interleaved" with the row above or below it.  
@@ -270,10 +276,15 @@ and are included as columns in the data frame returned by ``load()``.
 
 ``[block.WxH.A1]``
    Define conditions for a block of wells W columns wide, H rows tall, and with 
-   the given well ("A1" in the example above) in the top-left corner.
+   the given well ("A1" in the example above) in the top-left corner.  You can 
+   specify multiple blocks at once, e.g. ``[block.2x2.'A1,C3']`` would specify 
+   2x2 blocks starting at A1 and C3.  Note that the quotes are necessary 
+   because TOML doesn't allow unquoted keys to contain ",".  
 
 ``[well.A1]``
-  Define conditions for the specified well ("A1" in the example above).
+  Define conditions for the specified well ("A1" in the example above).  You 
+  can specify multiple wells at once, e.g. ``[well.'A1,A2']``.  Note that the 
+  quotes are necessary because TOML doesn't allow unquoted keys to contain ",".  
 
 Python API
 ==========

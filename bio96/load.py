@@ -4,7 +4,7 @@ import toml
 import re, itertools
 import pandas as pd
 from pathlib import Path
-from nonstdlib import plural
+from nonstdlib import plural, indices_from_str
 from copy import deepcopy
 from .util import *
 
@@ -16,10 +16,11 @@ from .util import *
 #   basis.  
 #
 # `wells`
-#   Dictionary where the keys are well identifiers (e.g. "A1", "B2", etc.) and 
-#   the values are dictionaries containing arbitrary information about said 
-#   well.  This is basically a version of the `config` data structure where 
-#   all the parameters have been resolved to a per-well basis.
+#   Dictionary where the keys are (row, col) well indices and the values are 
+#   dictionaries containing arbitrary information about said well.  This is 
+#   basically a version of the `config` data structure where all messy well 
+#   names have been resolved to simple indices, and all the parameters have 
+#   been resolved on a per-well basis.
 #
 # `table`
 #   A pandas DataFrame derived from the `wells` data structure.  Each row 
@@ -153,14 +154,43 @@ def wells_from_config(config, label=None):
     config = configdict(config)
     wells = {}
 
-    # Create and fill in any explicit wells.
-    for well in config.wells:
+    def iter_wells(config):
+        for key in config:
+            for well in key.split(','):
+                yield well, config[key]
+
+    def iter_rows(config):
+        def row_range(a, b):
+            A, B = i_from_row(a), i_from_row(b)
+            yield from [
+                    row_from_i(x)
+                    for x in range(A, B+1)
+            ]
+
+        for key in config:
+            for row in indices_from_str(key, cast=str, range=row_range):
+                yield row, config[key]
+
+    def iter_cols(config):
+        def col_range(a, b):
+            A, B = j_from_col(a), j_from_col(b)
+            yield from [
+                    col_from_j(x)
+                    for x in range(A, B+1)
+            ]
+
+        for key in config:
+            for col in indices_from_str(key, cast=str, range=col_range):
+                yield col, config[key]
+
+    ## Create and fill in wells defined by 'well' blocks.
+    for well, params in iter_wells(config.wells):
         ij = ij_from_well(well)
         if ij in wells:
             raise ConfigError(f"[well.{well}] defined more than once.")
-        wells[ij] = deepcopy(config.wells[well])
+        wells[ij] = deepcopy(params)
 
-    # Create new wells implied by any 'block' blocks:
+    ## Create new wells implied by any 'block' blocks:
     blocks = {}
     pattern = re.compile('(\d+)x(\d+)')
 
@@ -175,33 +205,41 @@ def wells_from_config(config, label=None):
         if height == 0:
             raise ConfigError(f"[block.{size}] has no height.  No wells defined.")
 
-        for top_left in config.blocks[size]:
+        for top_left, params in iter_wells(config.blocks[size]):
             for ij in iter_ij_in_block(top_left, width, height):
                 wells.setdefault(ij, {})
                 blocks.setdefault(ij, [])
-                blocks[ij].append(config.blocks[size][top_left])
+                blocks[ij].append(deepcopy(params))
     
-    # Create new wells implied by any 'row' & 'col' blocks.
+    ## Create new wells implied by any 'row' & 'col' blocks.
 
-    def normalize(dim, index_getter):
-        normed = {}
+    def simplify_keys(dim):
+        before = config.get(dim, {})
+        after = {}
+
+        callbacks = {
+                'row': (iter_rows, i_from_row),
+                'col': (iter_cols, j_from_col),
+                'irow': (iter_rows, i_from_row),
+                'icol': (iter_cols, j_from_col),
+        }
+        iter_keys, index_getter = callbacks[dim]
         
-        for key, params in config.get(dim, {}).items():
-            i = index_getter(key)
-            if i in normed:
-                raise ConfigError(f"[{dim}.{key}] defined more than once.")
-            normed[i] = params
+        for b, params in iter_keys(before):
+            a = index_getter(b)
+            after.setdefault(a, {})
+            recursive_merge(after[a], params)
 
-        return normed
+        return after
 
     def sanity_check(dim1, *dim2s):
         if config.get(dim1) and not any(config.get(x) for x in dim2s):
             raise ConfigError(f"Found {plural(len(config[dim1])):? [{dim1}] block/s}, but no [{'/'.join(dim2s)}] blocks.  No wells defined.")
 
-    rows = normalize('row', i_from_row)
-    cols = normalize('col', j_from_col)
-    irows = normalize('irow', i_from_row)
-    icols = normalize('icol', j_from_col)
+    rows = simplify_keys('row')
+    cols = simplify_keys('col')
+    irows = simplify_keys('irow')
+    icols = simplify_keys('icol')
 
     sanity_check('row', 'col', 'icol')
     sanity_check('col', 'row', 'irow')
@@ -218,13 +256,13 @@ def wells_from_config(config, label=None):
         ij = i, interleave(i, jj)
         wells.setdefault(ij, {})
 
-    # Fill in any wells created above.
+    ## Fill in any wells created above.
     for ij in wells:
         i, j = ij
         ii = interleave(i, j)
         jj = interleave(j, i)
 
-        # Merge in order of precedence: [block], [row/col], top-level
+        # Merge in order of precedence: [block], [row/col], top-level.
         # [well] is already accounted for.
         for block in blocks.get(ij, {}):
             recursive_merge(wells[ij], block)
