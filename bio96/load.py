@@ -219,7 +219,6 @@ def wells_from_config(config, label=None):
         wells.setdefault(ij, {})
 
     # Fill in any wells created above.
-    pprint(wells)
     for ij in wells:
         i, j = ij
         ii = interleave(i, j)
