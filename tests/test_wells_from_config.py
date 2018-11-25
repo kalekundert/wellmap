@@ -321,3 +321,14 @@ def test_precedence():
             'e': 5,
     }
 
+
+def test_multi_letter_well():
+    config = {
+            'well': {
+                'AA1': {'x': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            'AA1': {'x': 1},
+    }
+

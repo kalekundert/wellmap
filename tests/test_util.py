@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import pytest
+from pytest import raises
 from hypothesis import given
 from hypothesis.strategies import integers
 from bio96 import *
@@ -32,6 +33,14 @@ def test_well_from_ij():
 def test_i_from_row():
     assert i_from_row('A') == 0
     assert i_from_row('B') == 1
+
+    assert i_from_row('Z') == 25
+    assert i_from_row('AA') == 26
+    assert i_from_row('AB') == 27
+
+    assert i_from_row('AZ') == 51
+    assert i_from_row('BA') == 52
+    assert i_from_row('BB') == 53
 
 def test_j_from_col():
     assert j_from_col('1') == 0
@@ -67,6 +76,14 @@ def test_row_from_i():
     assert row_from_i(0) == 'A'
     assert row_from_i(1) == 'B'
 
+    assert row_from_i(25) == 'Z'
+    assert row_from_i(26) == 'AA'
+    assert row_from_i(27) == 'AB'
+
+    assert row_from_i(51) == 'AZ'
+    assert row_from_i(52) == 'BA'
+    assert row_from_i(53) == 'BB'
+
 def test_col_from_j():
     assert col_from_j(0) == '1'
     assert col_from_j(1) == '2'
@@ -76,6 +93,7 @@ def test_row_col_from_ij():
     assert row_col_from_ij(0, 1) == ('A', '2')
     assert row_col_from_ij(1, 0) == ('B', '1')
     assert row_col_from_ij(1, 1) == ('B', '2')
+
 
 def test_row_col_from_well():
     assert row_col_from_well('A1') == ('A', '1')
@@ -87,6 +105,23 @@ def test_row_col_from_well():
     assert row_col_from_well('A02') == ('A', '2')
     assert row_col_from_well('B01') == ('B', '1')
     assert row_col_from_well('B02') == ('B', '2')
+
+    assert row_col_from_well('AA1') == ('AA', '1')
+    assert row_col_from_well('AA2') == ('AA', '2')
+    assert row_col_from_well('BB1') == ('BB', '1')
+    assert row_col_from_well('BB2') == ('BB', '2')
+
+    assert row_col_from_well('AA01') == ('AA', '1')
+    assert row_col_from_well('AA02') == ('AA', '2')
+    assert row_col_from_well('BB01') == ('BB', '1')
+    assert row_col_from_well('BB02') == ('BB', '2')
+
+    with raises(ConfigError, match="XXX"):
+        row_col_from_well('XXX')
+    with raises(ConfigError, match="123"):
+        row_col_from_well('123')
+    with raises(ConfigError, match="1A"):
+        row_col_from_well('1A')
 
 def test_irow_icol_from_well():
     assert irow_icol_from_well('A1') == ('A', '1')

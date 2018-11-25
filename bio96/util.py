@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
+import re
 import string
+
+WELL_PATTERN = re.compile('([A-Za-z]+)([0-9]+)')
 
 def well_from_row_col(row, col):
     return f'{row}{int(col)}'
@@ -22,8 +25,20 @@ def well_from_ij(i, j):
     )
 
 
+def well0_from_well(well):
+    pass
+
+
 def i_from_row(row):
-    return ord(row.upper()) - ord('A')
+    i = 0
+    D = len(row) - 1
+    N = len(string.ascii_uppercase)
+
+    for d, char in enumerate(row):
+        n = ord(char.upper()) - ord('A') + 1
+        i += n * N**(D - d)
+
+    return i - 1
 
 def j_from_col(col):
     return int(col) - 1
@@ -36,7 +51,14 @@ def ij_from_row_col(row, col):
 
 
 def row_from_i(i):
-    return string.ascii_uppercase[i]
+    chars = ''
+    N = len(string.ascii_uppercase)
+
+    while i >= 0:
+        chars += string.ascii_uppercase[i % N]
+        i  = (i // N) - 1
+
+    return chars[::-1]
 
 def col_from_j(j):
     return str(j + 1)
@@ -45,7 +67,12 @@ def row_col_from_ij(i, j):
     return row_from_i(i), col_from_j(j)
 
 def row_col_from_well(well):
-    return well[:1], str(int(well[1:]))
+    m = WELL_PATTERN.match(well)
+    if not m:
+        from .load import ConfigError
+        raise ConfigError(f"Cannot parse well '{well}'")
+
+    return m.group(1).upper(), str(int(m.group(2)))
 
 def irow_icol_from_well(well):
     row, col = row_col_from_well(well)
@@ -77,4 +104,3 @@ def iter_wells_in_block(top_left, width, height):
     for dx in range(width):
         for dy in range(height):
             yield well_from_ij(top + dy, left + dx)
-

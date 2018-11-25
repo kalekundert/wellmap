@@ -233,8 +233,7 @@ and are included as columns in the data frame returned by ``load()``.
 
 ``[row.A]``
    Define conditions for all the wells in the specified row ("A" in the example 
-   above).  Rows must be specified using uppercase letters.  Currently, rows 
-   beyond "Z" are not supported.
+   above).  Rows must be specified using uppercase letters.
 
 ``[col.1]``
    Define conditions for all the wells in the specified column ("1" in the 
