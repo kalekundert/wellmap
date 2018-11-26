@@ -233,7 +233,10 @@ def wells_from_config(config, label=None):
         return after
 
     def sanity_check(dim1, *dim2s):
-        if config.get(dim1) and not any(config.get(x) for x in dim2s):
+        if config.get(dim1) \
+                and not wells \
+                and not blocks \
+                and not any(config.get(x) for x in dim2s):
             raise ConfigError(f"Found {plural(len(config[dim1])):? [{dim1}] block/s}, but no [{'/'.join(dim2s)}] blocks.  No wells defined.")
 
     rows = simplify_keys('row')

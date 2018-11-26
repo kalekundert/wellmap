@@ -317,6 +317,19 @@ def test_row_without_col():
     with raises(ConfigError, match="row"):
         wells_from_config(config)
 
+    config = {
+            'well': {
+                'A1': {'y': 1},
+            },
+            'row': {
+                'A': {'x': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+    }
+
+
 def test_col_without_row():
     config = {
             'col': {
@@ -325,6 +338,18 @@ def test_col_without_row():
     }
     with raises(ConfigError, match="col"):
         wells_from_config(config)
+
+    config = {
+            'well': {
+                'A1': {'x': 1},
+            },
+            'col': {
+                '1': {'y': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+    }
 
 def test_interleaved_row():
     config = {
