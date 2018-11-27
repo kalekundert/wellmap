@@ -55,14 +55,14 @@ def row_col_from_ij(i, j):
 def row_col_from_well(well):
     m = re.match('([A-Za-z]+)([0-9]+)', well)
     if not m:
-        raise ConfigError(f"Cannot parse well '{well}'")
+        raise ConfigError(f"Cannot parse well '{well}', expected 'A1', 'B2', etc.")
 
     return m.group(1).upper(), str(int(m.group(2)))
 
 
 def i_from_row(row):
     if not row.isalpha():
-        raise ConfigError(f"Cannot parse row '{row}'")
+        raise ConfigError(f"Cannot parse row '{row}', expected letter(s) e.g. 'A', 'B', etc.")
 
     i = 0
     D = len(row) - 1
@@ -76,7 +76,7 @@ def i_from_row(row):
 
 def j_from_col(col):
     if not col.isdigit():
-        raise ConfigError(f"Cannot parse column '{col}'")
+        raise ConfigError(f"Cannot parse column '{col}', expected digit(s) e.g. '1', '2', etc.")
 
     return int(col) - 1
 
