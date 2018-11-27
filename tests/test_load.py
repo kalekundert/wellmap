@@ -164,14 +164,14 @@ def test_bad_args():
         bio96.load(DIR/'two_plates.toml', merge_cols={})
 
     # Non-existent merge columns.
-    with raises(ValueError):
+    with raises(ValueError, match='xxx'):
         bio96.load(
                 DIR/'two_plates.toml',
                 data_loader=pd.read_excel,
                 merge_cols={'xxx': 'Well'},
         )
 
-    with raises(ValueError):
+    with raises(ValueError, match='xxx'):
         bio96.load(
                 DIR/'two_plates.toml',
                 data_loader=pd.read_excel,

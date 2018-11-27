@@ -63,7 +63,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
         def check_merge_cols(cols, known_cols, attr):
             unknown_cols = set(cols) - set(known_cols)
             if unknown_cols:
-                raise ValueError("Cannot merge on {','.join(unknown_cols)}.  `merge_cols` {attr} must be in {','.join(known_cols)}.")
+                raise ValueError(f"Cannot merge on {','.join(unknown_cols)}.  `merge_cols` {attr} must be in {','.join(known_cols)}.")
             return list(cols)
 
         left_ok = 'well', 'row', 'col', 'row_i', 'col_i', 'plate'
