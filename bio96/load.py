@@ -67,7 +67,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
                 raise ValueError(f"Cannot merge on {quoted_join(unknown_cols)}.  Allowed {attrs} of the `merge_cols` dict: {quoted_join(known_cols)}.")
             return list(cols)
 
-        left_ok = 'well', 'row', 'col', 'row_i', 'col_i', 'plate'
+        left_ok = 'well', 'well0', 'row', 'col', 'row_i', 'col_i', 'plate'
         left_on = check_merge_cols(merge_cols.keys(), left_ok, 'keys')
         right_on = check_merge_cols(merge_cols.values(), data.columns, 'values')
 
