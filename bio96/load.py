@@ -60,10 +60,11 @@ def load(toml_path, data_loader=None, merge_cols=None,
         if merge_cols is None:
             return labels, data
 
-        def check_merge_cols(cols, known_cols, attr):
+        def check_merge_cols(cols, known_cols, attrs):
             unknown_cols = set(cols) - set(known_cols)
             if unknown_cols:
-                raise ValueError(f"Cannot merge on {','.join(unknown_cols)}.  `merge_cols` {attr} must be in {','.join(known_cols)}.")
+                quoted_join = lambda it: ', '.join(f"'{x}'" for x in it)
+                raise ValueError(f"Cannot merge on {quoted_join(unknown_cols)}.  Allowed {attrs} of the `merge_cols` dict: {quoted_join(known_cols)}.")
             return list(cols)
 
         left_ok = 'well', 'row', 'col', 'row_i', 'col_i', 'plate'
@@ -237,7 +238,7 @@ def wells_from_config(config, label=None):
                 and not wells \
                 and not blocks \
                 and not any(config.get(x) for x in dim2s):
-            raise ConfigError(f"Found {plural(len(config[dim1])):? [{dim1}] block/s}, but no [{'/'.join(dim2s)}] blocks.  No wells defined.")
+            raise ConfigError(f"Found {plural(config[dim1]):? [{dim1}] block/s}, but no [{'/'.join(dim2s)}] blocks.  No wells defined.")
 
     rows = simplify_keys('row')
     cols = simplify_keys('col')
