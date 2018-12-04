@@ -17,17 +17,23 @@ setup(
     description="File format for 96-well plate layouts",
     long_description=readme,
     url='https://github.com/kalekundert/bio96',
+    license='MIT',
     packages=[
         'bio96',
     ],
-    include_package_data=True,
     install_requires=[
         'pandas',
         'toml>=0.10',
         'nonstdlib>=1.12',
+        'docopt',      # gui
+        'matplotlib',  # gui
+        'colorcet',    # gui
     ],
-    license='MIT',
-    zip_safe=False,
+    entry_points={
+        'console_scripts': [
+            'bio96 = bio96.verify:main',
+        ],
+    },
     keywords=[
         'bio96',
     ],
@@ -39,4 +45,6 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
     ],
+    zip_safe=False,
+    include_package_data=True,
 )
