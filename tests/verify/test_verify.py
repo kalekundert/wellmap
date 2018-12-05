@@ -77,6 +77,9 @@ def test_user_attr():
     run_cli(f'{DIR}/two_attrs.toml y')
     run_cli(f'{DIR}/two_attrs.toml x y')
 
+def test_nan_first():
+    run_cli(DIR/'nan_first.toml')
+
 def test_skip_wells():
     run_cli(DIR/'skip_wells.toml')
 
@@ -86,3 +89,9 @@ def test_long_labels():
 def test_reasonably_complex():
     run_cli(DIR/'reasonably_complex_2.toml')
     run_cli(DIR/'reasonably_complex_1.toml')
+
+def test_colorscheme():
+    run_cli(f'{DIR}/colors_viridis.toml -c viridis')
+    run_cli(f'{DIR}/colors_plasma.toml -c plasma')
+    run_cli(f'{DIR}/colors_coolwarm.toml -c coolwarm')
+

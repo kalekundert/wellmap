@@ -1,0 +1,11 @@
+[well.A1]
+x = 'a'
+
+[well.A2]
+x = 'a'
+y = 'b'
+
+[well.A3]
+x = 'a'
+y = 'c'
+

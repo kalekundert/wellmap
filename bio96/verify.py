@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 """\
+Visualize the plate layout described by a bio96 TOML file.
+
 Usage:
     bio96 <toml> [<attr>...] [options]
 
@@ -16,6 +18,11 @@ Arguments:
         project onto the plate.  For example, if the TOML file contains 
         something equivalent to `well.A1.conc = 1`, then "conc" would be a 
         valid attribute.
+
+        If no attributes are specified, any attributes with at least two 
+        different values will be automatically chosen.  Sometimes this results 
+        in a figure too big to fit on the screen.  In that case, the best 
+        solution is just to specify a smaller number of attributes to focus on.
 
 Options:
     -o --output PATH
@@ -66,11 +73,6 @@ LEFT_MARGIN = 0.5
 RIGHT_MARGIN = PAD_WIDTH
 BOTTOM_MARGIN = PAD_HEIGHT
 
-# TODO:
-# - General renaming/refactoring
-# - Object for num plates/attrs/rows/cols
-# - Tests?
-
 def main():
     import docopt
 
@@ -85,7 +87,7 @@ def main():
             if os.fork() != 0:
                 sys.exit()
 
-        fig = plot_attrs(df, args['<attr>'], cmap=cmap)
+        fig = plot_layout(df, args['<attr>'], cmap=cmap)
 
         if args['--output']:
             out_path = args['--output'].replace('$', toml_path.stem)
@@ -101,7 +103,7 @@ def main():
         print(err)
 
 
-def plot_attrs(df, user_attrs, cmap):
+def plot_layout(df, user_attrs, cmap):
     import matplotlib.pyplot as plt
 
     # The whole architecture of this program is dictated by a small and obscure 
@@ -133,13 +135,13 @@ def plot_attrs(df, user_attrs, cmap):
     plates = sorted(df['plate'].unique())
     attrs = pick_attrs(df, user_attrs)
 
-    fig, axes = setup_axes(df, plates, attrs)
+    fig, axes, dims = setup_axes(df, plates, attrs)
 
     for i, attr in enumerate(attrs):
-        norm = pick_norm(axes[i,-1], df, attr, cmap)
+        colors = pick_colors(axes[i,-1], df, attr, cmap)
 
         for j, plate in enumerate(plates):
-            plot_plate(axes[i,j], df, plate, attr, norm, cmap)
+            plot_plate(axes[i,j], df, plate, attr, dims, colors)
 
     for i, attr in enumerate(attrs):
         axes[i,0].set_ylabel(attr)
@@ -153,6 +155,28 @@ def plot_attrs(df, user_attrs, cmap):
         ax.set_yticklabels([])
 
     return fig
+
+def plot_plate(ax, df, plate, attr, dims, colors):
+    # Fill in a matrix integers representing each value of the given attribute.
+    matrix = np.full(dims.shape, np.nan)
+    q = df.query('plate == @plate')
+
+    for _, well in q.iterrows():
+        i = well['row_i'] - dims.i0
+        j = well['col_j'] - dims.j0
+        matrix[i, j] = colors.transform(well[attr])
+
+    # Plot a heatmap.
+    ax.matshow(matrix, norm=colors.norm, cmap=colors.cmap)
+
+    ax.set_xticks(dims.xticks)
+    ax.set_yticks(dims.yticks)
+    ax.set_xticks(dims.xticks - 0.5, minor=True)
+    ax.set_yticks(dims.yticks - 0.5, minor=True)
+    ax.set_xticklabels(dims.xticklabels)
+    ax.set_yticklabels(dims.yticklabels)
+    ax.grid(which='minor')
+    ax.tick_params(which='both', axis='both', length=0)
 
 def pick_attrs(df, user_attrs):
     bio96_cols = ['plate', 'well', 'well0', 'row', 'col', 'row_i', 'col_j', 'path']
@@ -191,57 +215,23 @@ def pick_attrs(df, user_attrs):
 
         return non_degenerate_cols
 
-def pick_norm(ax, df, attr, cmap):
+def pick_colors(ax, df, attr, cmap):
     from matplotlib.colorbar import ColorbarBase
 
-    norm = SortNorm(df[attr].unique())
+    colors = Colors(cmap, df[attr])
 
     bar = ColorbarBase(
             ax,
-            norm=norm.norm,
-            cmap=cmap,
-            boundaries=norm.boundaries,
+            norm=colors.norm,
+            cmap=colors.cmap,
+            boundaries=colors.boundaries,
     )
-
-    bar.set_ticks(list(norm.map.values()))
-    bar.set_ticklabels(list(norm.map.keys()))
+    bar.set_ticks(colors.ticks)
+    bar.set_ticklabels(colors.ticklabels)
 
     ax.invert_yaxis()
 
-
-    return norm
-
-def plot_plate(ax, df, plate, attr, norm, cmap):
-    i0 = df['row_i'].min()
-    j0 = df['col_j'].min() 
-    num_rows = df['row_i'].max() - i0 + 1
-    num_cols = df['col_j'].max() - j0 + 1
-
-    q = df.query('plate == @plate')
-
-    matrix = np.full((num_rows, num_cols), np.nan)
-    for _, well in q.iterrows():
-        i = well['row_i'] - i0
-        j = well['col_j'] - j0
-        matrix[i, j] = norm(well[attr])
-
-    ax.matshow(matrix, norm=norm.norm, cmap=cmap)
-
-    xticks = np.arange(num_cols)
-    xticklabels = [bio96.col_from_j(j + j0) for j in xticks]
-    yticks = np.arange(num_rows)
-    yticklabels = [bio96.row_from_i(i + i0) for i in yticks]
-
-    ax.set_xticks(xticks)
-    ax.set_yticks(yticks)
-    ax.set_xticks(xticks - 0.5, minor=True)
-    ax.set_yticks(yticks - 0.5, minor=True)
-    ax.set_xticklabels(xticklabels)
-    ax.set_yticklabels(yticklabels)
-    ax.grid(which='minor')
-    ax.tick_params(which='both', axis='both', length=0)
-
-
+    return colors
 def setup_axes(df, plates, attrs):
     from mpl_toolkits.axes_grid1 import Divider
     from mpl_toolkits.axes_grid1.axes_size import Fixed
@@ -253,8 +243,7 @@ def setup_axes(df, plates, attrs):
     # Determine how much data will be shown in the figure:
     num_plates = len(plates)
     num_attrs = len(attrs)
-    num_rows = df['row_i'].max() - df['row_i'].min() + 1
-    num_cols = df['col_j'].max() - df['col_j'].min() + 1
+    dims = Dimensions(df)
 
     bar_label_width = guess_attr_label_width(df, attrs)
 
@@ -264,7 +253,7 @@ def setup_axes(df, plates, attrs):
     ]
     for _ in plates:
         h_divs += [
-                CELL_SIZE * num_cols,
+                CELL_SIZE * dims.num_cols,
                 PAD_WIDTH,
         ]
     h_divs[-1:] = [
@@ -278,7 +267,7 @@ def setup_axes(df, plates, attrs):
     ]
     for _ in attrs:
         v_divs += [
-                CELL_SIZE * num_rows,
+                CELL_SIZE * dims.num_rows,
                 PAD_HEIGHT,
         ]
     v_divs[-1:] = [
@@ -307,7 +296,7 @@ def setup_axes(df, plates, attrs):
             loc = divider.new_locator(nx=2*j+1, ny=2*(num_attrs - i) - 1)
             axes[i,j].set_axes_locator(loc)
 
-    return fig, axes
+    return fig, axes, dims
 
 def guess_attr_label_width(df, attrs):
     # I've seen some posts suggesting that this might not work on Macs.  I 
@@ -343,24 +332,42 @@ def get_yticklabel_width(fig, ax):
 
     return width / dpi
 
-# Bad name...
-class SortNorm:
+class Dimensions:
 
-    def __init__(self, values):
-        self.map = {x: i for i, x in enumerate(values) if not self.isnan(x)}
+    def __init__(self, df):
+        self.i0 = df['row_i'].min()
+        self.j0 = df['col_j'].min() 
+        self.num_rows = df['row_i'].max() - self.i0 + 1
+        self.num_cols = df['col_j'].max() - self.j0 + 1
+        self.shape = self.num_rows, self.num_cols
+
+        self.xticks = np.arange(self.num_cols)
+        self.xticklabels = [
+                bio96.col_from_j(j + self.j0)
+                for j in self.xticks
+        ]
+        self.yticks = np.arange(self.num_rows)
+        self.yticklabels = [
+                bio96.row_from_i(i + self.i0)
+                for i in self.yticks
+        ]
+
+class Colors:
+
+    def __init__(self, cmap, values):
+        self.map = {
+                x: i for i, x in enumerate(values.dropna().unique())
+        }
 
         n = len(self.map)
-        self.boundaries = np.arange(n+1) - 0.5
+        self.cmap = cmap
         self.norm = Normalize(vmin=0, vmax=n-1)
+        self.boundaries = np.arange(n+1) - 0.5
+        self.ticks = np.fromiter(self.map.values(), dtype=int, count=n)
+        self.ticklabels = list(self.map.keys())
 
-    def __call__(self, x, clip=None):
-        if self.isnan(x):
-            return np.nan
-        return self.map[x]
-
-        #from matplotlib.cbook import iterable
-        #values = value if iterable(value) else [value]
-        #return np.array([self.map[x] for x in values])
+    def transform(self, x):
+        return self.map[x] if not self.isnan(x) else np.nan
 
     @staticmethod
     def isnan(x):

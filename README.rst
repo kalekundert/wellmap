@@ -45,18 +45,18 @@ experiment in triplicate, with each replicate on it's own plate.
 
 The file describing this plate might look something like this::
 
+   # Fields outside of any block apply to every well.  This can be a useful way 
+   # to document basic information about your experiments, like who did them, # 
+   what date they were done on, etc.
+
+   antibiotic = 'penicillin'
+
    # The `[meta]` block contains various options affecting how the file is
    # parsed.  In this case, the `paths` option describes where to find the
    # actual data files associated with these plates.
 
    [meta]
       paths = '20180704_penicillin_resistance_{}.xlsx'
-
-   # Fields outside of any block apply to every well.  This can be a useful way 
-   # to document basic information about your experiments, like who did them, 
-   # what date they were done on, etc.
-
-   antibiotic = 'penicillin'
 
    # The `[plate]`, `[row]`, and `[col]` blocks specify which conditions are
    # being tested in which wells.  The fields within these blocks (e.g.
@@ -112,6 +112,13 @@ The file describing this plate might look something like this::
      conc_ng_mL = 512
    [col.12]
      conc_ng_mL = 1024
+
+We can use the ``bio96`` command-line tool to visualize the plate layout and 
+make sure we correctly labeled all the wells::
+
+   $ bio96 penicillin_resistance.toml
+
+.. image:: docs/example_usage/penicillin_resistance.svg
 
 We could then parse this file (and others like it) from python::
 
