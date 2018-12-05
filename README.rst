@@ -120,7 +120,7 @@ make sure we correctly labeled all the wells::
 
 .. image:: docs/example_usage/penicillin_resistance.svg
 
-We could then parse this file (and others like it) from python::
+We could then parse the above TOML file (and others like it) from python::
 
    #!/usr/bin/env python3
 
