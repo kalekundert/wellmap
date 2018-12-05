@@ -318,26 +318,39 @@ Python API
       `File Format`_ section for details about this file.
 
    ``data_loader``
-      A function that takes a path to a data file, parses it, and returns a 
-      data frame containing the parsed data.  Note that specifying this option 
-      implies ``path_required=True``.
+      Indicates that ``load()`` should attempt to load the actual data 
+      associated with the plate layout, in addition to loading the layout 
+      itself.  The argument itself should be a function that takes a path to a 
+      data file, parses it, and returns a data frame containing the parsed 
+      data.  Note that specifying a data loader implies ``path_required=True``.
 
    ``merge_cols``
-      A dictionary mapping the data frame columns which identify wells between 
-      the TOML file and the data files.
-
-      The data frame loaded from the TOML file has 7 columns which identify the 
-      wells (``plate``, ``path``, ``well``, ``row``, ``col``, ``row_i``, 
-      ``row_j``, see the "Returns" section below for more details).  Each key 
-      in this mapping must be one of these columns, but the ``path`` column is 
-      implied and does not need to be specified.
+      Indicates that ``load()`` should attempt to merge the plate layout and 
+      its associated data into a single data frame.  This requires the 
+      ``data_loader`` argument to be specified.  Furthermore, it requires the 
+      data frame returned by the data loader to be `"tidy"`__.  Briefly, this 
+      means that each column should represent a single variable, and each row 
+      should represent a single observation.  One (or more) of the 
+      columns/variables should indicate which well each observation came from.  
+      This information is needed to merge the data into the layout.
+      
+      __ http://vita.had.co.nz/papers/tidy-data.html
+      
+      This argument is a dictionary mapping the names of the columns which 
+      identify wells between the data frames representing the TOML file and the 
+      actual data.  The data frame loaded from the TOML file has 8 columns 
+      which identify the wells (``plate``, ``path``, ``well``, ``well0``, 
+      ``row``, ``col``, ``row_i``, ``row_j``, see the "Returns" section below 
+      for more details).  For this argument, each key must be one of these 
+      columns, but the ``path`` column is implied and does not need to be 
+      specified.
 
       The data frame loaded from the data files will have whatever columns were 
-      created by ``data_loader()``.  Each value in this mapping must be one of 
-      these columns.  Furthermore, each key-value pair in this mapping must 
+      created by ``data_loader()``.  For this argument, each value must be one 
+      of these columns.  Furthermore, each key-value pair in this mapping must 
       associate two columns that are exactly comparable (e.g. not "A1" and 
-      "A01"), or the merge will fail.  It is the responsibility of 
-      ``data_loader()`` to create columns that can be merged in this manner.
+      "A01"), or the merge will fail.  It is the responsibility of the data 
+      loader to create columns that can be merged in this manner.
 
    ``path_guess``
       A string specifying the where to look for a data file if none is 
@@ -366,6 +379,7 @@ Python API
        well.  This column will not be present if no data files were referenced 
        by the TOML file.
      - ``well``: The name of the well, e.g. "A1".
+     - ``well0``: The zero-padded name of the well, e.g. "A01".
      - ``row``: The name of the row for this well, e.g. "A".
      - ``col``: The name of the column for this well, e.g. "1".
      - ``row_i``: The row-index of this well, counting from 0.
