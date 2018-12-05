@@ -293,6 +293,16 @@ and are included as columns in the data frame returned by ``load()``.
   can specify multiple wells at once, e.g. ``[well.'A1,A2']``.  Note that the 
   quotes are necessary because TOML doesn't allow unquoted keys to contain ",".  
 
+Command-line Usage
+==================
+``bio96`` comes with a command-line tool (also called ``bio96``) that displays 
+a visual representation of the plate layout described by a TOML file.  This is 
+meant to help catch mistakes, which can be easy to make in complex layouts.
+
+For more information on this command and its options, run::
+
+   $ bio96 -h
+
 Python API
 ==========
 ``bio96.load(toml_path, data_loader=None, merge_cols=None, path_guess=None, path_required=False)``
