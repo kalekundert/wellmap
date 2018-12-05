@@ -48,13 +48,13 @@ Options:
 import bio96
 import colorcet
 import numpy as np
+import matplotlib.pyplot as plt
 import sys, os
 
+from bio96 import ConfigError
 from nonstdlib import plural
-from pathlib import Path
-
-import matplotlib.pyplot as plt
 from matplotlib.colors import BoundaryNorm, Normalize
+from pathlib import Path
 
 CELL_SIZE = 0.25
 PAD_WIDTH = 0.20
@@ -74,93 +74,32 @@ BOTTOM_MARGIN = PAD_HEIGHT
 def main():
     import docopt
 
-    args = docopt.docopt(__doc__)
-    toml_path = Path(args['<toml>'])
+    try:
+        args = docopt.docopt(__doc__)
+        toml_path = Path(args['<toml>'])
 
-    df = bio96.load(toml_path)
-    cmap = colorcet.cm.get(args['--color'], plt.get_cmap(args['--color']))
+        df = bio96.load(toml_path)
+        cmap = colorcet.cm.get(args['--color'], plt.get_cmap(args['--color']))
 
-    if not args['--foreground'] and not args['--output']:
-        if os.fork() != 0:
-            sys.exit()
+        if not args['--foreground'] and not args['--output']:
+            if os.fork() != 0:
+                sys.exit()
 
-    fig = plot_attrs(df, args['<attr>'], cmap=cmap)
+        fig = plot_attrs(df, args['<attr>'], cmap=cmap)
 
-    if args['--output']:
-        out_path = args['--output'].replace('$', toml_path.stem)
-        fig.savefig(out_path)
-        print("Layout written to:", out_path)
-    else:
-        plt.show()
+        if args['--output']:
+            out_path = args['--output'].replace('$', toml_path.stem)
+            fig.savefig(out_path)
+            print("Layout written to:", out_path)
+        else:
+            plt.show()
 
+    except CliError as err:
+        print(err)
+    except ConfigError as err:
+        err.toml_path = toml_path
+        print(err)
 
-def pick_attrs(df, user_attrs):
-    bio96_cols = ['plate', 'well', 'well0', 'row', 'col', 'row_i', 'col_j', 'path']
-    user_cols = [x for x in df.columns if x not in bio96_cols]
-
-    if user_attrs:
-        # Complain if the user specified any columns that don't exist.
-        unknown_attrs = set(user_attrs) - set(user_cols)
-        if unknown_attrs:
-            raise ConfigError(f"Unknown attribute {' '.join(unknown_attrs)}")
-
-        return user_attrs
-
-    # IF the user didn't specify any columns, show any that have more than one 
-    # unique value.
-    else:
-        non_degenerate_cols = [
-                x for x in user_cols
-                if df[x].nunique() > 1
-        ]
-        return non_degenerate_cols
-
-def pick_norm(ax, df, attr, cmap):
-    from matplotlib.colorbar import ColorbarBase
-
-    norm = SortNorm(df[attr].unique())
-
-    bar = ColorbarBase(
-            ax,
-            norm=norm.norm,
-            cmap=cmap,
-            boundaries=norm.boundaries,
-    )
-
-    bar.set_ticks(list(norm.map.values()))
-    bar.set_ticklabels(list(norm.map.keys()))
-
-    ax.invert_yaxis()
-
-
-    return norm
-
-def plot_plate(ax, df, plate, attr, norm, cmap):
-    num_rows = df['row_i'].max() - df['row_i'].min() + 1
-    num_cols = df['col_j'].max() - df['col_j'].min() + 1
-
-    q = df.query('plate == @plate')
-
-    matrix = np.full((num_rows, num_cols), np.nan)
-    for _, well in q.iterrows():
-        i, j = well['row_i'], well['col_j']
-        matrix[i, j] = norm(well[attr])
-
-    ax.matshow(matrix, norm=norm.norm, cmap=cmap)
-
-    xticks = np.arange(num_cols)
-    xticklabels = [bio96.col_from_j(j) for j in xticks]
-    yticks = np.arange(num_rows)
-    yticklabels = [bio96.row_from_i(i) for i in yticks]
-
-    ax.set_xticks(xticks)
-    ax.set_yticks(yticks)
-    ax.set_xticks(xticks - 0.5, minor=True)
-    ax.set_yticks(yticks - 0.5, minor=True)
-    ax.set_xticklabels(xticklabels)
-    ax.set_yticklabels(yticklabels)
-    ax.grid(which='minor')
-    ax.tick_params(which='both', axis='both', length=0)
 
 def plot_attrs(df, user_attrs, cmap):
     import matplotlib.pyplot as plt
@@ -189,15 +128,10 @@ def plot_attrs(df, user_attrs, cmap):
     # calculation.
 
     if 'plate' not in df:
-        df['plate'] = ''
+        df.insert(0, 'plate', '')
 
     plates = sorted(df['plate'].unique())
     attrs = pick_attrs(df, user_attrs)
-
-    if not attrs:
-        raise ValueError("No attributes selected to display.")
-    if len(df) == 0:
-        raise ValueError("No wells found in the given TOML file.")
 
     fig, axes = setup_axes(df, plates, attrs)
 
@@ -219,6 +153,93 @@ def plot_attrs(df, user_attrs, cmap):
         ax.set_yticklabels([])
 
     return fig
+
+def pick_attrs(df, user_attrs):
+    bio96_cols = ['plate', 'well', 'well0', 'row', 'col', 'row_i', 'col_j', 'path']
+    user_cols = [x for x in df.columns if x not in bio96_cols]
+
+    if user_attrs:
+        # Complain if the user specified any columns that don't exist.
+
+        # Using lists (slower) instead of sets (faster) to maintain the order 
+        # of the attributes in case we want to print an error message.
+        unknown_attrs = [
+                x for x in user_attrs
+                if x not in user_cols
+        ]
+        if unknown_attrs:
+            raise ConfigError(f"No such {plural(unknown_attrs):attribute/s}: {', '.join(unknown_attrs)}.\n\nDid you mean: {', '.join(user_cols)}")
+
+        return user_attrs
+
+    # If the user didn't specify any columns, show any that have more than one 
+    # unique value.
+    else:
+        degenerate_cols = [
+                x for x in user_cols
+                if df[x].nunique() == 1
+        ]
+        non_degenerate_cols = [
+                x for x in user_cols
+                if x not in degenerate_cols
+        ]
+        if not non_degenerate_cols:
+            if degenerate_cols:
+                raise CliError(f"Found only degenerate attributes (i.e. with the same value in every well): {', '.join(degenerate_cols)}")
+            else:
+                raise ConfigError(f"No attributes defined.")
+
+        return non_degenerate_cols
+
+def pick_norm(ax, df, attr, cmap):
+    from matplotlib.colorbar import ColorbarBase
+
+    norm = SortNorm(df[attr].unique())
+
+    bar = ColorbarBase(
+            ax,
+            norm=norm.norm,
+            cmap=cmap,
+            boundaries=norm.boundaries,
+    )
+
+    bar.set_ticks(list(norm.map.values()))
+    bar.set_ticklabels(list(norm.map.keys()))
+
+    ax.invert_yaxis()
+
+
+    return norm
+
+def plot_plate(ax, df, plate, attr, norm, cmap):
+    i0 = df['row_i'].min()
+    j0 = df['col_j'].min() 
+    num_rows = df['row_i'].max() - i0 + 1
+    num_cols = df['col_j'].max() - j0 + 1
+
+    q = df.query('plate == @plate')
+
+    matrix = np.full((num_rows, num_cols), np.nan)
+    for _, well in q.iterrows():
+        i = well['row_i'] - i0
+        j = well['col_j'] - j0
+        matrix[i, j] = norm(well[attr])
+
+    ax.matshow(matrix, norm=norm.norm, cmap=cmap)
+
+    xticks = np.arange(num_cols)
+    xticklabels = [bio96.col_from_j(j + j0) for j in xticks]
+    yticks = np.arange(num_rows)
+    yticklabels = [bio96.row_from_i(i + i0) for i in yticks]
+
+    ax.set_xticks(xticks)
+    ax.set_yticks(yticks)
+    ax.set_xticks(xticks - 0.5, minor=True)
+    ax.set_yticks(yticks - 0.5, minor=True)
+    ax.set_xticklabels(xticklabels)
+    ax.set_yticklabels(yticklabels)
+    ax.grid(which='minor')
+    ax.tick_params(which='both', axis='both', length=0)
 
 
 def setup_axes(df, plates, attrs):
@@ -344,3 +365,6 @@ class SortNorm:
     @staticmethod
     def isnan(x):
         return isinstance(x, float) and np.isnan(x)
+
+class CliError(Exception):
+    pass

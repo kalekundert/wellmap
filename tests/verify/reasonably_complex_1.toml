@@ -1,0 +1,42 @@
+[row.A]
+  strain = "E. coli"
+[row.B]
+  strain = "K. pneumoniae"
+[row.C]
+  strain = "L. monocytogenes"
+[row.D]
+  strain = "M. abscessus"
+[row.E]
+  strain = "M. tuberculosis"
+[row.F]
+  strain = "N. meningitidis"
+[row.G]
+  strain = "P. aeruginosa"
+[row.H]
+  strain = "S. aureus"
+
+[col.1]
+  conc_ng_mL = 0
+[col.2]
+  conc_ng_mL = 1
+[col.3]
+  conc_ng_mL = 2
+[col.4]
+  conc_ng_mL = 4
+[col.5]
+  conc_ng_mL = 8
+[col.6]
+  conc_ng_mL = 16
+[col.7]
+  conc_ng_mL = 32
+[col.8]
+  conc_ng_mL = 64
+[col.9]
+  conc_ng_mL = 128
+[col.10]
+  conc_ng_mL = 256
+[col.11]
+  conc_ng_mL = 512
+[col.12]
+  conc_ng_mL = 1024
+
