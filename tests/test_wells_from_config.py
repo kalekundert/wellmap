@@ -46,12 +46,44 @@ def test_well_range():
 
     config = {
             'well': {
-                'A1,A3': {'x': 1},
+                'A1,A3,...,A5': {'x': 1},
             },
     }
     assert wells_from_config(config) == {
             (0,0): {'x': 1},
             (0,2): {'x': 1},
+            (0,4): {'x': 1},
+    }
+
+    config = {
+            'well': {
+                'A1,C1,...,E1': {'x': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1},
+            (2,0): {'x': 1},
+            (4,0): {'x': 1},
+    }
+
+    config = {
+            'well': {
+                'A1,C3,...,E7': {'x': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1},
+            (0,2): {'x': 1},
+            (0,4): {'x': 1},
+            (0,6): {'x': 1},
+            (2,0): {'x': 1},
+            (2,2): {'x': 1},
+            (2,4): {'x': 1},
+            (2,6): {'x': 1},
+            (4,0): {'x': 1},
+            (4,2): {'x': 1},
+            (4,4): {'x': 1},
+            (4,6): {'x': 1},
     }
 
 def test_one_block():
@@ -187,6 +219,22 @@ def test_block_range():
             (2,1): {'x': 1},
     }
 
+    config_1x2 = {
+            'block': {
+                '2x1': {
+                    'A1,A5,...,A9': {'x': 1},
+                },
+            },
+    }
+    assert wells_from_config(config_1x2) == {
+            (0,0): {'x': 1},
+            (0,1): {'x': 1},
+            (0,4): {'x': 1},
+            (0,5): {'x': 1},
+            (0,8): {'x': 1},
+            (0,9): {'x': 1},
+    }
+
 def test_one_row_col():
     config = {
             'row': {
@@ -268,7 +316,7 @@ def test_row_range():
 
     config = {
             'row': {
-                'A-C': {'x': 1},
+                'A,B,...,C': {'x': 1},
             },
             'col': {
                 '1': {'y': 1},
@@ -299,7 +347,7 @@ def test_col_range():
                 'A': {'x': 1},
             },
             'col': {
-                '1-3': {'y': 1},
+                '1,2,...,3': {'y': 1},
             },
     }
     assert wells_from_config(config) == {

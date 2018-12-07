@@ -26,7 +26,7 @@ def run_cli(args, out='Layout written'):
             sys.argv = orig_argv
 
     with capture_output() as capture:
-        with spoof_argv('bio96', '-o', '$.pdf', *shlex.split(str(args))):
+        with spoof_argv('bio96', '-o', f'{DIR}/$.pdf', *shlex.split(str(args))):
             bio96.verify.main()
 
         if out is None:

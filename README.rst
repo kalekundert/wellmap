@@ -229,9 +229,8 @@ and are included as columns in the data frame returned by ``load()``.
     of that every time you look at the data.
 
 ``[plate.NAME]``
-   Define conditions for all the wells on the given plate.  The plate NAME, 
-   which is used to look up the path to the data file for the plate, can 
-   be anything.  
+   Define conditions for all the wells on the given plate.  NAME, which is used 
+   to look up the path to the data file for the plate, can be anything.  
 
    Plate blocks may also include any of the blocks described below, e.g. 
    ``[plate.NAME.row.A]``.  The fields in these "nested" blocks will only apply 
@@ -240,18 +239,18 @@ and are included as columns in the data frame returned by ``load()``.
 
 ``[row.A]``
    Define conditions for all the wells in the specified row ("A" in the example 
-   above).  Row must be specified as letters (upper or lower case).  You can 
-   specify multiple rows, e.g. ``[row.'A,C-E']`` would specify the rows "A", 
-   "C", "D", and "E".  Note that the quotes are necessary because TOML doesn't 
-   allow unquoted keys to contain ",".  Rows beyond "Z" can be specified with 
-   multiple letters (e.g. "AA", "AB", etc.) if necessary.
+   above).  Row must be specified as letters (upper or lower case).  If 
+   necessary, rows beyond "Z" can be specified with multiple letters (e.g.  
+   "AA", "AB", etc.).  You can specify multiple rows at once, e.g.  
+   ``[row.'A,C,E']`` or ``[row.'A,C,...,G']``.  More details about this syntax 
+   can be found below: `Specifying multiple wells`_.
 
 ``[col.1]``
    Define conditions for all the wells in the specified column ("1" in the 
    example above).  Columns must be specified using integer numbers, starting 
-   from 1.  You can specify multiple columns, e.g. ``[col.'1,3-5']`` would 
-   specify the columns "1", "3", "4", and "5".  Note that the quotes are 
-   necessary because TOML doesn't allow unquoted keys to contain ",".
+   from 1.  You can specify multiple columns at once, e.g. ``[col.'1,3,5']`` or 
+   ``[col.'1,3,...,7']``.  More details about this syntax can be found below: 
+   `Specifying multiple wells`_.
 
 ``[irow.A]``
    Similar to ``[row.A]``, but "interleaved" with the row above or below it.  
@@ -284,14 +283,58 @@ and are included as columns in the data frame returned by ``load()``.
 ``[block.WxH.A1]``
    Define conditions for a block of wells W columns wide, H rows tall, and with 
    the given well ("A1" in the example above) in the top-left corner.  You can 
-   specify multiple blocks at once, e.g. ``[block.2x2.'A1,C3']`` would specify 
-   2x2 blocks starting at A1 and C3.  Note that the quotes are necessary 
-   because TOML doesn't allow unquoted keys to contain ",".  
+   specify multiple blocks at once, e.g. ``[block.2x2.'A1,A3']`` or 
+   ``[block.2x2.'A1,C3,...,G11']``.  More details about this syntax can be 
+   found below: `Specifying multiple wells`_.
 
 ``[well.A1]``
   Define conditions for the specified well ("A1" in the example above).  You 
-  can specify multiple wells at once, e.g. ``[well.'A1,A2']``.  Note that the 
-  quotes are necessary because TOML doesn't allow unquoted keys to contain ",".  
+  can specify multiple wells at once, e.g. ``[well.'A1,A2']``.  More details 
+  about this syntax can be found below: `Specifying multiple wells`_.
+
+Specifying multiple wells
+-------------------------
+You can specify multiple indices for any row, column, block, or well.  This can 
+often help reduce redundancy, which in turn reduces the chance of errors.  The 
+basic syntax is just comma-separated indices:
+
+=================================  =================================
+Syntax                             Meaning
+=================================  =================================
+``[row.'A,B']``                    A, B
+``[col.'1,2']``                    1, 2
+``[well.'A1,A2']``                 A1, A2
+=================================  =================================
+
+Note that the quotes are necessary with this syntax because TOML doesn't allow 
+unquoted keys to contain ",".  
+
+It is also possible to specify simple patterns of indices using the "ellipsis" 
+syntax:
+
+=================================  ==================================
+Syntax                             Meaning
+=================================  ==================================
+``[row.'A,B,...,H']``              A, B, C, D, E, F, G, H
+``[row.'A,C,...,G']``              A, C, E, G
+``[col.'1,2,...,8']``              1, 2, 3, 4, 5, 6, 7, 8
+``[col.'1,3,...,7']``              1, 3, 5, 7
+``[well.'A1,A2,...,A6']``          A1, A2, A3, A4, A5, A6
+``[well.'A1,C3,...,E5']``          A1, A3, A5, C1, C3, C5, E1, E3, E5
+=================================  ==================================
+
+This syntax requires exactly 4 comma-separated elements in exactly this order:  
+the first, second, and fourth must be valid indices, and the third must be an 
+ellipsis ("...").  The first index defines the start of the pattern, the fourth 
+defines the end (inclusive), and the second defines the step size.  It is an 
+error if you cannot get from the start to the end taking steps of the given 
+size.
+
+Note that for wells and blocks, the ellipsis pattern can propagate across both 
+rows and columns.  In this case, the second index specifies the step size in 
+both dimensions.  Consider the ``A1,C3,...E5`` example from above: C3 is two 
+rows and two columns away from A1, so this pattern specifies every odd well 
+between A1 and E5.
 
 Command-line Usage
 ==================

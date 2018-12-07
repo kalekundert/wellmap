@@ -4,7 +4,7 @@ import toml
 import re, itertools
 import pandas as pd
 from pathlib import Path
-from nonstdlib import plural, indices_from_str
+from nonstdlib import plural
 from copy import deepcopy
 from .util import *
 
@@ -157,38 +157,23 @@ def wells_from_config(config, label=None):
 
     def iter_wells(config):
         for key in config:
-            for well in key.split(','):
-                yield well, config[key]
+            for ij in iter_well_indices(key):
+                yield ij, config[key]
 
     def iter_rows(config):
-        def row_range(a, b):
-            A, B = i_from_row(a), i_from_row(b)
-            yield from [
-                    row_from_i(x)
-                    for x in range(A, B+1)
-            ]
-
         for key in config:
-            for row in indices_from_str(key, cast=str, range=row_range):
-                yield row, config[key]
+            for i in iter_row_indices(key):
+                yield i, config[key]
 
     def iter_cols(config):
-        def col_range(a, b):
-            A, B = j_from_col(a), j_from_col(b)
-            yield from [
-                    col_from_j(x)
-                    for x in range(A, B+1)
-            ]
-
         for key in config:
-            for col in indices_from_str(key, cast=str, range=col_range):
-                yield col, config[key]
+            for j in iter_col_indices(key):
+                yield j, config[key]
 
     ## Create and fill in wells defined by 'well' blocks.
-    for well, params in iter_wells(config.wells):
-        ij = ij_from_well(well)
+    for ij, params in iter_wells(config.wells):
         if ij in wells:
-            raise ConfigError(f"[well.{well}] defined more than once.")
+            raise ConfigError(f"[well.{well_from_ij(*ij)}] defined more than once.")
         wells[ij] = deepcopy(params)
 
     ## Create new wells implied by any 'block' blocks:
@@ -217,17 +202,14 @@ def wells_from_config(config, label=None):
     def simplify_keys(dim):
         before = config.get(dim, {})
         after = {}
-
-        callbacks = {
-                'row': (iter_rows, i_from_row),
-                'col': (iter_cols, j_from_col),
-                'irow': (iter_rows, i_from_row),
-                'icol': (iter_cols, j_from_col),
+        iter = {
+                'row': iter_rows,
+                'col': iter_cols,
+                'irow': iter_rows,
+                'icol': iter_cols,
         }
-        iter_keys, index_getter = callbacks[dim]
         
-        for b, params in iter_keys(before):
-            a = index_getter(b)
+        for a, params in iter[dim](before):
             after.setdefault(a, {})
             recursive_merge(after[a], params)
 

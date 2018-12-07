@@ -105,10 +105,84 @@ def interleave(a, b):
         return a - b % 2
 
 def iter_ij_in_block(top_left, width, height):
-    top, left = ij_from_well(top_left)
-    for dx in range(width):
-        for dy in range(height):
-            yield top + dy, left + dx
+    i, j = top_left
+    for di in range(height):
+        for dj in range(width):
+            yield i + di, j + dj
+
+
+def iter_indices(key, index_from_subkey, indices_from_range):
+    subkeys = key.split(',')
+
+    if '...' not in subkeys:
+        yield from map(index_from_subkey, subkeys)
+
+    else:
+        if len(subkeys) != 4 or subkeys.index('...') != 2:
+            raise ConfigError(f"Expected '<first>,<second>,...,<last>', not '{key}'")
+
+        x0 = index_from_subkey(subkeys[0])
+        x1 = index_from_subkey(subkeys[1])
+        xn = index_from_subkey(subkeys[3])
+
+        try:
+            # Delegate this to another function, because it has to be done 
+            # differently for wells than for rows/cols.
+            yield from indices_from_range(x0, x1, xn)
+
+        except ConfigError as err:
+            err.message = f"'{key}': {err.message.format(*subkeys)}"
+            raise err
+
+def iter_row_indices(key):
+    yield from iter_indices(key, i_from_row, indices_from_range)
+
+def iter_col_indices(key):
+    yield from iter_indices(key, j_from_col, indices_from_range)
+
+def iter_well_indices(key):
+
+    def ijs_from_range(x0, x1, xn):
+        i0, j0 = x0
+        i1, j1 = x1
+        iz, jz = xn
+
+        # Handle the cases where all the indices are in the same row or column 
+        # specially, because these cases would otherwise trigger edge 
+        # conditions in check_range() and inclusive_range() that I don't want 
+        # to allow generally.
+
+        if i0 == i1 == iz:
+            yield from ((i0, j) for j in indices_from_range(j0, j1, jz))
+
+        elif j0 == j1 == jz:
+            yield from ((i, j0) for i in indices_from_range(i0, i1, iz))
+
+        else:
+            check_range(i0, i1, iz, True)
+            check_range(j0, j1, jz, True)
+            yield from (
+                    (i, j)
+                    for i in inclusive_range(i0, i1, iz)
+                    for j in inclusive_range(j0, j1, jz)
+            )
+
+    yield from iter_indices(key, ij_from_well, ijs_from_range)
+
+def check_range(x0, x1, xn, single_step_ok=False):
+    # Make sure the range makes sense, i.e. you can get from the first 
+    # element to the last in steps of the given size.
+    if not x0 < x1 < (xn + single_step_ok):
+        raise ConfigError(f"Expected {{0}} < {{1}} {'≤' if single_step_ok else '<'} {{3}}.")
+    if (xn - x0) % (x1 - x0) != 0:
+        raise ConfigError(f"Cannot get from {{0}} to {{3}} in steps of {x1-x0}.")
+
+def inclusive_range(x0, x1, xn):
+    return range(x0, xn+1, x1-x0)  # xn+1 because range is exclusive.
+
+def indices_from_range(x0, x1, xn):
+    check_range(x0, x1, xn)
+    yield from inclusive_range(x0, x1, xn)
 
 class ConfigError(Exception):
 
