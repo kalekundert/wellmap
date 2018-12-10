@@ -18,7 +18,7 @@ from .util import *
 # `wells`
 #   Dictionary where the keys are (row, col) well indices and the values are 
 #   dictionaries containing arbitrary information about said well.  This is 
-#   basically a version of the `config` data structure where all messy well 
+#   basically a version of the `config` data structure where all the messy well 
 #   names have been resolved to simple indices, and all the parameters have 
 #   been resolved on a per-well basis.
 #
@@ -29,6 +29,115 @@ from .util import *
 
 def load(toml_path, data_loader=None, merge_cols=None,
         path_guess=None, path_required=False):
+    """
+    Parse the given TOML file and return a `pandas.DataFrame` with a row for each 
+    well and a column for each experimental condition specified in that file.  
+    If the **data_loader** and **merge_cols** arguments are provided, that data 
+    frame will also contain columns for any data associated with each well.
+
+    :param toml_path:
+      The path to a file describing the layout of one or more plates.  See the 
+      :doc:`file_format` section for details about this file.
+    :type toml_path: str or pathlib.Path
+
+    :param callable data_loader:
+       Indicates that `load()` should attempt to load the actual data 
+       associated with the plate layout, in addition to loading the layout 
+       itself.  The argument should be a function that takes a path to a data 
+       file, parses it, and returns a data frame containing the parsed data.  
+       Note that specifying a data loader implies that **path_required** is 
+       True.
+
+    :param dict merge_cols:
+       Indicates that `load()` should attempt to merge the plate layout and the 
+       actual data associated with it into a single data frame.  This 
+       functionality requires several conditions to be met:
+       
+       1. The **data_loader** argument must be specified (otherwise there'd be 
+          no data to merge).
+       2. The data frame returned by **data_loader()** must be `"tidy"`__.  
+          Briefly, a data frame is tidy if each of its columns represents a 
+          single variable (e.g.  time, fluorescence) and each of its rows 
+          represents a single observation.  
+       3. The data frame returned by **data_loader()** must have one (or more) 
+          columns/variables indicating which well each row/observation comes 
+          from.  For example, a column called "Well" with values like "A1", 
+          "A2", "B1", "B2", etc. would satisfy this requirement.
+       
+       __ http://vita.had.co.nz/papers/tidy-data.html
+
+       The **merge_cols** argument itself specifies which columns to use when 
+       merging the data frames representing the layout and the actual data 
+       (i.e. the two data frames that would be returned if **data_loader** was 
+       specified but **merge_cols** was not) into one.  The argument is a 
+       dictionary in which the key-value pairs are the names of columns that 
+       identify wells in the same way between the two data frames.
+
+       Each key should be one of the columns from the data frame representing 
+       the layout loaded from the TOML file by ``bio96``.  This data frame has 
+       8 columns which identify the wells: ``plate``, ``path``, ``well``, 
+       ``well0``, ``row``, ``col``, ``row_i``, ``row_j``.  See the "Returns" 
+       section below for more details on the differences between these columns.  
+       Note that the ``path`` column is included in the merge automatically and 
+       never has to be specified.
+
+       Each value should be one of the columns from the data frame representing 
+       the actual data.  This data frame will have whatever columns were 
+       created by **data_loader()**.  The columns named in each key-value pair 
+       must contain values that correspond exactly (i.e. not "A1" and "A01").  
+       It is the responsibility of **data_loader()** to ensure that this is 
+       possible.
+       
+    :param str path_guess:
+       Where to look for a data file if none is specified in the given TOML 
+       file.  In other words, this is the default value for ``meta.path``.  
+       This path is interpreted relative to the TOML file itself (unless it's 
+       an absolute path) and is formatted with a `pathlib.Path` representing 
+       said TOML file.  In code, that would be: ``path_guess.format(Path(toml_path))``.
+       A typical value would be something like ``'{0.stem}.xlsx'``.
+
+    :param bool path_required:
+       Indicates whether or not the given TOML file must reference one or more 
+       data files.  A `ValueError` will be raised if this condition is not met.  
+       Data files found via **path_guess** are acceptable for this purpose.
+
+    :returns:
+        - If neither **data_loader** nor **merge_cols** were provided:
+
+          A `pandas.DataFrame` containing the information about the plate 
+          layout parsed from the given TOML file.  The data frame will have a 
+          row for each well and a column for each experimental condition.  In 
+          addition, there will be several columns identifying each well:
+
+          - ``plate``: The name of the plate for this well.  This column will 
+            not be present if there are no ``[plate]`` blocks in the TOML file.
+          - ``path``: The path to the data file associated with the plate for 
+            this well.  This column will not be present if no data files were 
+            referenced by the TOML file.
+          - ``well``: The name of the well, e.g. "A1".
+          - ``well0``: The zero-padded name of the well, e.g. "A01".
+          - ``row``: The name of the row for this well, e.g. "A".
+          - ``col``: The name of the column for this well, e.g. "1".
+          - ``row_i``: The row-index of this well, counting from 0.
+          - ``col_j``: The column-index of this well, counting from 0.
+
+        - If **data_loader** was provided but **merge_cols** was not:
+
+          Two `pandas.DataFrames <pandas.DataFrame>`.  The first is identical 
+          to the one described for the above condition.  The second is the 
+          concatenated result of calling **data_loader()** on every path 
+          specified by the TOML file.
+
+        - If **data_loader** and **merge_cols** were both provided:
+
+          A single `pandas.DataFrame` with one or more rows for each well (more 
+          are possible if there are multiple data points per well, e.g. a time 
+          course), a column for each experimental condition described in the 
+          TOML file, and a column for each kind of data loaded from the data 
+          files.  This is exactly the two data frames from above, merged into 
+          one using :func:`pandas.merge` along the columns specified in the 
+          **merge_cols** argument.
+    """
 
     try:
         ## Parse the TOML file:
@@ -171,10 +280,10 @@ def wells_from_config(config, label=None):
                 yield j, config[key]
 
     ## Create and fill in wells defined by 'well' blocks.
-    for ij, params in iter_wells(config.wells):
+    for ij, subconfig in iter_wells(config.wells):
         if ij in wells:
             raise ConfigError(f"[well.{well_from_ij(*ij)}] defined more than once.")
-        wells[ij] = deepcopy(params)
+        wells[ij] = deepcopy(subconfig)
 
     ## Create new wells implied by any 'block' blocks:
     blocks = {}
@@ -191,11 +300,11 @@ def wells_from_config(config, label=None):
         if height == 0:
             raise ConfigError(f"[block.{size}] has no height.  No wells defined.")
 
-        for top_left, params in iter_wells(config.blocks[size]):
+        for top_left, subconfig in iter_wells(config.blocks[size]):
             for ij in iter_ij_in_block(top_left, width, height):
                 wells.setdefault(ij, {})
                 blocks.setdefault(ij, [])
-                blocks[ij].append(deepcopy(params))
+                blocks[ij].append(deepcopy(subconfig))
     
     ## Create new wells implied by any 'row' & 'col' blocks.
 
@@ -209,9 +318,9 @@ def wells_from_config(config, label=None):
                 'icol': iter_cols,
         }
         
-        for a, params in iter[dim](before):
+        for a, subconfig in iter[dim](before):
             after.setdefault(a, {})
-            recursive_merge(after[a], params)
+            recursive_merge(after[a], subconfig)
 
         return after
 

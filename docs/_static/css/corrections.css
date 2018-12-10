@@ -1,0 +1,50 @@
+/* Format parameters with multiple paragraphs the same as parameters with only 
+ * a single paragraph. */
+
+.field-list p {
+  line-height: 24px !important;
+  font-size: 100%;
+}
+.field-list p:first-of-type {
+  display: inline;
+}
+.field-list p:nth-of-type(2) {
+  margin-top: 12px;
+}
+
+/* Style cross-references like links (i.e. blue, italicized, sans), rather than 
+ * like code (i.e. black, bold, mono). */
+
+.rst-content a code.xref {
+  white-space: normal;
+  max-width: none;
+  background: none;
+  border: none;
+  font-size: 100%;
+  padding: 0px;
+	font-family: "Lato","proxima-nova","Helvetica Neue",Arial,sans-serif;
+	color: #2980B9;
+  overflow-x: visible;
+
+	cursor: pointer;
+  font-style: italic;
+  font-weight: normal;
+}
+
+/* Make inline code stand out less */
+.rst-content code.literal {
+  color: #404040;
+}
+.rst-content code {
+  /*border: none;*/
+	border-radius: 3px;
+	border: 1px solid #e1e4e5;
+	font-size: 85%;
+	margin: 0;
+	padding: .3em .4em .1em;
+  background: #eeffcc;
+}
+
+.rst-content dl:not(.docutils) tt, .rst-content dl:not(.docutils) tt, .rst-content dl:not(.docutils) code {
+	font-weight: normal;
+}

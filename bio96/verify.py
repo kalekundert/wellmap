@@ -19,10 +19,11 @@ Arguments:
         something equivalent to `well.A1.conc = 1`, then "conc" would be a 
         valid attribute.
 
-        If no attributes are specified, any attributes with at least two 
-        different values will be automatically chosen.  Sometimes this results 
-        in a figure too big to fit on the screen.  In that case, the best 
-        solution is just to specify a smaller number of attributes to focus on.
+        If no attributes are specified, the default is to display any 
+        attributes that have at least two different values.  For complex 
+        layouts, this may result in a figure too big to fit on the screen.
+        The best solution for this is just to specify a smaller number of 
+        attributes to focus on.
 
 Options:
     -o --output PATH
