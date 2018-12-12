@@ -31,6 +31,7 @@ setup(
     ],
     extras_require={
         'docs': [
+            'setuptools>=31.0.1',
             'sphinxcontrib-programoutput',
             'sphinx_rtd_theme',
         ],
