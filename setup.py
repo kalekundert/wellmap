@@ -29,6 +29,12 @@ setup(
         'matplotlib',  # gui
         'colorcet',    # gui
     ],
+    extras_require={
+        'docs': [
+            'sphinxcontrib-programoutput',
+            'sphinx_rtd_theme',
+        ],
+    },
     entry_points={
         'console_scripts': [
             'bio96 = bio96.verify:main',
