@@ -28,7 +28,7 @@ from .util import *
 #   dictionaries.  Columns identifying the plate and well are also added.
 
 def load(toml_path, data_loader=None, merge_cols=None,
-        path_guess=None, path_required=False):
+        path_guess=None, path_required=False, on_alert=None):
     """
     Parse the given TOML file and return a `pandas.DataFrame` with a row for each 
     well and a column for each experimental condition specified in that file.  
@@ -101,6 +101,12 @@ def load(toml_path, data_loader=None, merge_cols=None,
        data files.  A `ValueError` will be raised if this condition is not met.  
        Data files found via **path_guess** are acceptable for this purpose.
 
+    :param callable on_alert:
+        A callback to invoke if the given TOML file contains a warning for the 
+        user.  The default behavior is to print the warning to the terminal.  
+        If a callback is provided, it must take two arguments: a `pathlib.Path` 
+        to the TOML file containing the alert, and the message itself.
+
     :returns:
         - If neither **data_loader** nor **merge_cols** were provided:
 
@@ -141,7 +147,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
 
     try:
         ## Parse the TOML file:
-        config, paths, concats = config_from_toml(toml_path, path_guess)
+        config, paths, concats = config_from_toml(toml_path, path_guess, on_alert)
         layout = table_from_config(config, paths)
         layout = pd.concat([layout, *concats], sort=False)
 
@@ -189,7 +195,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
         err.toml_path = toml_path
         raise
 
-def config_from_toml(toml_path, path_guess=None):
+def config_from_toml(toml_path, path_guess=None, on_alert=None):
     toml_path = Path(toml_path).resolve()
     config = configdict(toml.load(str(toml_path)))
 
@@ -224,9 +230,12 @@ def config_from_toml(toml_path, path_guess=None):
 
     # Print out any messages contained in the file.
     if 'alert' in config.meta:
-        try: print(f"{toml_path.relative_to(Path.cwd())}:")
-        except ValueError: print(f"{toml_path}:")
-        print(config.meta['alert'])
+        if on_alert:
+            on_alert(toml_path, config.meta['alert'])
+        else:
+            try: print(f"{toml_path.relative_to(Path.cwd())}:")
+            except ValueError: print(f"{toml_path}:")
+            print(config.meta['alert'])
 
     config.pop('meta', None)
     return config, paths, concats
@@ -432,6 +441,7 @@ def resolve_path(parent_path, child_path):
         return child_path
     else:
         return parent_dir / child_path
+
 
 class PathManager:
 
