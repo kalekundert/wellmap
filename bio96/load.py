@@ -142,32 +142,32 @@ def load(toml_path, data_loader=None, merge_cols=None,
     try:
         ## Parse the TOML file:
         config, paths, concats = config_from_toml(toml_path, path_guess)
-        labels = table_from_config(config, paths)
-        labels = pd.concat([labels, *concats], sort=False)
+        layout = table_from_config(config, paths)
+        layout = pd.concat([layout, *concats], sort=False)
 
         if path_required or data_loader:
-            if 'path' not in labels or labels['path'].isnull().any():
+            if 'path' not in layout or layout['path'].isnull().any():
                 raise paths.missing_path_error
 
-        if len(labels) == 0:
+        if len(layout) == 0:
             raise ConfigError("No wells defined.")
 
         ## Load the data associated with each well:
         if data_loader is None:
             if merge_cols is not None:
                 raise ValueError("Specified columns to merge, but no function to load data!")
-            return labels
+            return layout
 
         data = pd.DataFrame()
 
-        for path in labels['path'].unique():
+        for path in layout['path'].unique():
            df = data_loader(path)
            df['path'] = path
            data = data.append(df, sort=False)
 
-        ## Merge the labels and the data into a single data frame:
+        ## Merge the layout and the data into a single data frame:
         if merge_cols is None:
-            return labels, data
+            return layout, data
 
         def check_merge_cols(cols, known_cols, attrs):
             unknown_cols = set(cols) - set(known_cols)
@@ -181,7 +181,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
         right_on = check_merge_cols(merge_cols.values(), data.columns, 'values')
 
         return pd.merge(
-                labels, data,
+                layout, data,
                 left_on=left_on + ['path'],
                 right_on=right_on + ['path'],
         )
@@ -248,8 +248,19 @@ def table_from_config(config, paths):
         paths.check_named_plates(config.plates)
 
         for key, plate_config in config.plates.items():
-            # Copy to avoid infinite recursion.
-            plate_config = recursive_merge(plate_config.copy(), config)
+            if not isinstance(plate_config, dict):
+                raise ConfigError(f"Illegal attribute '{key}' within [plate] block but outside of any plates.")
+            if 'expt' in plate_config:
+                raise ConfigError("Cannot use [expt] in [plate] blocks.")
+
+            # Mold the plate dictionary into the same format as the top-level 
+            # dictionary, i.e. the format expected by wells_from_config(), by 
+            # putting any global parameters into the 'expt' block.  Copy to 
+            # avoid infinite recursion.
+            plate_config = plate_config.copy()
+            plate_config['expt'] = configdict(plate_config).user
+
+            plate_config = recursive_merge(plate_config, config)
             wells = wells_from_config(plate_config)
 
             index = paths.get_index_for_named_plate(key) if wells else {}
@@ -260,7 +271,7 @@ def table_from_config(config, paths):
         cols = tables[-1].columns
         return pd.concat(tables, sort=False)[cols]
 
-def wells_from_config(config, label=None):
+def wells_from_config(config):
     config = configdict(config)
     wells = {}
 
@@ -366,7 +377,7 @@ def wells_from_config(config, label=None):
         recursive_merge(wells[ij], cols.get(j, {}))
         recursive_merge(wells[ij], irows.get(ii, {}))
         recursive_merge(wells[ij], icols.get(jj, {}))
-        recursive_merge(wells[ij], config.user)
+        recursive_merge(wells[ij], config.expt)
 
     return wells
     
@@ -519,6 +530,7 @@ class configdict(dict):
             'icols': 'icol',
             'blocks': 'block',
             'wells': 'well',
+            'expt': 'expt',
     }
 
     def __init__(self, config):

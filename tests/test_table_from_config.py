@@ -2,6 +2,7 @@
 
 from bio96 import *
 from test_table_from_wells import row
+from pytest import raises
 
 class DummyPathManager:
 
@@ -16,6 +17,9 @@ class DummyPathManager:
 
 def test_only_plate():
     config = {
+            'expt': {
+                'y': 2,
+            },
             'well': {
                 'A1': {'x': 1},
             },
@@ -28,6 +32,7 @@ def test_only_plate():
             row='A', col='1',
             row_i=0, col_j=0,
             x=1,
+            y=2,
     )
 
 def test_named_plates():
@@ -40,7 +45,7 @@ def test_named_plates():
                 },
                 'R': {
                     'well': {
-                        'A1': {'x': 1},
+                        'A1': {'x': 2},
                     },
                 },
             },
@@ -63,11 +68,14 @@ def test_named_plates():
             well0='A01',
             row='A', col='1',
             row_i=0, col_j=0,
-            x=1,
+            x=2,
     )
 
 def test_named_plates_with_defaults():
     config = {
+            'expt': {
+                'z': 1,
+            },
             'well': {
                 'A1': {'x': 1, 'y': 1},
             },
@@ -95,6 +103,7 @@ def test_named_plates_with_defaults():
             row_i=0, col_j=0,
             x=2,
             y=1,
+            z=1,
     )
     assert row(df, 'plate == "R"') == dict(
             plate='R',
@@ -105,4 +114,65 @@ def test_named_plates_with_defaults():
             row_i=0, col_j=0,
             x=1,
             y=2,
+            z=1,
     )
+
+def test_top_level():
+    config = {
+            'plate': {
+                'Q': {
+                    'y': 3,
+                    'well': {
+                        'A1': {'x': 1},
+                    },
+                },
+                'R': {
+                    'y': 4,
+                    'well': {
+                        'A1': {'x': 2},
+                    },
+                },
+            },
+    }
+    df = table_from_config(config, DummyPathManager())
+
+    assert row(df, 'plate == "Q"') == dict(
+            plate='Q',
+            path='/path/to/q',
+            well='A1',
+            well0='A01',
+            row='A', col='1',
+            row_i=0, col_j=0,
+            x=1,
+            y=3,
+    )
+    assert row(df, 'plate == "R"') == dict(
+            plate='R',
+            path='/path/to/r',
+            well='A1',
+            well0='A01',
+            row='A', col='1',
+            row_i=0, col_j=0,
+            x=2,
+            y=4,
+    )
+
+def test_no_plate_name():
+    config = {
+            'plate': {
+                'x': 1,
+            },
+    }
+    with raises(ConfigError, match="Illegal attribute 'x'"):
+        table_from_config(config, DummyPathManager())
+
+def test_expt_in_plate():
+    config = {
+            'plate': {
+                'Q': {
+                    'expt': 1,
+                },
+            },
+    }
+    with raises(ConfigError, match="\[expt\] in \[plate\]"):
+        table_from_config(config, DummyPathManager())

@@ -477,7 +477,7 @@ def test_icol_without_row():
 
 def test_top_level_params():
     config = {
-            'x': 1,
+            'expt': {'x': 1},
             'well': {'A1': {}},
     }
     assert wells_from_config(config) == {
@@ -500,12 +500,9 @@ def test_precedence():
             'col': {
                 '1': {'a': 4, 'b': 4, 'd': 4},
             },
-
-            'a': 5,
-            'b': 5,
-            'c': 5,
-            'd': 5,
-            'e': 5,
+            'expt': {
+                'a': 5, 'b': 5, 'c': 5, 'd': 5, 'e': 5,
+            },
     }
     wells = wells_from_config(config)
     assert wells[0,0] == {

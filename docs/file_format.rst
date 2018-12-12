@@ -66,6 +66,11 @@ and are included as columns in the data frame returned by ``load()``.
     would affect how the data is interpreted, put that here to be reminded 
     of that every time you look at the data.
 
+``[expt]``
+   Define conditions for every well in the layout.  This can be a good place to 
+   record bookkeeping information like your name, the date, the name of the 
+   experiment, etc.
+
 ``[plate.NAME]``
    Define conditions for all the wells on the given plate.  NAME, which is used 
    to look up the path to the data file for the plate, can be anything.  

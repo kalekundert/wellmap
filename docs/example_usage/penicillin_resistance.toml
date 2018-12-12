@@ -1,9 +1,3 @@
-# Fields outside of any block apply to every well.  This can be a useful way 
-# to document basic information about your experiments, like who did them,
-# what date they were done on, etc.
-
-antibiotic = 'penicillin'
-
 # The `[meta]` block contains various options affecting how the file is
 # parsed.  In this case, the `paths` option describes where to find the
 # actual data files associated with these plates.
@@ -11,11 +5,14 @@ antibiotic = 'penicillin'
 [meta]
    paths = '20180704_penicillin_resistance_{}.xlsx'
 
-# The `[plate]`, `[row]`, and `[col]` blocks specify which conditions are
-# being tested in which wells.  The fields within these blocks (e.g.
-# `replicate`, `strain`, `conc_ng_mL`) can be anything.  If your plates
-# aren't organized by row and column, there are other ways to define the
-# plate layout; see the "File Format" section for more details.
+# The `[expt]`, `[plate]`, `[row]`, and `[col]` blocks specify which conditions 
+# are being tested in which wells.  The fields within these blocks (e.g.  
+# `antibiotic`, `replicate`, `strain`, `conc_ng_mL`) can be anything.  If your 
+# plates aren't organized by row and column, there are other ways to define the 
+# plate layout; see the "File format" section for more details.
+
+[expt]
+  antibiotic = 'penicillin'
 
 [plate.rep1]
    replicate = 1
