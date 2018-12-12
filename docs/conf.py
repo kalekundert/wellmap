@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Bio96 documentation build configuration file, created by
+# bio96 documentation build configuration file, created by
 # sphinx-quickstart on Sat Dec 12 21:08:36 2015.
 #
 # This file is execfile()d with the current directory set to its
@@ -55,7 +55,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Bio96'
+project = u'bio96'
 copyright = u'2015, Kale Kundert'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -240,7 +240,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'cookiecutterproject_name', u'Bio96 Documentation',
+    ('index', 'cookiecutterproject_name', u'bio96 Documentation',
      [u'Kale Kundert'], 1)
 ]
 
@@ -254,7 +254,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'cookiecutterproject_name', u'Bio96 Documentation',
+  ('index', 'cookiecutterproject_name', u'bio96 Documentation',
    u'Kale Kundert', 'cookiecutterproject_name', 'One line description of project.',
    'Miscellaneous'),
 ]
