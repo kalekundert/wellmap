@@ -60,6 +60,13 @@ and are included as columns in the data frame returned by ``load()``.
     themselves affected by anything in this file.  This is useful if you want 
     to use data from multiple independent experiments in a single analysis.
 
+  ``options``
+    A block containing any options that apply to the whole layout, but not any 
+    wells in particular.  For example, this would be a good place to specify 
+    plotting parameters or data analysis algorithms.  The entries in this block 
+    can be anything.  Thw whole block is simply parsed into a dictionary and 
+    returned by the `load()` function.
+
   ``alert``
     A message that should be printed to the terminal every time this file is 
     loaded.  For example, if something went wrong during the experiment that 

@@ -1,3 +1,6 @@
+[meta.options]
+z = 1
+
 [well.A1]
 x = 1
 y = 1

@@ -7,7 +7,7 @@ from test_table_from_wells import row
 DIR = Path(__file__).parent/'toml'
 
 def test_one_include():
-    config, paths, concats = config_from_toml(DIR/'one_include.toml')
+    config, paths, concats, options = config_from_toml(DIR/'one_include.toml')
     assert config == {
             'well': {
                 'A1': {'x': 2, 'y': 1},
@@ -15,7 +15,7 @@ def test_one_include():
     }
 
 def test_two_includes():
-    config, paths, concats = config_from_toml(DIR/'two_includes.toml')
+    config, paths, concats, options = config_from_toml(DIR/'two_includes.toml')
     assert config == {
             'well': {
                 'A1': {'x': 2, 'y': 1, 'z': 1},
@@ -23,7 +23,7 @@ def test_two_includes():
     }
 
 def test_one_concat():
-    config, paths, concats = config_from_toml(DIR/'one_concat.toml')
+    config, paths, concats, options = config_from_toml(DIR/'one_concat.toml')
     assert config == {
             'well': {
                 'A1': {'x': 2},
@@ -38,7 +38,7 @@ def test_one_concat():
             y=1,
     )
 
-    config, paths, concats = config_from_toml(
+    config, paths, concats, options = config_from_toml(
             DIR/'one_concat.toml',
             path_guess='{0.stem}.xlsx',
     )
@@ -58,7 +58,7 @@ def test_one_concat():
     )
 
 def test_two_concats():
-    config, paths, concats = config_from_toml(
+    config, paths, concats, options = config_from_toml(
             DIR/'two_concats.toml',
             path_guess='{0.stem}.xlsx',
     )
@@ -87,8 +87,17 @@ def test_two_concats():
             z=1,
     )
 
+def test_options():
+    config, paths, concats, options = config_from_toml(DIR/'one_well_xy.toml')
+    assert config == {
+            'well': {
+                'A1': {'x': 1, 'y': 1},
+            }
+    }
+    assert options == {'z': 1}
+
 def test_alert(capsys):
-    config, paths, concats = config_from_toml(DIR/'alert.toml')
+    config, paths, concats, options = config_from_toml(DIR/'alert.toml')
     assert "Hello world!" in capsys.readouterr().out
 
     alert = ""
@@ -96,7 +105,7 @@ def test_alert(capsys):
         nonlocal alert
         alert = toml_path, message
 
-    config, paths, concats = config_from_toml(
+    config, paths, concats, options = config_from_toml(
             DIR/'alert.toml',
             on_alert=on_alert,
     )

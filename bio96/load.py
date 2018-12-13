@@ -30,10 +30,11 @@ from .util import *
 def load(toml_path, data_loader=None, merge_cols=None,
         path_guess=None, path_required=False, on_alert=None):
     """
-    Parse the given TOML file and return a `pandas.DataFrame` with a row for each 
-    well and a column for each experimental condition specified in that file.  
-    If the **data_loader** and **merge_cols** arguments are provided, that data 
-    frame will also contain columns for any data associated with each well.
+    Parse the given TOML file and return a `pandas.DataFrame` with a row for 
+    each well and a column for each experimental condition specified in that 
+    file.  If the **data_loader** and **merge_cols** arguments are provided 
+    (which is the most typical use-case), that data frame will also contain 
+    columns for any data associated with each well.
 
     :param toml_path:
       The path to a file describing the layout of one or more plates.  See the 
@@ -105,15 +106,17 @@ def load(toml_path, data_loader=None, merge_cols=None,
         A callback to invoke if the given TOML file contains a warning for the 
         user.  The default behavior is to print the warning to the terminal.  
         If a callback is provided, it must take two arguments: a `pathlib.Path` 
-        to the TOML file containing the alert, and the message itself.
+        to the TOML file containing the alert, and the message itself.  Note 
+        that this could be called more than once, e.g. if there are included or 
+        concatenated files.
 
     :returns:
-        - If neither **data_loader** nor **merge_cols** were provided:
+        If neither **data_loader** nor **merge_cols** were provided:
 
-          A `pandas.DataFrame` containing the information about the plate 
-          layout parsed from the given TOML file.  The data frame will have a 
-          row for each well and a column for each experimental condition.  In 
-          addition, there will be several columns identifying each well:
+        - **layout** (`pandas.DataFrame`) – Information about the plate layout 
+          parsed from the given TOML file.  The data frame will have a row for 
+          each well and a column for each experimental condition.  In addition, 
+          there will be several columns identifying each well:
 
           - ``plate``: The name of the plate for this well.  This column will 
             not be present if there are no ``[plate]`` blocks in the TOML file.
@@ -127,27 +130,41 @@ def load(toml_path, data_loader=None, merge_cols=None,
           - ``row_i``: The row-index of this well, counting from 0.
           - ``col_j``: The column-index of this well, counting from 0.
 
-        - If **data_loader** was provided but **merge_cols** was not:
+        - **options** (`dict`) – Any options present in the ``[meta.options]`` 
+          section of the given TOML file.  These options apply to the whole 
+          layout and not any wells in particular (e.g. data analysis 
+          algorithms, plotting parameters, etc.).
+          
+        If **data_loader** was provided but **merge_cols** was not:
 
-          Two `pandas.DataFrames <pandas.DataFrame>`.  The first is identical 
-          to the one described for the above condition.  The second is the 
-          concatenated result of calling **data_loader()** on every path 
-          specified by the TOML file.
+        - **layout** (`pandas.DataFrame`) – See above.
 
-        - If **data_loader** and **merge_cols** were both provided:
+        - **data** (`pandas.DataFrame`) – The concatenated result of calling 
+          **data_loader()** on every path specified in the given TOML file.  
+          See :func:`pandas.concat()` for more information on how the data from 
+          different paths are concatenated.
 
-          A single `pandas.DataFrame` with one or more rows for each well (more 
-          are possible if there are multiple data points per well, e.g. a time 
-          course), a column for each experimental condition described in the 
-          TOML file, and a column for each kind of data loaded from the data 
-          files.  This is exactly the two data frames from above, merged into 
-          one using :func:`pandas.merge` along the columns specified in the 
-          **merge_cols** argument.
+        - **options** (`dict`) – See above.
+
+        If **data_loader** and **merge_cols** were both provided:
+
+        - **merged** (`pandas.DataFrame`) – The result of merging the 
+          **layout** and **data** data frames along the columns specified by 
+          **merge_cols**.  See :func:`pandas.merge()` for more details on the 
+          merge itself.  The resulting data frame will have one or more rows 
+          for each well (more are possible if there are multiple data points 
+          per well, e.g. a time course), a column for each experimental 
+          condition described in the TOML file, and a column for each kind of 
+          data loaded from the data files.  
+          
+        - **options** (`dict`) – See above.
     """
 
     try:
         ## Parse the TOML file:
-        config, paths, concats = config_from_toml(toml_path, path_guess, on_alert)
+        config, paths, concats, options = config_from_toml(
+                toml_path, path_guess, on_alert)
+
         layout = table_from_config(config, paths)
         layout = pd.concat([layout, *concats], sort=False)
 
@@ -162,7 +179,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
         if data_loader is None:
             if merge_cols is not None:
                 raise ValueError("Specified columns to merge, but no function to load data!")
-            return layout
+            return layout, options
 
         data = pd.DataFrame()
 
@@ -173,7 +190,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
 
         ## Merge the layout and the data into a single data frame:
         if merge_cols is None:
-            return layout, data
+            return layout, data, options
 
         def check_merge_cols(cols, known_cols, attrs):
             unknown_cols = set(cols) - set(known_cols)
@@ -186,11 +203,13 @@ def load(toml_path, data_loader=None, merge_cols=None,
         left_on = check_merge_cols(merge_cols.keys(), left_ok, 'keys')
         right_on = check_merge_cols(merge_cols.values(), data.columns, 'values')
 
-        return pd.merge(
+        merged = pd.merge(
                 layout, data,
                 left_on=left_on + ['path'],
                 right_on=right_on + ['path'],
         )
+        return merged, options
+
     except ConfigError as err:
         err.toml_path = toml_path
         raise
@@ -219,14 +238,17 @@ def config_from_toml(toml_path, path_guess=None, on_alert=None):
 
     # Include one or more remote files if any are specified.  
     for path in reversed(list(iter_paths_from_meta('include'))):
-        defaults, *_ = config_from_toml(path)
+        defaults, *_ = config_from_toml(path, on_alert=on_alert)
         recursive_merge(config, defaults)
 
     # Load any files to be concatenated.
     concats = []
     for path in iter_paths_from_meta('concat'):
-        df = load(path, path_guess=path_guess)
+        df, _ = load(path, path_guess=path_guess)
         concats.append(df)
+
+    # Get any options for the analysis script.
+    options = config.meta.get('options', {})
 
     # Print out any messages contained in the file.
     if 'alert' in config.meta:
@@ -238,7 +260,7 @@ def config_from_toml(toml_path, path_guess=None, on_alert=None):
             print(config.meta['alert'])
 
     config.pop('meta', None)
-    return config, paths, concats
+    return config, paths, concats, options
 
 def table_from_config(config, paths):
     config = configdict(config)
@@ -441,7 +463,6 @@ def resolve_path(parent_path, child_path):
         return child_path
     else:
         return parent_dir / child_path
-
 
 class PathManager:
 
