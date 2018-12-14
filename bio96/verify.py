@@ -267,9 +267,12 @@ def setup_axes(df, plates, attrs):
     v_divs = [
             TOP_MARGIN,
     ]
-    for _ in attrs:
+    for attr in attrs:
         v_divs += [
-                CELL_SIZE * dims.num_rows,
+                max(
+                    CELL_SIZE * dims.num_rows,
+                    BAR_WIDTH * dims.num_values[attr],
+                ),
                 PAD_HEIGHT,
         ]
     v_divs[-1:] = [
@@ -341,6 +344,7 @@ class Dimensions:
         self.j0 = df['col_j'].min() 
         self.num_rows = df['row_i'].max() - self.i0 + 1
         self.num_cols = df['col_j'].max() - self.j0 + 1
+        self.num_values = df.nunique()
         self.shape = self.num_rows, self.num_cols
 
         self.xticks = np.arange(self.num_cols)
@@ -357,9 +361,32 @@ class Dimensions:
 class Colors:
 
     def __init__(self, cmap, values):
-        self.map = {
-                x: i for i, x in enumerate(values.dropna().unique())
-        }
+        values = values.dropna().unique()
+
+        # If we don't sort, the values will be listing in the order they appear 
+        # in the TOML file.  This is a reasonable default, but it can break 
+        # down when there are included or concatenated files.
+        # 
+        # For numbers and dates, the natural ordering (least to greatest) is 
+        # likely to be useful, so explicitly sorting the values makes the 
+        # display more robust and is worth doing.  
+        #
+        # For strings, the natural ordering (alphabetical) is not likely to be 
+        # useful, so instead we keep the values in their order-of-appearance.  
+        # This might break down in the more-complicated cases mentioned above, 
+        # but in the common case its the most likely to be useful.
+        #
+        # (Note that the only scalar types in the TOML format are: string, int, 
+        # float, bool, and datetime.  Of these, string is the only one that 
+        # doesn't have a meaningful natural ordering.)
+
+        if not any(isinstance(x, str) for x in values):
+            # If sorting fails (e.g. due to mixed types), just fall back on the 
+            # original ordering.
+            try: values = sorted(values)
+            except ValueError: pass
+
+        self.map = {x: i for i, x in enumerate(values)}
 
         n = len(self.map)
         self.cmap = cmap

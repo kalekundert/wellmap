@@ -69,9 +69,6 @@ def test_unknown_attr():
 def test_one_attr():
     run_cli(DIR/'one_attr.toml')
 
-def test_one_value():
-    run_cli(f'{DIR}/one_value.toml x')
-
 def test_two_attrs():
     run_cli(DIR/'two_attrs.toml')
 
@@ -79,6 +76,14 @@ def test_user_attr():
     run_cli(f'{DIR}/two_attrs.toml x')
     run_cli(f'{DIR}/two_attrs.toml y')
     run_cli(f'{DIR}/two_attrs.toml x y')
+
+def test_one_value():
+    run_cli(f'{DIR}/one_value.toml x')
+
+def test_sort_values():
+    run_cli(f'{DIR}/sort_numbers.toml')
+    run_cli(f'{DIR}/sort_dates.toml')
+    run_cli(f'{DIR}/sort_strings.toml')
 
 def test_nan_first():
     run_cli(DIR/'nan_first.toml')
