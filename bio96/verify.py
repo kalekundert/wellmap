@@ -233,6 +233,7 @@ def pick_colors(ax, df, attr, cmap):
     ax.invert_yaxis()
 
     return colors
+
 def setup_axes(df, plates, attrs):
     from mpl_toolkits.axes_grid1 import Divider
     from mpl_toolkits.axes_grid1.axes_size import Fixed
@@ -362,7 +363,7 @@ class Colors:
 
         n = len(self.map)
         self.cmap = cmap
-        self.norm = Normalize(vmin=0, vmax=n-1)
+        self.norm = Normalize(vmin=0, vmax=max(n-1, 1))
         self.boundaries = np.arange(n+1) - 0.5
         self.ticks = np.fromiter(self.map.values(), dtype=int, count=n)
         self.ticklabels = list(self.map.keys())

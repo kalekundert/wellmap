@@ -9,7 +9,7 @@ from pathlib import Path
 # written out as *.pdf files, so you can look at those by hand if you want to 
 # be sure the plots are correct (which is *not* tested).
 
-DIR = Path(__file__).parent
+DIR = Path(__file__).parent / 'verify'
 
 def run_cli(args, out='Layout written'):
     import sys, re, shlex, subprocess as proc
@@ -68,6 +68,9 @@ def test_unknown_attr():
 
 def test_one_attr():
     run_cli(DIR/'one_attr.toml')
+
+def test_one_value():
+    run_cli(f'{DIR}/one_value.toml x')
 
 def test_two_attrs():
     run_cli(DIR/'two_attrs.toml')
