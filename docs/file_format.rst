@@ -182,7 +182,7 @@ steps of the given size.
 
 Note that for wells and blocks, the ellipsis pattern can propagate across both 
 rows and columns.  In this case, the second index specifies the step size in 
-both dimensions.  Consider the ``A1,C3,...E5`` example from above: C3 is two 
+both dimensions.  Consider the ``A1,C3,...,E5`` example from above: C3 is two 
 rows and two columns away from A1, so this pattern specifies every odd well 
 between A1 and E5.
 
