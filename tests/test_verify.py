@@ -39,7 +39,7 @@ def run_cli(args, out='Layout written'):
 
 def test_no_wells():
     run_cli(DIR/'no_wells.toml', [
-        'no_wells.toml',
+        "no_wells.toml",
         "No wells defined",
     ])
 
@@ -48,22 +48,22 @@ def test_no_attr():
 
 def test_degenerate_attr():
     run_cli(DIR/'degenerate_attr.toml', [
-        'degenerate attributes',
-        ': x',
+        "degenerate attributes",
+        ": 'x'",
     ])
 
 def test_unknown_attr():
     run_cli(f'{DIR}/one_attr.toml XXX', [
-        'one_attr.toml',
-        "No such attribute: XXX",
-        "Did you mean: x",
+        "one_attr.toml",
+        "No such attribute: 'XXX'",
+        "Did you mean: 'x'",
     ])
 
     # Make sure the fancy plural logic works :-)
     run_cli(f'{DIR}/one_attr.toml XXX YYY', [
-        'one_attr.toml',
-        "No such attributes: XXX, YYY",
-        "Did you mean: x",
+        "one_attr.toml",
+        "No such attributes: 'XXX', 'YYY'",
+        "Did you mean: 'x'",
     ])
 
 def test_one_attr():

@@ -25,21 +25,21 @@ def test_check_named_plates():
     pm2.check_named_plates(['a', 'b'])
 
     # These should raise:
-    with raises(ConfigError, match="(a)"):
+    with raises(ConfigError, match="('a')"):
         pm0.check_named_plates(['a'])
     with raises(ConfigError, match="()"):
         pm1.check_named_plates([])
-    with raises(ConfigError, match="(b)"):
+    with raises(ConfigError, match="('b')"):
         pm1.check_named_plates(['b'])
-    with raises(ConfigError, match="(a, b)"):
+    with raises(ConfigError, match="('a', 'b')"):
         pm1.check_named_plates(['a', 'b'])
     with raises(ConfigError, match="()"):
         pm2.check_named_plates([])
-    with raises(ConfigError, match="(a)"):
+    with raises(ConfigError, match="('a')"):
         pm2.check_named_plates(['a'])
-    with raises(ConfigError, match="(b)"):
+    with raises(ConfigError, match="('b')"):
         pm2.check_named_plates(['b'])
-    with raises(ConfigError, match="(a, b, c)"):
+    with raises(ConfigError, match="('a', 'b', 'c')"):
         pm2.check_named_plates(['a', 'b', 'c'])
 
     # Path instead of plates:

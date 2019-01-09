@@ -2,7 +2,7 @@ language: python
 python:
     - "3.6"
 install:
-    - pip install coverage hypothesis pytest-cov python-coveralls xlrd
+    - pip install coverage pytest hypothesis pytest-cov python-coveralls xlrd
     # The -e is necessary for coverage to work.  Otherwise it seems to get 
     # confused, maybe by looking for the paths in the repository while the 
     # paths in site-packages actually run.  I'm not totally sure.
