@@ -184,6 +184,10 @@ def indices_from_range(x0, x1, xn):
     check_range(x0, x1, xn)
     yield from inclusive_range(x0, x1, xn)
 
+
+def quoted_join(it):
+    return ', '.join(f"'{x}'" for x in it)
+
 class ConfigError(Exception):
 
     def __init__(self, message):

@@ -63,6 +63,7 @@ from bio96 import ConfigError
 from nonstdlib import plural
 from matplotlib.colors import BoundaryNorm, Normalize
 from pathlib import Path
+from .util import *
 
 CELL_SIZE = 0.25
 PAD_WIDTH = 0.20
@@ -193,7 +194,7 @@ def pick_attrs(df, user_attrs):
                 if x not in user_cols
         ]
         if unknown_attrs:
-            raise ConfigError(f"No such {plural(unknown_attrs):attribute/s}: {', '.join(unknown_attrs)}.\n\nDid you mean: {', '.join(user_cols)}")
+            raise ConfigError(f"No such {plural(unknown_attrs):attribute/s}: {quoted_join(unknown_attrs)}.\nDid you mean: {quoted_join(user_cols)}")
 
         return user_attrs
 
@@ -210,7 +211,7 @@ def pick_attrs(df, user_attrs):
         ]
         if not non_degenerate_cols:
             if degenerate_cols:
-                raise CliError(f"Found only degenerate attributes (i.e. with the same value in every well): {', '.join(degenerate_cols)}")
+                raise CliError(f"Found only degenerate attributes (i.e. with the same value in every well): {quoted_join(degenerate_cols)}")
             else:
                 raise ConfigError(f"No attributes defined.")
 

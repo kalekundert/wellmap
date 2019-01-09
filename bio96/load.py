@@ -195,7 +195,6 @@ def load(toml_path, data_loader=None, merge_cols=None,
         def check_merge_cols(cols, known_cols, attrs):
             unknown_cols = set(cols) - set(known_cols)
             if unknown_cols:
-                quoted_join = lambda it: ', '.join(f"'{x}'" for x in it)
                 raise ValueError(f"Cannot merge on {quoted_join(unknown_cols)}.  Allowed {attrs} of the `merge_cols` dict: {quoted_join(known_cols)}.")
             return list(cols)
 
@@ -489,11 +488,11 @@ class PathManager:
         self.check_overspecified()
 
         if self.path is not None:
-            raise ConfigError(f"`meta.path` specified with one or more [plate] blocks ({', '.join(names)}).  Did you mean to use `meta.paths`?")
+            raise ConfigError(f"`meta.path` specified with one or more [plate] blocks ({quoted_join(names)}).  Did you mean to use `meta.paths`?")
 
         if isinstance(self.paths, dict):
             if set(names) != set(self.paths):
-                raise ConfigError(f"The keys in `meta.paths` ({', '.join(sorted(self.paths))}) don't match the [plate] blocks ({', '.join(sorted(names))})")
+                raise ConfigError(f"The keys in `meta.paths` ({quoted_join(sorted(self.paths))}) don't match the [plate] blocks ({quoted_join(sorted(names))})")
         
     def get_index_for_only_plate(self):
         # If there is only one plate:
@@ -511,7 +510,7 @@ class PathManager:
         self.check_overspecified()
 
         if self.paths is not None:
-            raise ConfigError(f"`meta.paths` ({self.paths if isinstance(self.paths, str) else ', '.join(self.paths)}) specified without any [plate] blocks.  Did you mean to use `meta.path`?")
+            raise ConfigError(f"`meta.paths` ({self.paths if isinstance(self.paths, str) else quoted_join(self.paths)}) specified without any [plate] blocks.  Did you mean to use `meta.path`?")
 
         if self.path is not None:
             return make_index(self.path)
