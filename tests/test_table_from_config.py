@@ -174,5 +174,5 @@ def test_expt_in_plate():
                 },
             },
     }
-    with raises(ConfigError, match="\[expt\] in \[plate\]"):
+    with raises(ConfigError, match=r"\[expt\] in \[plate\]"):
         table_from_config(config, DummyPathManager())

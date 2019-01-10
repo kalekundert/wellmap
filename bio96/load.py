@@ -328,7 +328,7 @@ def wells_from_config(config):
 
     ## Create new wells implied by any 'block' blocks:
     blocks = {}
-    pattern = re.compile('(\d+)x(\d+)')
+    pattern = re.compile(r'(\d+)x(\d+)')
 
     for size in config.blocks:
         match = pattern.match(size)
