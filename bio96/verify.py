@@ -82,7 +82,7 @@ def main():
         args = docopt.docopt(__doc__)
         toml_path = Path(args['<toml>'])
 
-        df, options = bio96.load(toml_path)
+        df = bio96.load(toml_path)
         cmap = colorcet.cm.get(args['--color'], plt.get_cmap(args['--color']))
 
         if not args['--foreground'] and not args['--output']:
