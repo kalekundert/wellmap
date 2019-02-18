@@ -11,7 +11,7 @@ with open('README.rst') as file:
 
 setup(
     name='bio96',
-    version='0.4.0',
+    version='0.5.0',
     author='Kale Kundert',
     author_email='kale@thekunderts.net',
     description="File format for 96-well plate layouts",
