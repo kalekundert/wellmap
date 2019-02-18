@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import pytest
 import bio96
 import pandas as pd
 from pathlib import Path
@@ -10,8 +11,7 @@ from test_table_from_wells import row
 DIR = Path(__file__).parent/'toml'
 
 def test_one_well():
-    labels, options = bio96.load(DIR/'one_well_xy.toml')
-    assert options == dict(z=1)
+    labels = bio96.load(DIR/'one_well_xy.toml')
     assert row(labels, 'well == "A1"') == dict(
             well='A1',
             well0='A01',
@@ -21,8 +21,7 @@ def test_one_well():
             y=1,
     )
 
-    labels, options = bio96.load(DIR/'one_well_xy.toml', path_guess='{0.stem}.xlsx')
-    assert options == dict(z=1)
+    labels = bio96.load(DIR/'one_well_xy.toml', path_guess='{0.stem}.xlsx')
     assert row(labels, 'well == "A1"') == dict(
             path=DIR/'one_well_xy.xlsx',
             well='A1',
@@ -38,12 +37,11 @@ def test_one_well():
     with raises(ConfigError, match='one_well_xy.toml'):
         bio96.load(DIR/'one_well_xy.toml', data_loader=pd.read_excel)
 
-    labels, data, options = bio96.load(
+    labels, data = bio96.load(
             DIR/'one_well_xy.toml',
             data_loader=pd.read_excel,
             path_guess='{0.stem}.xlsx',
     )
-    assert options == dict(z=1)
     assert row(labels, 'well == "A1"') == dict(
             path=DIR/'one_well_xy.xlsx',
             well='A1',
@@ -59,13 +57,12 @@ def test_one_well():
             Data='xy',
     )
 
-    df, options = bio96.load(
+    df = bio96.load(
             DIR/'one_well_xy.toml',
             data_loader=pd.read_excel,
             merge_cols={'well': 'Well'},
             path_guess='{0.stem}.xlsx',
     )
-    assert options == dict(z=1)
     assert row(df, 'well == "A1"') == dict(
             path=DIR/'one_well_xy.xlsx',
             well='A1',
@@ -78,8 +75,72 @@ def test_one_well():
             Data='xy',
     )
 
+@pytest.mark.parametrize(
+        "extras_arg,expected", [
+            ('extras', {'a': 1, 'b': 2}),
+            (['extras.a', 'extras.b'], {'extras.a': 1, 'extras.b': 2}),
+        ]
+)
+def test_one_well_with_extras(extras_arg, expected):
+    labels, extras = bio96.load(
+            DIR/'one_well_xy_extras.toml',
+            extras=extras_arg,
+    )
+    assert extras == expected
+    assert row(labels, 'well == "A1"') == dict(
+            well='A1',
+            well0='A01',
+            row='A', col='1',
+            row_i=0, col_j=0,
+            x=1,
+            y=1,
+    )
+
+    labels, data, extras = bio96.load(
+            DIR/'one_well_xy_extras.toml',
+            data_loader=pd.read_excel,
+            path_guess='{0.stem}.xlsx',
+            extras=extras_arg,
+    )
+    assert extras == expected
+    assert row(labels, 'well == "A1"') == dict(
+            path=DIR/'one_well_xy_extras.xlsx',
+            well='A1',
+            well0='A01',
+            row='A', col='1',
+            row_i=0, col_j=0,
+            x=1,
+            y=1,
+    )
+    assert row(data, 'Well == "A1"') == dict(
+            Well='A1',
+            path=DIR/'one_well_xy_extras.xlsx',
+            Data='xy',
+    )
+
+    # Merged data
+    df, extras = bio96.load(
+            DIR/'one_well_xy_extras.toml',
+            data_loader=pd.read_excel,
+            merge_cols={'well': 'Well'},
+            path_guess='{0.stem}.xlsx',
+            extras=extras_arg,
+    )
+    assert extras == expected
+    assert row(df, 'well == "A1"') == dict(
+            path=DIR/'one_well_xy_extras.xlsx',
+            well='A1',
+            Well='A1',
+            well0='A01',
+            row='A', col='1',
+            row_i=0, col_j=0,
+            x=1,
+            y=1,
+            Data='xy',
+    )
+
 def test_one_plate():
-    labels, _ = bio96.load(DIR/'one_plate.toml')
+    labels = bio96.load(DIR/'one_plate.toml')
     assert row(labels, 'well == "A1"') == dict(
             path=DIR/'one_plate.xlsx',
             plate='a',
@@ -91,7 +152,7 @@ def test_one_plate():
     )
 
 def test_two_plates():
-    df, _ = bio96.load(
+    df = bio96.load(
             DIR/'two_plates.toml',
             data_loader=pd.read_excel,
             merge_cols={'well': 'Well'},
@@ -121,13 +182,13 @@ def test_two_plates():
     )
 
 def test_concat():
-    labels, _ = bio96.load(DIR/'one_concat.toml')
+    labels = bio96.load(DIR/'one_concat.toml')
     assert len(labels) == 2
 
     with raises(ConfigError, match="Did you mean to set `meta.path`?"):
         bio96.load(DIR/'one_concat.toml', path_required=True)
 
-    labels, _ = bio96.load(DIR/'two_concats.toml')
+    labels = bio96.load(DIR/'two_concats.toml')
     assert len(labels) == 3
 
     with raises(ConfigError, match="Did you mean to set `meta.path`?"):
@@ -135,7 +196,7 @@ def test_concat():
 
     # Should not raise.  It's ok that `just_concat.xlsx` doesn't exist, because
     # `just_concat.toml` doesn't specify any wells.
-    labels, _ = bio96.load(
+    labels = bio96.load(
             DIR/'just_concat.toml',
             path_guess='{0.stem}.xlsx',
             path_required=True,
@@ -143,7 +204,7 @@ def test_concat():
     assert len(labels) == 1
 
 def test_reasonably_complex():
-    df, _ = bio96.load(DIR/'reasonably_complex.toml')
+    df = bio96.load(DIR/'reasonably_complex.toml')
     assert len(df) == 32
 
 def test_no_wells():

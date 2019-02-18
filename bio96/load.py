@@ -28,7 +28,7 @@ from .util import *
 #   dictionaries.  Columns identifying the plate and well are also added.
 
 def load(toml_path, data_loader=None, merge_cols=None,
-        path_guess=None, path_required=False, on_alert=None):
+        path_guess=None, path_required=False, extras=None, on_alert=None):
     """
     Parse the given TOML file and return a `pandas.DataFrame` with a row for 
     each well and a column for each experimental condition specified in that 
@@ -102,6 +102,17 @@ def load(toml_path, data_loader=None, merge_cols=None,
        data files.  A `ValueError` will be raised if this condition is not met.  
        Data files found via **path_guess** are acceptable for this purpose.
 
+    :param str,list extras:
+        One or more keys to extract directly from the given TOML file.  
+        Typically, this would be used to get information pertaining to the 
+        whole analysis and not any wells in particular (e.g. instruments used, 
+        preferred algorithms, plotting parameters, etc.).  Either one key 
+        (string) or multiple keys (list of strings) can be specified.  `Dotted 
+        keys`__ are supported.  Specifying this argument causes the value(s) 
+        corresponding to the given key(s) to be returned, see below.
+
+        __ https://github.com/toml-lang/toml#keys
+
     :param callable on_alert:
         A callback to invoke if the given TOML file contains a warning for the 
         user.  The default behavior is to print the warning to the terminal.  
@@ -130,11 +141,6 @@ def load(toml_path, data_loader=None, merge_cols=None,
           - ``row_i``: The row-index of this well, counting from 0.
           - ``col_j``: The column-index of this well, counting from 0.
 
-        - **options** (`dict`) – Any options present in the ``[meta.options]`` 
-          section of the given TOML file.  These options apply to the whole 
-          layout and not any wells in particular (e.g. data analysis 
-          algorithms, plotting parameters, etc.).
-          
         If **data_loader** was provided but **merge_cols** was not:
 
         - **layout** (`pandas.DataFrame`) – See above.
@@ -143,8 +149,6 @@ def load(toml_path, data_loader=None, merge_cols=None,
           **data_loader()** on every path specified in the given TOML file.  
           See :func:`pandas.concat()` for more information on how the data from 
           different paths are concatenated.
-
-        - **options** (`dict`) – See above.
 
         If **data_loader** and **merge_cols** were both provided:
 
@@ -157,13 +161,39 @@ def load(toml_path, data_loader=None, merge_cols=None,
           condition described in the TOML file, and a column for each kind of 
           data loaded from the data files.  
           
-        - **options** (`dict`) – See above.
+        If **extras** was provided:
+
+        - **extras** – The value(s) corresponding to the specified "extra" 
+          key(s).  If only one extra key was specified, only that value will be 
+          returned.  If multiple extra keys were specified, a `dict` containing 
+          the value for each such key will be returned.  For example, consider 
+          the following TOML file::
+
+              a = 1
+              b = 2
+
+          If we were to load this file with ``extras='a'``, this return 
+          value would simply be ``1``.  With ``extras=['a', 'b']``, the same 
+          return value would be ``{'a': 1, 'b': 2}`` instead.
     """
 
     try:
         ## Parse the TOML file:
-        config, paths, concats, options = config_from_toml(
-                toml_path, path_guess, on_alert)
+        config, paths, concats, extras = config_from_toml(
+                toml_path, path_guess, extras, on_alert)
+
+        def add_extras(*args):
+            """
+            Helper function to work out which values to return, depending on 
+            whether or not the caller wants any "extras" (i.e. key/value pairs 
+            in the TOML file that wouldn't otherwise be parsed).
+            """
+            if len(extras) == 1:
+                args += extras.popitem()[1],
+            if len(extras) > 1:
+                args += extras,
+
+            return args if len(args) != 1 else args[0]
 
         layout = table_from_config(config, paths)
         layout = pd.concat([layout, *concats], sort=False)
@@ -179,7 +209,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
         if data_loader is None:
             if merge_cols is not None:
                 raise ValueError("Specified columns to merge, but no function to load data!")
-            return layout, options
+            return add_extras(layout)
 
         data = pd.DataFrame()
 
@@ -190,7 +220,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
 
         ## Merge the layout and the data into a single data frame:
         if merge_cols is None:
-            return layout, data, options
+            return add_extras(layout, data)
 
         def check_merge_cols(cols, known_cols, attrs):
             unknown_cols = set(cols) - set(known_cols)
@@ -207,13 +237,13 @@ def load(toml_path, data_loader=None, merge_cols=None,
                 left_on=left_on + ['path'],
                 right_on=right_on + ['path'],
         )
-        return merged, options
+        return add_extras(merged)
 
     except ConfigError as err:
         err.toml_path = toml_path
         raise
 
-def config_from_toml(toml_path, path_guess=None, on_alert=None):
+def config_from_toml(toml_path, path_guess=None, extras=None, on_alert=None):
     toml_path = Path(toml_path).resolve()
     config = configdict(toml.load(str(toml_path)))
 
@@ -243,11 +273,22 @@ def config_from_toml(toml_path, path_guess=None, on_alert=None):
     # Load any files to be concatenated.
     concats = []
     for path in iter_paths_from_meta('concat'):
-        df, _ = load(path, path_guess=path_guess)
+        df = load(path, path_guess=path_guess)
         concats.append(df)
 
-    # Get any options for the analysis script.
-    options = config.meta.get('options', {})
+    # Return any specific fields requested by the caller.
+    def iter_extra_keys():
+        if extras is None:
+            return
+        elif isinstance(extras, str):
+            yield extras
+        else:
+            yield from extras
+
+    extras_out = {
+            key: get_dotted_key(config, key)
+            for key in iter_extra_keys()
+    }
 
     # Print out any messages contained in the file.
     if 'alert' in config.meta:
@@ -259,7 +300,7 @@ def config_from_toml(toml_path, path_guess=None, on_alert=None):
             print(config.meta['alert'])
 
     config.pop('meta', None)
-    return config, paths, concats, options
+    return config, paths, concats, extras_out
 
 def table_from_config(config, paths):
     config = configdict(config)

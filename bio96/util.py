@@ -185,6 +185,12 @@ def indices_from_range(x0, x1, xn):
     yield from inclusive_range(x0, x1, xn)
 
 
+def get_dotted_key(dict, key):
+    result = dict
+    for subkey in key.split('.'):
+        result = result.get(subkey.strip(), {})
+    return result
+
 def quoted_join(it):
     return ', '.join(f"'{x}'" for x in it)
 
