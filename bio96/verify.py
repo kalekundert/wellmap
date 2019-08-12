@@ -96,6 +96,9 @@ def main():
             fig.savefig(out_path)
             print("Layout written to:", out_path)
         else:
+            title = str(toml_path)
+            if args['<attr>']: title += f' [{", ".join(args["<attr>"])}]'
+            fig.canvas.set_window_title(title)
             plt.show()
 
     except CliError as err:
