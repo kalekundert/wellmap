@@ -114,7 +114,7 @@ def plot_layout(df, user_attrs, cmap):
     # GUI will have the given height, but the figure itself will be too short 
     # by the height of the GUI control panel.  That control panel has different 
     # heights with different backends (and no way that I know of to query what 
-    # it's height will be), so `set_size_inches()` is not reliable.
+    # its height will be), so `set_size_inches()` is not reliable.
     #
     # The only way to reliably control the height of the figure is to provide a 
     # size when constructing it.  But that requires knowing the size of the 
@@ -127,9 +127,10 @@ def plot_layout(df, user_attrs, cmap):
     # the most complicated part of the figure layout, because they come from 
     # the TOML file and could be either very narrow or very wide.  So I need to 
     # do a first pass where I plot all the labels on a dummy figure, get their 
-    # widths, then allocate enough room for them in the main figure.  I also 
-    # need to work out the dimensions of the plates twice, but that's a simpler 
-    # calculation.
+    # widths, then allocate enough room for them in the main figure.  
+    # 
+    # I also need to work out the dimensions of the plates twice, but that's a 
+    # simpler calculation.
 
     if 'plate' not in df:
         df.insert(0, 'plate', '')
@@ -159,7 +160,8 @@ def plot_layout(df, user_attrs, cmap):
     return fig
 
 def plot_plate(ax, df, plate, attr, dims, colors):
-    # Fill in a matrix integers representing each value of the given attribute.
+    # Fill in a matrix with integers representing each value of the given 
+    # attribute.
     matrix = np.full(dims.shape, np.nan)
     q = df.query('plate == @plate')
 
@@ -169,16 +171,23 @@ def plot_plate(ax, df, plate, attr, dims, colors):
         matrix[i, j] = colors.transform(well[attr])
 
     # Plot a heatmap.
-    ax.matshow(matrix, norm=colors.norm, cmap=colors.cmap)
+    ax.imshow(
+            matrix,
+            norm=colors.norm,
+            cmap=colors.cmap,
+            origin='upper',
+            interpolation='nearest',
+    )
 
     ax.set_xticks(dims.xticks)
     ax.set_yticks(dims.yticks)
-    ax.set_xticks(dims.xticks - 0.5, minor=True)
-    ax.set_yticks(dims.yticks - 0.5, minor=True)
+    ax.set_xticks(dims.xticksminor, minor=True)
+    ax.set_yticks(dims.yticksminor, minor=True)
     ax.set_xticklabels(dims.xticklabels)
     ax.set_yticklabels(dims.yticklabels)
     ax.grid(which='minor')
     ax.tick_params(which='both', axis='both', length=0)
+    ax.xaxis.tick_top()
 
 def pick_attrs(df, user_attrs):
     bio96_cols = ['plate', 'well', 'well0', 'row', 'col', 'row_i', 'col_j', 'path']
@@ -324,7 +333,6 @@ def guess_attr_label_width(df, attrs):
     return width
 
 def get_yticklabel_width(fig, ax):
-
     # With some backends, getting the renderer like this may trigger a warning 
     # and cause matplotlib to drop down to the Agg backend.
     from matplotlib import tight_layout
@@ -349,11 +357,15 @@ class Dimensions:
         self.shape = self.num_rows, self.num_cols
 
         self.xticks = np.arange(self.num_cols)
+        self.yticks = np.arange(self.num_rows)
+
+        self.xticksminor = np.arange(self.num_cols + 1) - 0.5
+        self.yticksminor = np.arange(self.num_rows + 1) - 0.5
+
         self.xticklabels = [
                 bio96.col_from_j(j + self.j0)
                 for j in self.xticks
         ]
-        self.yticks = np.arange(self.num_rows)
         self.yticklabels = [
                 bio96.row_from_i(i + self.i0)
                 for i in self.yticks
