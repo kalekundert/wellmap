@@ -95,7 +95,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
        This path is interpreted relative to the TOML file itself (unless it's 
        an absolute path) and is formatted with a `pathlib.Path` representing 
        said TOML file.  In code, that would be: ``path_guess.format(Path(toml_path))``.
-       A typical value would be something like ``'{0.stem}.xlsx'``.
+       A typical value would be something like ``'{0.stem}.csv'``.
 
     :param bool path_required:
        Indicates whether or not the given TOML file must reference one or more 
