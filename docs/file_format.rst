@@ -64,7 +64,7 @@ and are included as columns in the data frame returned by ``load()``.
     A block containing any options that apply to the whole layout, but not any 
     wells in particular.  For example, this would be a good place to specify 
     plotting parameters or data analysis algorithms.  The entries in this block 
-    can be anything.  Thw whole block is simply parsed into a dictionary and 
+    can be anything.  The whole block is simply parsed into a dictionary and 
     returned by the `load()` function.
 
   ``alert``

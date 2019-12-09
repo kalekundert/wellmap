@@ -10,6 +10,10 @@ from test_table_from_wells import row
 
 DIR = Path(__file__).parent/'toml'
 
+def read_excel_and_rename(path):
+    return pd.read_excel(path).rename({'Well': 'well'})
+
+
 def test_one_well():
     labels = bio96.load(DIR/'one_well_xy.toml')
     assert row(labels, 'well == "A1"') == dict(
@@ -75,6 +79,24 @@ def test_one_well():
             Data='xy',
     )
 
+    df = bio96.load(
+            DIR/'one_well_xy.toml',
+            data_loader=read_excel_and_rename,
+            merge_cols=True,
+            path_guess='{0.stem}.xlsx',
+    )
+    assert row(df, 'well == "A1"') == dict(
+            path=DIR/'one_well_xy.xlsx',
+            well='A1',
+            Well='A1',
+            well0='A01',
+            row='A', col='1',
+            row_i=0, col_j=0,
+            x=1,
+            y=1,
+            Data='xy',
+    )
+
 @pytest.mark.parametrize(
         "extras_arg,expected", [
             ('extras', {'a': 1, 'b': 2}),
@@ -119,15 +141,7 @@ def test_one_well_with_extras(extras_arg, expected):
     )
 
     # Merged data
-    df, extras = bio96.load(
-            DIR/'one_well_xy_extras.toml',
-            data_loader=pd.read_excel,
-            merge_cols={'well': 'Well'},
-            path_guess='{0.stem}.xlsx',
-            extras=extras_arg,
-    )
-    assert extras == expected
-    assert row(df, 'well == "A1"') == dict(
+    a1_expected = dict(
             path=DIR/'one_well_xy_extras.xlsx',
             well='A1',
             Well='A1',
@@ -138,6 +152,26 @@ def test_one_well_with_extras(extras_arg, expected):
             y=1,
             Data='xy',
     )
+
+    df, extras = bio96.load(
+            DIR/'one_well_xy_extras.toml',
+            data_loader=pd.read_excel,
+            merge_cols={'well': 'Well'},
+            path_guess='{0.stem}.xlsx',
+            extras=extras_arg,
+    )
+    assert extras == expected
+    assert row(df, 'well == "A1"') == a1_expected
+
+    df, extras = bio96.load(
+            DIR/'one_well_xy_extras.toml',
+            data_loader=read_excel_and_rename,
+            merge_cols=True,
+            path_guess='{0.stem}.xlsx',
+            extras=extras_arg,
+    )
+    assert extras == expected
+    assert row(df, 'well == "A1"') == a1_expected
 
 def test_one_plate():
     labels = bio96.load(DIR/'one_plate.toml')

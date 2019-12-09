@@ -36,10 +36,9 @@ def load(toml_path, data_loader=None, merge_cols=None,
     (which is the most typical use-case), that data frame will also contain 
     columns for any data associated with each well.
 
-    :param toml_path:
+    :param str,pathlib.Path toml_path:
       The path to a file describing the layout of one or more plates.  See the 
       :doc:`file_format` section for details about this file.
-    :type toml_path: str or pathlib.Path
 
     :param callable data_loader:
        Indicates that `load()` should attempt to load the actual data 
@@ -49,7 +48,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
        Note that specifying a data loader implies that **path_required** is 
        True.
 
-    :param dict merge_cols:
+    :param bool,list merge_cols:
        Indicates that `load()` should attempt to merge the plate layout and the 
        actual data associated with it into a single data frame.  This 
        functionality requires several conditions to be met:
@@ -67,20 +66,27 @@ def load(toml_path, data_loader=None, merge_cols=None,
        
        __ http://vita.had.co.nz/papers/tidy-data.html
 
-       The **merge_cols** argument itself specifies which columns to use when 
+       The **merge_cols** argument specifies which columns to use when 
        merging the data frames representing the layout and the actual data 
        (i.e. the two data frames that would be returned if **data_loader** was 
-       specified but **merge_cols** was not) into one.  The argument is a 
-       dictionary in which the key-value pairs are the names of columns that 
-       identify wells in the same way between the two data frames.
+       specified but **merge_cols** was not) into one.  The argument can either 
+       be a bool or a dictionary:
 
-       Each key should be one of the columns from the data frame representing 
-       the layout loaded from the TOML file by ``bio96``.  This data frame has 
-       8 columns which identify the wells: ``plate``, ``path``, ``well``, 
-       ``well0``, ``row``, ``col``, ``row_i``, ``row_j``.  See the "Returns" 
-       section below for more details on the differences between these columns.  
-       Note that the ``path`` column is included in the merge automatically and 
-       never has to be specified.
+       If *False* (or falsey, e.g. `None`, `{}`, etc.), the data frames will be 
+       returned separately and not be merged.  This is the default behavior.
+
+       If *True*, the data frames will be merged using any columns that share 
+       the same name between the two data frames.  For example, the layout has 
+       a column named ``well``, so if the actual data also has a column named 
+       ``well``, the merge would happen on those columns.
+
+       If a dictionary, each key should be one of the columns from the data 
+       frame representing the layout loaded from the TOML file by ``bio96``.  
+       This data frame has 8 columns which identify the wells: ``plate``, 
+       ``path``, ``well``, ``well0``, ``row``, ``col``, ``row_i``, ``row_j``.  
+       See the "Returns" section below for more details on the differences 
+       between these columns.  Note that the ``path`` column is included in the 
+       merge automatically and never has to be specified.
 
        Each value should be one of the columns from the data frame representing 
        the actual data.  This data frame will have whatever columns were 
@@ -219,24 +225,28 @@ def load(toml_path, data_loader=None, merge_cols=None,
            data = data.append(df, sort=False)
 
         ## Merge the layout and the data into a single data frame:
-        if merge_cols is None:
+        if not merge_cols:
             return add_extras(layout, data)
 
-        def check_merge_cols(cols, known_cols, attrs):
-            unknown_cols = set(cols) - set(known_cols)
-            if unknown_cols:
-                raise ValueError(f"Cannot merge on {quoted_join(unknown_cols)}.  Allowed {attrs} of the `merge_cols` dict: {quoted_join(known_cols)}.")
-            return list(cols)
+        if merge_cols is True:
+            # Let pandas choose which columns to merge on.
+            kwargs = {}
+        else:
+            def check_merge_cols(cols, known_cols, attrs):
+                unknown_cols = set(cols) - set(known_cols)
+                if unknown_cols:
+                    raise ValueError(f"Cannot merge on {quoted_join(unknown_cols)}.  Allowed {attrs} of the `merge_cols` dict: {quoted_join(known_cols)}.")
+                return list(cols)
 
-        left_ok = 'well', 'well0', 'row', 'col', 'row_i', 'col_i', 'plate'
-        left_on = check_merge_cols(merge_cols.keys(), left_ok, 'keys')
-        right_on = check_merge_cols(merge_cols.values(), data.columns, 'values')
+            left_ok = 'well', 'well0', 'row', 'col', 'row_i', 'col_i', 'plate'
+            kwargs = {
+                    'left_on': ['path'] + check_merge_cols(
+                        merge_cols.keys(), left_ok, 'keys'),
+                    'right_on': ['path'] + check_merge_cols(
+                        merge_cols.values(), data.columns, 'values'),
+            }
 
-        merged = pd.merge(
-                layout, data,
-                left_on=left_on + ['path'],
-                right_on=right_on + ['path'],
-        )
+        merged = pd.merge(layout, data, **kwargs)
         return add_extras(merged)
 
     except ConfigError as err:
@@ -621,4 +631,6 @@ class configdict(dict):
                 for k, v in self.items()
                 if k not in self.special.values()
         }
+
+
 
