@@ -40,7 +40,7 @@ def test_one_concat():
 
     config, paths, concats, extras = config_from_toml(
             DIR/'one_concat.toml',
-            path_guess='{0.stem}.xlsx',
+            path_guess='{0.stem}.csv',
     )
     assert config == {
             'well': {
@@ -48,7 +48,7 @@ def test_one_concat():
             }
     }
     assert row(concats[0], 'well == "A1"') == dict(
-            path=DIR/'one_well_xy.xlsx',
+            path=DIR/'one_well_xy.csv',
             well='A1',
             well0='A01',
             row='A', col='1',
@@ -60,7 +60,7 @@ def test_one_concat():
 def test_two_concats():
     config, paths, concats, extras = config_from_toml(
             DIR/'two_concats.toml',
-            path_guess='{0.stem}.xlsx',
+            path_guess='{0.stem}.csv',
     )
     assert config == {
             'well': {
@@ -68,7 +68,7 @@ def test_two_concats():
             }
     }
     assert row(concats[0], 'well == "A1"') == dict(
-            path=DIR/'one_well_xy.xlsx',
+            path=DIR/'one_well_xy.csv',
             well='A1',
             well0='A01',
             row='A', col='1',
@@ -77,7 +77,7 @@ def test_two_concats():
             y=1,
     )
     assert row(concats[1], 'well == "A1"') == dict(
-            path=DIR/'one_well_xyz.xlsx',
+            path=DIR/'one_well_xyz.csv',
             well='A1',
             well0='A01',
             row='A', col='1',
