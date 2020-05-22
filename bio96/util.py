@@ -7,7 +7,7 @@ import string
 # =======
 # `well`
 #   A string naming a well, e.g. "A1" or "A01".  Note that columns count from 
-#   1.  Rows beyond "Z" can be specified useing multiple letters, e.g. "AA".  
+#   1.  Rows beyond "Z" can be specified using multiple letters, e.g. "AA".  
 #
 # `well0`
 #   The same as `well`, but with the column numbers padded with leading zeros.
@@ -92,7 +92,7 @@ def interleave(a, b):
     Convert the given coordinates between "real" and "interleaved" space.
 
     Only the first coordinate differs between the two spaces.  A straight row 
-    in "interleaved" space will alternative between two adjacent rows in "real" 
+    in "interleaved" space will alternate between two adjacent rows in "real" 
     space, and vice versa.  This function can also used to interleave 
     columns (by passing the column as the first argument and the row as the 
     second).

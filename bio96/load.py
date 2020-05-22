@@ -37,76 +37,82 @@ def load(toml_path, data_loader=None, merge_cols=None,
     columns for any data associated with each well.
 
     :param str,pathlib.Path toml_path:
-      The path to a file describing the layout of one or more plates.  See the 
-      :doc:`file_format` section for details about this file.
+        The path to a file describing the layout of one or more plates.  See 
+        the :doc:`file_format` page for details about this file.
 
     :param callable data_loader:
-       Indicates that `load()` should attempt to load the actual data 
-       associated with the plate layout, in addition to loading the layout 
-       itself.  The argument should be a function that takes a path to a data 
-       file, parses it, and returns a data frame containing the parsed data.  
-       Note that specifying a data loader implies that **path_required** is 
-       True.
+        Indicates that `load()` should attempt to load the actual data 
+        associated with the plate layout, in addition to loading the layout 
+        itself.  The argument should be a function that takes a `pathlib.Path` 
+        to a data file, parses it, and returns a `pandas.DataFrame` containing 
+        the parsed data.  Note that specifying a data loader implies that 
+        **path_required** is True.
 
-    :param bool,list merge_cols:
-       Indicates that `load()` should attempt to merge the plate layout and the 
-       actual data associated with it into a single data frame.  This 
-       functionality requires several conditions to be met:
+    :param bool,dict merge_cols:
+        Indicates that `load()` should attempt to merge the plate layout and 
+        the actual data associated with it into a single data frame.  This 
+        functionality requires several conditions to be met:
        
-       1. The **data_loader** argument must be specified (otherwise there'd be 
-          no data to merge).
-       2. The data frame returned by **data_loader()** must be `"tidy"`__.  
-          Briefly, a data frame is tidy if each of its columns represents a 
-          single variable (e.g.  time, fluorescence) and each of its rows 
-          represents a single observation.  
-       3. The data frame returned by **data_loader()** must have one (or more) 
-          columns/variables indicating which well each row/observation comes 
-          from.  For example, a column called "Well" with values like "A1", 
-          "A2", "B1", "B2", etc. would satisfy this requirement.
-       
-       __ http://vita.had.co.nz/papers/tidy-data.html
+        1. The **data_loader** argument must be specified (otherwise there'd be 
+           no data to merge).
 
-       The **merge_cols** argument specifies which columns to use when 
-       merging the data frames representing the layout and the actual data 
-       (i.e. the two data frames that would be returned if **data_loader** was 
-       specified but **merge_cols** was not) into one.  The argument can either 
-       be a bool or a dictionary:
+        2. The data frame returned by **data_loader()** must be `"tidy"`__.  
+           Briefly, a data frame is tidy if each of its columns represents a 
+           single variable (e.g.  time, fluorescence) and each of its rows 
+           represents a single observation.  
+            
+           __ http://vita.had.co.nz/papers/tidy-data.html
 
-       If *False* (or falsey, e.g. `None`, `{}`, etc.), the data frames will be 
-       returned separately and not be merged.  This is the default behavior.
+        3. The data frame returned by **data_loader()** must have one (or more) 
+           columns/variables indicating which well each row/observation comes 
+           from.  For example, a column called "Well" with values like "A1", 
+           "A2", "B1", "B2", etc. would satisfy this requirement.
+        
+        The **merge_cols** argument specifies which columns to use when merging 
+        the data frames representing the layout and the actual data (i.e. the 
+        two data frames that would be returned if **data_loader** was specified 
+        but **merge_cols** was not) into one.  The argument can either be a 
+        bool or a dictionary:
 
-       If *True*, the data frames will be merged using any columns that share 
-       the same name between the two data frames.  For example, the layout has 
-       a column named ``well``, so if the actual data also has a column named 
-       ``well``, the merge would happen on those columns.
+        If *False* (or falsey, e.g. ``None``, ``{}``, etc.), the data frames 
+        will be returned separately and not be merged.  This is the default 
+        behavior.
 
-       If a dictionary, each key should be one of the columns from the data 
-       frame representing the layout loaded from the TOML file by ``bio96``.  
-       This data frame has 8 columns which identify the wells: ``plate``, 
-       ``path``, ``well``, ``well0``, ``row``, ``col``, ``row_i``, ``row_j``.  
-       See the "Returns" section below for more details on the differences 
-       between these columns.  Note that the ``path`` column is included in the 
-       merge automatically and never has to be specified.
+        If *True*, the data frames will be merged using any columns that share 
+        the same name.  For example, the layout will always have a column named 
+        *well*, so if the actual data also has a column named *well*, the merge 
+        would happen on those columns.
 
-       Each value should be one of the columns from the data frame representing 
-       the actual data.  This data frame will have whatever columns were 
-       created by **data_loader()**.  The columns named in each key-value pair 
-       must contain values that correspond exactly (i.e. not "A1" and "A01").  
-       It is the responsibility of **data_loader()** to ensure that this is 
-       possible.
+        If a dictionary, the keys and values identify the names of the columns 
+        that correspond with each other for the purpose of merging.  Each key 
+        should be one of the columns from the data frame representing the 
+        layout loaded from the TOML file.  This data frame has 8 columns which 
+        identify the wells: *plate*, *path*, *well*, *well0*, *row*, *col*, 
+        *row_i*, *row_j*.  See the "Returns" section below for more details on 
+        the differences between these columns.  Note that the *path* column is 
+        included in the merge automatically and never has to be specified.  
+        Each value should be one of the columns from the data frame 
+        representing the actual data.  This data frame will have whatever 
+        columns were created by **data_loader()**.  
+
+        Note that the columns named in each key-value pair must contain values 
+        that correspond exactly (i.e. not "A1" and "A01").  It is the 
+        responsibility of **data_loader()** to ensure that this is possible.
        
     :param str path_guess:
-       Where to look for a data file if none is specified in the given TOML 
-       file.  In other words, this is the default value for ``meta.path``.  
-       This path is interpreted relative to the TOML file itself (unless it's 
-       an absolute path) and is formatted with a `pathlib.Path` representing 
-       said TOML file.  In code, that would be: ``path_guess.format(Path(toml_path))``.
-       A typical value would be something like ``'{0.stem}.csv'``.
+        Where to look for a data file if none is specified in the given TOML 
+        file.  In other words, this is the default value for ``meta.path``.  
+        This path is interpreted relative to the TOML file itself (unless it's 
+        an absolute path) and is formatted with a `pathlib.Path` representing 
+        said TOML file.  In code, that would be: 
+        ``path_guess.format(Path(toml_path))``.  A typical value would be 
+        something like ``'{0.stem}.csv'``.
 
     :param bool path_required:
-       Indicates whether or not the given TOML file must reference one or more 
-       data files.  A `ValueError` will be raised if this condition is not met.  
-       Data files found via **path_guess** are acceptable for this purpose.
+        Indicates whether or not the given TOML file must reference one or more 
+        data files.  A `ValueError` will be raised if this condition is not 
+        met.  Data files found via **path_guess** are acceptable for this 
+        purpose.
 
     :param str,list extras:
         One or more keys to extract directly from the given TOML file.  
@@ -114,10 +120,9 @@ def load(toml_path, data_loader=None, merge_cols=None,
         whole analysis and not any wells in particular (e.g. instruments used, 
         preferred algorithms, plotting parameters, etc.).  Either one key 
         (string) or multiple keys (list of strings) can be specified.  `Dotted 
-        keys`__ are supported.  Specifying this argument causes the value(s) 
-        corresponding to the given key(s) to be returned, see below.
-
-        __ https://github.com/toml-lang/toml#keys
+        keys <https://github.com/toml-lang/toml#keys>`__ are supported.  
+        Specifying this argument causes the value(s) corresponding to the given 
+        key(s) to be returned, see below.
 
     :param callable on_alert:
         A callback to invoke if the given TOML file contains a warning for the 
@@ -129,35 +134,35 @@ def load(toml_path, data_loader=None, merge_cols=None,
 
     :returns:
         If neither **data_loader** nor **merge_cols** were provided:
-
+ 
         - **layout** (`pandas.DataFrame`) – Information about the plate layout 
           parsed from the given TOML file.  The data frame will have a row for 
           each well and a column for each experimental condition.  In addition, 
           there will be several columns identifying each well:
-
-          - ``plate``: The name of the plate for this well.  This column will 
+ 
+          - *plate*: The name of the plate for this well.  This column will 
             not be present if there are no ``[plate]`` blocks in the TOML file.
-          - ``path``: The path to the data file associated with the plate for 
+          - *path*: The path to the data file associated with the plate for 
             this well.  This column will not be present if no data files were 
             referenced by the TOML file.
-          - ``well``: The name of the well, e.g. "A1".
-          - ``well0``: The zero-padded name of the well, e.g. "A01".
-          - ``row``: The name of the row for this well, e.g. "A".
-          - ``col``: The name of the column for this well, e.g. "1".
-          - ``row_i``: The row-index of this well, counting from 0.
-          - ``col_j``: The column-index of this well, counting from 0.
-
+          - *well*: The name of the well, e.g. "A1".
+          - *well0*: The zero-padded name of the well, e.g. "A01".
+          - *row*: The name of the row for this well, e.g. "A".
+          - *col*: The name of the column for this well, e.g. "1".
+          - *row_i*: The row-index of this well, counting from 0.
+          - *col_j*: The column-index of this well, counting from 0.
+ 
         If **data_loader** was provided but **merge_cols** was not:
-
+ 
         - **layout** (`pandas.DataFrame`) – See above.
-
+ 
         - **data** (`pandas.DataFrame`) – The concatenated result of calling 
           **data_loader()** on every path specified in the given TOML file.  
           See :func:`pandas.concat()` for more information on how the data from 
           different paths are concatenated.
-
+ 
         If **data_loader** and **merge_cols** were both provided:
-
+ 
         - **merged** (`pandas.DataFrame`) – The result of merging the 
           **layout** and **data** data frames along the columns specified by 
           **merge_cols**.  See :func:`pandas.merge()` for more details on the 
@@ -168,16 +173,16 @@ def load(toml_path, data_loader=None, merge_cols=None,
           data loaded from the data files.  
           
         If **extras** was provided:
-
+ 
         - **extras** – The value(s) corresponding to the specified "extra" 
           key(s).  If only one extra key was specified, only that value will be 
           returned.  If multiple extra keys were specified, a `dict` containing 
           the value for each such key will be returned.  For example, consider 
           the following TOML file::
-
+ 
               a = 1
               b = 2
-
+ 
           If we were to load this file with ``extras='a'``, this return 
           value would simply be ``1``.  With ``extras=['a', 'b']``, the same 
           return value would be ``{'a': 1, 'b': 2}`` instead.
