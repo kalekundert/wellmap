@@ -1,0 +1,22 @@
+# The [expt], [row], and [col] blocks specify which conditions are 
+# being tested in which wells.  The fields within these blocks (e.g.  
+# `antibiotic`, `replicate`, `strain`, `conc_ng_mL`) can be anything.  If your 
+# plates aren't organized by row and column, there are other ways to define the 
+# plate layout; see the "File format" section for more details.
+
+[expt]
+  date = 2018-10-07
+
+[col]
+  1.dilution = 1e5
+  2.dilution = 1e4
+  3.dilution = 1e3
+  4.dilution = 1e2
+  5.dilution = 1e1
+  6.dilution = 1e0
+
+[row]
+  A.replicate = 1
+  B.replicate = 2
+  C.replicate = 3
+

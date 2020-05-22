@@ -2,6 +2,8 @@
 ``bio96`` — File format for 96-well plate layouts
 *************************************************
 
+.. module:: bio96
+
 Many medium-throughput experiments produce data in 24-, 96-, or 384-well plate 
 format.  However, it can be a challenge to keep track of which wells (e.g. A1, 
 B2, etc.) correspond to which experimental conditions (e.g. genotype, drug 
@@ -35,13 +37,16 @@ collaborators) organize wells on your plates.
 Table of contents
 =================
 .. toctree::
-   :maxdepth: 1
+   :caption: Getting Started
 
-   installation
-   example_usage
+   basic_usage
+   using_from_r
+   example_layouts
+
+.. toctree::
+   :caption: Reference
+   
    file_format
    command_line
    python_api
-   contributing
-
 

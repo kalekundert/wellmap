@@ -1,0 +1,58 @@
+[expt]
+  sgrna = 'ligRNA-'
+
+[block.4x3.A1]
+  time = 00:00:00
+[block.8x3.A9]
+  time = 00:02:00
+[block.8x3.D1]
+  time = 00:04:20
+[block.8x3.D9]
+  time = 00:07:00
+[block.8x3.G1]
+  time = 00:10:00
+[block.8x3.G9]
+  time = 00:13:20
+[block.8x3.J1]
+  time = 00:17:00
+[block.8x3.J9]
+  time = 00:21:00
+[block.8x3.M1]
+  time = 00:25:20
+[block.8x3.M9]
+  time = 00:30:00
+
+[col.'1,3,...,17']
+  primers = 'gfp'
+[col.'2,4,...,18']
+  primers = '16s'
+
+[block.2x3.A1]
+  ligand = 'apo'
+[block.2x3.A3]
+  ligand = 'holo'
+[block.2x12.D1]
+  ligand = 'apo→apo'
+[block.2x15.A9]
+  ligand = 'apo→apo'
+[block.2x12.D3]
+  ligand = 'apo→holo'
+[block.2x15.A11]
+  ligand = 'apo→holo'
+[block.2x12.D5]
+  ligand = 'holo→apo'
+[block.2x15.A13]
+  ligand = 'holo→apo'
+[block.2x12.D7]
+  ligand = 'holo→holo'
+[block.2x15.A15]
+  ligand = 'holo→holo'
+
+# Controls:
+[block.2x3.A5]
+  control = 'no GFP'
+[block.2x3.A7]
+  control = 'no RT'
+[block.2x3.A17]
+  control = 'no cDNA'
+

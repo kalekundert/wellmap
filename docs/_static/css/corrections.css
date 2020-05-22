@@ -12,6 +12,12 @@
   margin-top: 12px;
 }
 
+/* Fix the spacing around lists. */
+
+.rst-content .section ol li ul {
+  margin-bottom: 12px;
+}
+
 /* Style cross-references like links (i.e. blue, italicized, sans), rather than 
  * like code (i.e. black, bold, mono). */
 
@@ -36,7 +42,6 @@
   color: #404040;
 }
 .rst-content code {
-  /*border: none;*/
 	border-radius: 3px;
 	border: 1px solid #e1e4e5;
 	font-size: 85%;
@@ -44,7 +49,28 @@
 	padding: .3em .4em .1em;
   background: #eeffcc;
 }
+.rst-content dl dt code {
+  border-radius: 0px;
+  border: none;
 
+	font-size: 100%;
+	margin: 0;
+	padding: 0;
+  background: none;
+}
 .rst-content dl:not(.docutils) tt, .rst-content dl:not(.docutils) tt, .rst-content dl:not(.docutils) code {
 	font-weight: normal;
 }
+
+/* Make filename captions look nicer. */
+.rst-content .code-block-caption {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  text-align: left;
+}
+.rst-content table.docutils caption {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  text-align: left;
+}
+
