@@ -1,0 +1,24 @@
+[block.3x8.A1]
+  standard = true
+
+# See manual for "Pierce BCA Protein Assay Kit"
+[block.3x1.A1]
+  ug_mL = 2000
+[block.3x1.B1]
+  ug_mL = 1500
+[block.3x1.C1]
+  ug_mL = 1000
+[block.3x1.D1]
+  ug_mL = 750
+[block.3x1.E1]
+  ug_mL = 500
+[block.3x1.F1]
+  ug_mL = 250
+[block.3x1.G1]
+  ug_mL = 125
+[block.3x1.H1]
+  ug_mL =  25
+[block.3x1.H10]
+  ug_mL =  0
+  standard = true
+

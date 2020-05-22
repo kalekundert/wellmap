@@ -1,0 +1,15 @@
+[row.A]
+mutant = 'Y37A'
+[row.B]
+mutant = 'E38A'
+[row.C]
+mutant = 'T39A'
+
+[col.1]
+substrate_uM = 8
+[col.2]
+substrate_uM = 4
+[col.3]
+substrate_uM = 2
+[col.4]
+substrate_uM = 1
