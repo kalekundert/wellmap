@@ -13,6 +13,7 @@ templates_path = ['_templates']
 html_static_path = ['_static']
 
 extensions = [
+        '_ext.example',
         '_ext.hidden_section',
         #'show_nodes',
         'sphinx.ext.autodoc',
