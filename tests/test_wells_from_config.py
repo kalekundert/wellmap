@@ -407,11 +407,15 @@ def test_interleaved_row():
             'col': {
                 '1': {'y': 1},
                 '2': {'y': 2},
+                '3': {'y': 3},
+                '4': {'y': 4},
             },
     }
     assert wells_from_config(config) == {
             (0,0): {'x': 1, 'y': 1},
             (1,1): {'x': 1, 'y': 2},
+            (0,2): {'x': 1, 'y': 3},
+            (1,3): {'x': 1, 'y': 4},
     }
 
     config = {
@@ -421,11 +425,15 @@ def test_interleaved_row():
             'col': {
                 '1': {'y': 1},
                 '2': {'y': 2},
+                '3': {'y': 3},
+                '4': {'y': 4},
             },
     }
     assert wells_from_config(config) == {
             (1,0): {'x': 2, 'y': 1},
             (0,1): {'x': 2, 'y': 2},
+            (1,2): {'x': 2, 'y': 3},
+            (0,3): {'x': 2, 'y': 4},
     }
 
 def test_interleaved_col():
@@ -433,6 +441,8 @@ def test_interleaved_col():
             'row': {
                 'A': {'x': 1},
                 'B': {'x': 2},
+                'C': {'x': 3},
+                'D': {'x': 4},
             },
             'icol': {
                 '1': {'y': 1},
@@ -441,12 +451,16 @@ def test_interleaved_col():
     assert wells_from_config(config) == {
             (0,0): {'x': 1, 'y': 1},
             (1,1): {'x': 2, 'y': 1},
+            (2,0): {'x': 3, 'y': 1},
+            (3,1): {'x': 4, 'y': 1},
     }
 
     config = {
             'row': {
                 'A': {'x': 1},
                 'B': {'x': 2},
+                'C': {'x': 3},
+                'D': {'x': 4},
             },
             'icol': {
                 '2': {'y': 2},
@@ -455,6 +469,8 @@ def test_interleaved_col():
     assert wells_from_config(config) == {
             (0,1): {'x': 1, 'y': 2},
             (1,0): {'x': 2, 'y': 2},
+            (2,1): {'x': 3, 'y': 2},
+            (3,0): {'x': 4, 'y': 2},
     }
 
 def test_irow_without_col():

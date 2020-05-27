@@ -426,7 +426,7 @@ def wells_from_config(config):
                 and not wells \
                 and not blocks \
                 and not any(config.get(x) for x in dim2s):
-            raise ConfigError(f"Found {plural(config[dim1]):? [{dim1}] block/s}, but no [{'/'.join(dim2s)}] blocks.  No wells defined.")
+            raise ConfigError(f"Found {plural(config[dim1]):? [{dim1}] spec/s}, but no [{'/'.join(dim2s)}] specs.  No wells defined.")
 
     rows = simplify_keys('row')
     cols = simplify_keys('col')
@@ -445,7 +445,7 @@ def wells_from_config(config):
 
     sanity_check('icol', 'row')
     for i, jj in itertools.product(rows, icols):
-        ij = i, interleave(i, jj)
+        ij = i, interleave(jj, i)
         wells.setdefault(ij, {})
 
     ## Fill in any wells created above.
