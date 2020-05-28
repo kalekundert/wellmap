@@ -500,8 +500,8 @@ within |plate| groups have precedence a half-step higher than the same group
 used outside a plate.  In other words, `[plate.NAME.row.A] <[plate.NAME]>` has 
 higher precedence than |row|, but lower precedence than |block|.
 
-This following layout is contrived, but helps to visually demonstrate as many 
-of the precedence rules as possible:
+The following layout is contrived, but helps to visually demonstrate as many of 
+the precedence rules as possible:
 
 .. example:: file_format/precedence.toml
 

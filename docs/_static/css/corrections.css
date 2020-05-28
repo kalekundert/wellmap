@@ -1,15 +1,16 @@
 /* Format parameters with multiple paragraphs the same as parameters with only 
  * a single paragraph. */
 
-.field-list p {
-  line-height: 24px !important;
-  font-size: 100%;
-}
-.field-list p:first-of-type {
+.field-list p:first-of-type:not(:only-of-type) {
   display: inline;
 }
 .field-list p:nth-of-type(2) {
-  margin-top: 12px;
+  display: inline;
+}
+.field-list p:nth-of-type(2)::after {
+  content: "";
+  display: block;
+  margin-bottom: 12px;
 }
 
 /* Try to show the example code side-by-side with the image. */
@@ -114,7 +115,14 @@
   margin-bottom: 12px;
 }
 
+.rst-content .field-list ul li ul>li>p {
+  margin-bottom: 0 !important;
+}
+
 .rst-content th p {
   margin-bottom: 0px;
 }
 
+.rst-content .section ul li p:last-of-type {
+  margin-bottom: 0;
+}
