@@ -36,7 +36,7 @@ Options:
         understood by either `matplotlib` or `colorcet`.  See the links below 
         for the full list of supported colors, but some common choices are:
 
-        rainbow:  blue, green, yellow, red
+        rainbow:  blue, green, yellow, orange, red
         viridis:  purple, green, yellow
         plasma:   purple, red, yellow
         coolwarm: blue, red
