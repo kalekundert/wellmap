@@ -399,9 +399,10 @@ def wells_from_config(config):
 
         for top_left, subconfig in iter_wells(config.blocks[size]):
             for ij in iter_ij_in_block(top_left, width, height):
-                wells.setdefault(ij, {})
+                block = width * height, deepcopy(subconfig)
                 blocks.setdefault(ij, [])
-                blocks[ij].append(deepcopy(subconfig))
+                blocks[ij].insert(0, block)
+                wells.setdefault(ij, {})
     
     ## Create new wells implied by any 'row' & 'col' blocks.
 
@@ -456,7 +457,8 @@ def wells_from_config(config):
 
         # Merge in order of precedence: [block], [row/col], top-level.
         # [well] is already accounted for.
-        for block in blocks.get(ij, {}):
+        blocks_by_area = sorted(blocks.get(ij, []), key=lambda x: x[0])
+        for area, block in blocks_by_area:
             recursive_merge(wells[ij], block)
 
         recursive_merge(wells[ij], rows.get(i, {}))

@@ -529,6 +529,49 @@ def test_precedence():
             'e': 5,
     }
 
+def test_block_precedence():
+    # For block of different size: smaller blocks have higher precedence.
+    config = {
+            'block': {
+                '2x2': {
+                    'A1': {'p': '2x2'},
+                },
+                '2x1': {
+                    'A1': {'p': '2x1'},
+                },
+                '1x1': {
+                    'A1': {'p': '1x1'},
+                },
+            },
+    }
+    wells = wells_from_config(config)
+    assert wells == {
+            (0, 0): {'p': '1x1'},
+            (0, 1): {'p': '2x1'},
+            (1, 0): {'p': '2x2'},
+            (1, 1): {'p': '2x2'},
+    }
+
+    # For blocks of the same size, the block defined later has precedence.
+
+    config = {
+            'block': {
+                '2x1': {
+                    'A1': {'p': '2x1'},
+                },
+                '1x2': {
+                    'A1': {'p': '1x2'},
+                },
+            },
+    }
+    wells = wells_from_config(config)
+    assert wells == {
+            (0, 0): {'p': '1x2'},
+            (0, 1): {'p': '2x1'},
+            (1, 0): {'p': '1x2'},
+    }
+
+
 
 def test_multi_letter_well():
     config = {
