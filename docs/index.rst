@@ -41,6 +41,7 @@ collaborators) organize wells on your plates.
    basic_usage
    using_from_r
    example_layouts
+   related_software
 
 .. toctree::
    :caption: Reference

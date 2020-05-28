@@ -1,5 +1,5 @@
 ***************
-Example Layouts
+Example layouts
 ***************
 
 Below are examples of plate layouts used in actual experiments.

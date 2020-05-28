@@ -1,5 +1,5 @@
 ***********
-Basic Usage
+Basic usage
 ***********
 
 The following steps show how to get started with :mod:`bio96`:
