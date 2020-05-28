@@ -1,0 +1,40 @@
+[expt]
+spacer = 'lz'
+ligand = 'theophylline'
+fit_start_min = 5
+fit_stop_min = 30
+
+[row.A]
+growth_time_h = 6
+[row.B]
+growth_time_h = 8
+[row.C]
+growth_time_h = 10
+[row.D]
+growth_time_h = 16
+
+[col.3]
+sgrna = 'on'
+ligand_mM = 0
+[col.4]
+sgrna = 'on'
+ligand_mM = 30
+[col.5]
+sgrna = 'off'
+ligand_mM = 0
+[col.6]
+sgrna = 'off'
+ligand_mM = 30
+
+[well.B5]
+fit_start_min = 0
+fit_stop_min = 15
+[well.C5]
+fit_start_min = 5
+fit_stop_min = 15
+[well.D5]
+fit_start_min = 0
+fit_stop_min = 15
+[well.D6]
+fit_start_min = 0
+fit_stop_min = 15
