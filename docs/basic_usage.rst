@@ -8,11 +8,11 @@ The following steps show how to get started with :mod:`bio96`:
 
 1. Install bio96
 ================
-Install `bio96` from PyPI:
+Install :mod:`bio96` from PyPI:
 
-  .. code-block:: console
+.. code-block:: console
 
-    $ pip install bio96
+  $ pip install bio96
 
 2. Describe the plate layout
 ============================
@@ -27,14 +27,16 @@ example, the following layout might be used for a standard curve:
 ===========================
 Confirm that the layout is correct by using the :prog:`bio96` command-line 
 program to produce a map of the layout.  This is an important step, because 
-small mistakes in the layout file are often easy to spot visually.
+it's much easier to spot mistakes in the map than in the layout file itself.
 
 .. code-block:: console
 
    $ bio96 std_curve.toml
 
-This maps shows that each row is a different replicate, and each column is a 
-different dilution.
+This maps shows that:
+
+- Each row is a different replicate.
+- Each column is a different dilution.
 
 .. figure:: basic_usage/std_curve_map.svg
 
@@ -50,29 +52,27 @@ the example standard curve layout.  This is qPCR data, where a higher
 
 5. Label the data
 =================
-Use :mod:`bio96` to associate the labels specified in the TOML file (e.g. the 
-dilutions, replicates, and dates) with the experimental data (e.g. the 
-:math:`C_q` values).  This process has three steps:
+Use `bio96.load()` to associate the labels specified in the TOML file (e.g. the 
+dilutions and replicates) with the experimental data (e.g. the :math:`C_q` 
+values).  This process has three steps:
 
-- Load a `pandas.DataFrame` containing the labels.
-
-- Load another `pandas.DataFrame` containing the data.
-
+- Load a data frame containing the labels.
+- Load another data frame containing the data.
 - Merge the two data frames.
 
-For the sake of clarity and completeness, we will begin by showing how to 
-perform these steps `manually <#manual-merge>`__.  Practically, though, it's 
-easier to let :mod:`bio96` perform them `automatically <#automatic-merge>`__.
+For the sake of clarity and completeness, we will first show how to perform 
+these steps `manually <#manual-merge>`__.  Practically, though, it's easier to 
+let :mod:`bio96` perform them `automatically <#automatic-merge>`__.
 
 Manual merge
 ------------
 The first step is to use the `bio96.load()` function to create a 
 `pandas.DataFrame` containing the information from the TOML file.  Note that 
 this data frame has columns for each label we specified: *replicate*, 
-*dilution*, *date*.  It also has six columns identifying the wells in different 
-ways: *well*, *well0*, *row*, *col*, *row_i*, *col_j*.  This redundancy makes 
-it more likely that there will be columns that exactly match between the labels 
-and the data, which would make the merge step trivial.
+*dilution*.  It also has six columns identifying the wells in different ways: 
+*well*, *well0*, *row*, *col*, *row_i*, *col_j*.  This redundancy makes it more 
+likely that there will be columns that exactly match between the labels and the 
+data, which would make the merge step trivial.
 
 .. code-block:: pycon
 
@@ -80,25 +80,25 @@ and the data, which would make the merge step trivial.
    >>> import pandas as pd
    >>> labels = bio96.load('std_curve.toml')
    >>> labels
-      well well0 row col  row_i  col_j  replicate  dilution        date
-   0    A1   A01   A   1      0      0          1  100000.0  2018-10-07
-   1    A2   A02   A   2      0      1          1   10000.0  2018-10-07
-   2    A3   A03   A   3      0      2          1    1000.0  2018-10-07
-   3    A4   A04   A   4      0      3          1     100.0  2018-10-07
-   4    A5   A05   A   5      0      4          1      10.0  2018-10-07
-   5    A6   A06   A   6      0      5          1       1.0  2018-10-07
-   6    B1   B01   B   1      1      0          2  100000.0  2018-10-07
-   7    B2   B02   B   2      1      1          2   10000.0  2018-10-07
-   8    B3   B03   B   3      1      2          2    1000.0  2018-10-07
-   9    B4   B04   B   4      1      3          2     100.0  2018-10-07
-   10   B5   B05   B   5      1      4          2      10.0  2018-10-07
-   11   B6   B06   B   6      1      5          2       1.0  2018-10-07
-   12   C1   C01   C   1      2      0          3  100000.0  2018-10-07
-   13   C2   C02   C   2      2      1          3   10000.0  2018-10-07
-   14   C3   C03   C   3      2      2          3    1000.0  2018-10-07
-   15   C4   C04   C   4      2      3          3     100.0  2018-10-07
-   16   C5   C05   C   5      2      4          3      10.0  2018-10-07
-   17   C6   C06   C   6      2      5          3       1.0  2018-10-07
+      well well0 row col  row_i  col_j  replicate  dilution
+   0    A1   A01   A   1      0      0          1  100000.0
+   1    A2   A02   A   2      0      1          1   10000.0
+   2    A3   A03   A   3      0      2          1    1000.0
+   3    A4   A04   A   4      0      3          1     100.0
+   4    A5   A05   A   5      0      4          1      10.0
+   5    A6   A06   A   6      0      5          1       1.0
+   6    B1   B01   B   1      1      0          2  100000.0
+   7    B2   B02   B   2      1      1          2   10000.0
+   8    B3   B03   B   3      1      2          2    1000.0
+   9    B4   B04   B   4      1      3          2     100.0
+   10   B5   B05   B   5      1      4          2      10.0
+   11   B6   B06   B   6      1      5          2       1.0
+   12   C1   C01   C   1      2      0          3  100000.0
+   13   C2   C02   C   2      2      1          3   10000.0
+   14   C3   C03   C   3      2      2          3    1000.0
+   15   C4   C04   C   4      2      3          3     100.0
+   16   C5   C05   C   5      2      4          3      10.0
+   17   C6   C06   C   6      2      5          3       1.0
 
 The second step is to load a `pandas.DataFrame` containing the actual data.  
 How this is done depends on what kind of data it is, and how it is formatted.  
@@ -140,40 +140,34 @@ names; see the documentation on :func:`pandas.merge` for more information.
 
    >>> df = pd.merge(labels, data)
    >>> df
-      well well0 row col  row_i  col_j  replicate  dilution        date         Cq
-   0    A1   A01   A   1      0      0          1  100000.0  2018-10-07  24.180859
-   1    A2   A02   A   2      0      1          1   10000.0  2018-10-07  20.740120
-   2    A3   A03   A   3      0      2          1    1000.0  2018-10-07  17.183802
-   3    A4   A04   A   4      0      3          1     100.0  2018-10-07  13.774300
-   4    A5   A05   A   5      0      4          1      10.0  2018-10-07  10.294983
-   5    A6   A06   A   6      0      5          1       1.0  2018-10-07   6.967062
-   6    B1   B01   B   1      1      0          2  100000.0  2018-10-07  24.157118
-   7    B2   B02   B   2      1      1          2   10000.0  2018-10-07  20.779703
-   8    B3   B03   B   3      1      2          2    1000.0  2018-10-07  17.171795
-   9    B4   B04   B   4      1      3          2     100.0  2018-10-07  13.768831
-   10   B5   B05   B   5      1      4          2      10.0  2018-10-07  10.362967
-   11   B6   B06   B   6      1      5          2       1.0  2018-10-07   6.870273
-   12   C1   C01   C   1      2      0          3  100000.0  2018-10-07  24.238230
-   13   C2   C02   C   2      2      1          3   10000.0  2018-10-07  20.787008
-   14   C3   C03   C   3      2      2          3    1000.0  2018-10-07  17.147598
-   15   C4   C04   C   4      2      3          3     100.0  2018-10-07  13.779314
-   16   C5   C05   C   5      2      4          3      10.0  2018-10-07  10.292967
-   17   C6   C06   C   6      2      5          3       1.0  2018-10-07   6.735704
-
-As you can see, each row of this data frame associates a dilution with a 
-:math:`C_q` value, which was our goal.  This will make analysis pretty 
-straight-forward.  Also note that the layout was entirely determined by the 
-TOML file.  So if we were to do another standard curve experiment with a 
-completely different plate layout, the code to analyze it wouldn't change.
+      well well0 row col  row_i  col_j  replicate  dilution         Cq
+   0    A1   A01   A   1      0      0          1  100000.0  24.180859
+   1    A2   A02   A   2      0      1          1   10000.0  20.740120
+   2    A3   A03   A   3      0      2          1    1000.0  17.183802
+   3    A4   A04   A   4      0      3          1     100.0  13.774300
+   4    A5   A05   A   5      0      4          1      10.0  10.294983
+   5    A6   A06   A   6      0      5          1       1.0   6.967062
+   6    B1   B01   B   1      1      0          2  100000.0  24.157118
+   7    B2   B02   B   2      1      1          2   10000.0  20.779703
+   8    B3   B03   B   3      1      2          2    1000.0  17.171795
+   9    B4   B04   B   4      1      3          2     100.0  13.768831
+   10   B5   B05   B   5      1      4          2      10.0  10.362967
+   11   B6   B06   B   6      1      5          2       1.0   6.870273
+   12   C1   C01   C   1      2      0          3  100000.0  24.238230
+   13   C2   C02   C   2      2      1          3   10000.0  20.787008
+   14   C3   C03   C   3      2      2          3    1000.0  17.147598
+   15   C4   C04   C   4      2      3          3     100.0  13.779314
+   16   C5   C05   C   5      2      4          3      10.0  10.292967
+   17   C6   C06   C   6      2      5          3       1.0   6.735704
 
 Automatic merge
 ---------------
 While it's good to understand how the labels are merged with the data, it's 
-better to let :mod:`bio96` perform the merge for you.  Not only is this less 
-code, it also handles some more complex corner cases behind the scenes, e.g.  
-layouts with multiple data files.  
+better to let :mod:`bio96` perform the merge for you.  Not only is this 
+approach less code, it also handles some tricky corner cases behind the scenes, 
+e.g. layouts with multiple data files.  
 
-To load and merge the data using :func:`bio96.load`, you need to provide the 
+To load *and* merge the data using :func:`bio96.load`, you need to provide the 
 following arguments:
 
 - **data_loader**: A function that accepts a path to a file and returns a 
@@ -190,8 +184,8 @@ following arguments:
 Here we also provide the **path_guess** argument, which specifies that the 
 experimental data can be found in a CSV file with the same base name as the 
 layout.  It also would've been possible to specify the path to the CSV directly 
-from the TOML file (see :doc:`file_format`), in which case this argument 
-would've been unnecessary.
+from the TOML file (see `meta.path`), in which case this argument would've been 
+unnecessary.
 
 .. code-block:: pycon
 
@@ -202,25 +196,25 @@ would've been unnecessary.
    >>>         path_guess='{0.stem}.csv',
    >>> )
    >>> df
-      well well0 row col  ...  replicate  dilution        date         Cq
-   0    A1   A01   A   1  ...          1  100000.0  2018-10-07  24.180859
-   1    A2   A02   A   2  ...          1   10000.0  2018-10-07  20.740120
-   2    A3   A03   A   3  ...          1    1000.0  2018-10-07  17.183802
-   3    A4   A04   A   4  ...          1     100.0  2018-10-07  13.774300
-   4    A5   A05   A   5  ...          1      10.0  2018-10-07  10.294983
-   5    A6   A06   A   6  ...          1       1.0  2018-10-07   6.967062
-   6    B1   B01   B   1  ...          2  100000.0  2018-10-07  24.157118
-   7    B2   B02   B   2  ...          2   10000.0  2018-10-07  20.779703
-   8    B3   B03   B   3  ...          2    1000.0  2018-10-07  17.171795
-   9    B4   B04   B   4  ...          2     100.0  2018-10-07  13.768831
-   10   B5   B05   B   5  ...          2      10.0  2018-10-07  10.362967
-   11   B6   B06   B   6  ...          2       1.0  2018-10-07   6.870273
-   12   C1   C01   C   1  ...          3  100000.0  2018-10-07  24.238230
-   13   C2   C02   C   2  ...          3   10000.0  2018-10-07  20.787008
-   14   C3   C03   C   3  ...          3    1000.0  2018-10-07  17.147598
-   15   C4   C04   C   4  ...          3     100.0  2018-10-07  13.779314
-   16   C5   C05   C   5  ...          3      10.0  2018-10-07  10.292967
-   17   C6   C06   C   6  ...          3       1.0  2018-10-07   6.735704
+      well well0 row col  ...  replicate  dilution         Cq
+   0    A1   A01   A   1  ...          1  100000.0  24.180859
+   1    A2   A02   A   2  ...          1   10000.0  20.740120
+   2    A3   A03   A   3  ...          1    1000.0  17.183802
+   3    A4   A04   A   4  ...          1     100.0  13.774300
+   4    A5   A05   A   5  ...          1      10.0  10.294983
+   5    A6   A06   A   6  ...          1       1.0   6.967062
+   6    B1   B01   B   1  ...          2  100000.0  24.157118
+   7    B2   B02   B   2  ...          2   10000.0  20.779703
+   8    B3   B03   B   3  ...          2    1000.0  17.171795
+   9    B4   B04   B   4  ...          2     100.0  13.768831
+   10   B5   B05   B   5  ...          2      10.0  10.362967
+   11   B6   B06   B   6  ...          2       1.0   6.870273
+   12   C1   C01   C   1  ...          3  100000.0  24.238230
+   13   C2   C02   C   2  ...          3   10000.0  20.787008
+   14   C3   C03   C   3  ...          3    1000.0  17.147598
+   15   C4   C04   C   4  ...          3     100.0  13.779314
+   16   C5   C05   C   5  ...          3      10.0  10.292967
+   17   C6   C06   C   6  ...          3       1.0   6.735704
 
 6. Analyze the data
 ===================
@@ -259,7 +253,8 @@ example below makes a linear regression of the data in log-space:
    dilution, but they are hard to tell apart because they are almost perfectly 
    superimposed.  Efficiency is a measure of how well the qPCR reaction worked, 
    or more specifically, how close the amount of DNA came to doubling (as would 
-   be expected) on each cycle.
+   be expected) on each cycle.  100% indicates perfect doubling; 94% is a 
+   little on the low side.
 
 
 .. _TOML: https://github.com/toml-lang/toml 

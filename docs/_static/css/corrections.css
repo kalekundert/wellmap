@@ -12,10 +12,44 @@
   margin-top: 12px;
 }
 
-/* Fix the spacing around lists. */
+/* Try to show the example code side-by-side with the image. */
 
-.rst-content .section ol li ul {
-  margin-bottom: 12px;
+.rst-content .bio96-example {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  margin: -4px;
+  margin-bottom: 20px;
+}
+
+.rst-content .bio96-example div.figure {
+  margin: 4px;          /* This has a big bottom-margin by default.  That's now 
+                         * handled by the .bio96-example div.  The 4px margin 
+                         * is needed to keep the flexbox spacing nice. */
+  overflow-x: auto;
+}
+
+.rst-content .bio96-example div.literal-block-wrapper {
+  margin: 4px;
+  align-self: flex-start;
+  flex: 1 0 50%;        /* Let the code grow, but don't let it take less than 
+                         * 50% of the page. */
+  min-width: 0;         /* By default, flex-box items have "min-width: auto".  
+                         * This is in contrast to normal elements, which 
+                         * default to "min-width: 0".  This difference prevents 
+                         * flex items from being smaller than their content.  
+                         * Since I want code blocks to scroll (rather than 
+                         * pushing the images to the next line) if they're too 
+                         * big, I have to override this setting. */
+}
+
+.rst-content .bio96-example div.figure img {
+  max-width: none;      /* Don't allow the images to shrink. */
+}
+
+.rst-content .bio96-example div[class^='highlight'] {
+  margin-bottom: 0px;   /* This margin is now handled by the .bio96-example 
+                         * div.*/
 }
 
 /* Style cross-references like links (i.e. blue, italicized, sans), rather than 
@@ -72,5 +106,15 @@
   padding-top: 0.5em;
   padding-bottom: 0.5em;
   text-align: left;
+}
+
+/* Miscellaneous spacing fixes. */
+
+.rst-content .section ol li ul {
+  margin-bottom: 12px;
+}
+
+.rst-content th p {
+  margin-bottom: 0px;
 }
 

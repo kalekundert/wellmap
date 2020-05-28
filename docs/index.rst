@@ -34,10 +34,9 @@ collaborators) organize wells on your plates.
 .. image:: https://img.shields.io/coveralls/kalekundert/bio96.svg
    :target: https://coveralls.io/github/kalekundert/bio96?branch=master
 
-Table of contents
-=================
 .. toctree::
    :caption: Getting Started
+   :hidden:
 
    basic_usage
    using_from_r
@@ -45,6 +44,7 @@ Table of contents
 
 .. toctree::
    :caption: Reference
+   :hidden:
    
    file_format
    command_line
