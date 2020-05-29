@@ -42,12 +42,13 @@ collaborators) organize wells on your plates.
    using_from_r
    example_layouts
    related_software
+   getting_help
 
 .. toctree::
    :caption: Reference
    :hidden:
    
    file_format
-   command_line
    python_api
+   command_line
 
