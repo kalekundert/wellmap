@@ -1,0 +1,42 @@
+[build-system]
+requires = ["flit"]
+build-backend = "flit.buildapi"
+
+[tool.flit.metadata]
+module = "wellmap"
+author = "Kale Kundert"
+author-email = "kale@thekunderts.net"
+home-page = 'https://github.com/kalekundert/wellmap'
+description-file = 'README.rst'
+requires-python = "~=3.6"
+requires = [
+  'pandas',
+  'toml>=0.10',
+  'inform>=1.15',
+  'docopt',      # gui
+  'matplotlib',  # gui
+  'colorcet',    # gui
+]
+classifiers = [
+  'Development Status :: 3 - Alpha',
+  'Intended Audience :: Developers',
+  'License :: OSI Approved :: MIT License',
+  'Natural Language :: English',
+  'Programming Language :: Python :: 3.6',
+  'Topic :: Scientific/Engineering :: Bio-Informatics',
+]
+[tool.flit.metadata.requires-extra]
+docs = [
+  'sphinxcontrib-programoutput',
+  'sphinx_rtd_theme',
+]
+
+[tool.flit.scripts]
+wellmap = "wellmap.verify:main"
+
+[tool.flit.metadata.urls]
+'Documentation' = 'https://wellmap.readthedocs.io/en/latest/'
+'Version Control' = 'https://github.com/kalekundert/wellmap'
+'Bug Tracker' = 'https://github.com/kalekundert/wellmap/issues'
+'Continuous Integration' = 'https://travis-ci.org/kalekundert/wellmap'
+'Test Coverage' = 'https://coveralls.io/github/kalekundert/wellmap'

@@ -60,7 +60,7 @@ import matplotlib.pyplot as plt
 import sys, os
 
 from wellmap import ConfigError
-from nonstdlib import plural
+from inform import plural
 from matplotlib.colors import BoundaryNorm, Normalize
 from pathlib import Path
 from .util import *

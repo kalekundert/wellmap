@@ -4,7 +4,7 @@ import toml
 import re, itertools
 import pandas as pd
 from pathlib import Path
-from nonstdlib import plural
+from inform import plural
 from copy import deepcopy
 from .util import *
 
@@ -454,7 +454,7 @@ def wells_from_config(config):
                 and not wells \
                 and not blocks \
                 and not any(config.get(x) for x in dim2s):
-            raise ConfigError(f"Found {plural(config[dim1]):? [{dim1}] spec/s}, but no [{'/'.join(dim2s)}] specs.  No wells defined.")
+            raise ConfigError(f"Found {plural(config[dim1]):# [{dim1}] spec/s}, but no [{'/'.join(dim2s)}] specs.  No wells defined.")
 
     rows = simplify_keys('row')
     cols = simplify_keys('col')
