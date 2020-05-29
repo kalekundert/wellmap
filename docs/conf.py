@@ -39,7 +39,7 @@ html_theme_options = {}
 def setup(app):
     app.add_css_file('css/corrections.css')
 
-    app.add_object_type(
+    app.add_crossref_type(
             'prog',
             'prog',
             objname='command-line program',

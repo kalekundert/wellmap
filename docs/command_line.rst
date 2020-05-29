@@ -1,10 +1,12 @@
+.. prog:: bio96
+
 ******************
 Command-line usage
 ******************
-:mod:`bio96` comes with a command-line tool (also called :prog:`bio96`) that 
-displays a visual representation of the plate layout described by a TOML file.  
-This is meant to help catch mistakes, which can be easy to make in complex 
-layouts.
+The :mod:`bio96` package comes with a command-line tool (also called 
+:prog:`bio96`) that displays a visual representation of the plate layout 
+described by a TOML file.  This is meant to help catch mistakes, which can be 
+easy to make in complex layouts.
 
 For more information on this command and its options, run:
 
