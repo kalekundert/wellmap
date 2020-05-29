@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import toml
-import re, itertools
+import re, itertools, inspect
 import pandas as pd
 from pathlib import Path
 from inform import plural
@@ -45,7 +45,9 @@ def load(toml_path, data_loader=None, merge_cols=None,
         associated with the plate layout, in addition to loading the layout 
         itself.  The argument should be a function that takes a `pathlib.Path` 
         to a data file, parses it, and returns a `pandas.DataFrame` containing 
-        the parsed data.  Note that specifying a data loader implies that 
+        the parsed data.  The function may also take an argument named 
+        "extras", in which case the **extras** return value will be provided to 
+        the data loader.  Note that specifying a data loader implies that 
         **path_required** is True.
 
     :param bool,dict merge_cols:
@@ -200,11 +202,29 @@ def load(toml_path, data_loader=None, merge_cols=None,
             in the TOML file that wouldn't otherwise be parsed).
             """
             if len(extras) == 1:
-                args += extras.popitem()[1],
+                args += list(extras.values())[0],
             if len(extras) > 1:
                 args += extras,
 
             return args if len(args) != 1 else args[0]
+
+        def get_extras_kwarg():
+            """
+            Helper function to determine whether or not to pass any "extras" 
+            (i.e. key/value pairs in the TOML file requested by the caller) to 
+            the **data_loader** function.
+            """
+            if not extras:
+                return {}
+
+            sig = inspect.signature(data_loader)
+
+            if 'extras' not in sig.parameters:
+                return {}
+            if sig.parameters['extras'].kind != inspect.Parameter.POSITIONAL_OR_KEYWORD:
+                return {}
+
+            return {'extras': add_extras()}
 
         layout = table_from_config(config, paths)
         layout = pd.concat([layout, *concats], sort=False)
@@ -225,9 +245,9 @@ def load(toml_path, data_loader=None, merge_cols=None,
         data = pd.DataFrame()
 
         for path in layout['path'].unique():
-           df = data_loader(path)
-           df['path'] = path
-           data = data.append(df, sort=False)
+            df = data_loader(path, **get_extras_kwarg())
+            df['path'] = path
+            data = data.append(df, sort=False)
 
         ## Merge the layout and the data into a single data frame:
         if not merge_cols:

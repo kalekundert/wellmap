@@ -104,6 +104,12 @@ def test_one_well():
         ]
 )
 def test_one_well_with_extras(extras_arg, expected):
+
+    def data_loader(path, extras):
+        assert extras == expected
+        return pd.read_csv(path)
+
+    # No data
     labels, extras = wellmap.load(
             DIR/'one_well_xy_extras.toml',
             extras=extras_arg,
@@ -118,9 +124,10 @@ def test_one_well_with_extras(extras_arg, expected):
             y=1,
     )
 
+    # Load labels and data, but don't merge.
     labels, data, extras = wellmap.load(
             DIR/'one_well_xy_extras.toml',
-            data_loader=pd.read_csv,
+            data_loader=data_loader,
             path_guess='{0.stem}.csv',
             extras=extras_arg,
     )
@@ -140,7 +147,7 @@ def test_one_well_with_extras(extras_arg, expected):
             Data='xy',
     )
 
-    # Merged data
+    # Automatic merge
     a1_expected = dict(
             path=DIR/'one_well_xy_extras.csv',
             well='A1',
@@ -155,7 +162,7 @@ def test_one_well_with_extras(extras_arg, expected):
 
     df, extras = wellmap.load(
             DIR/'one_well_xy_extras.toml',
-            data_loader=pd.read_csv,
+            data_loader=data_loader,
             merge_cols={'well': 'Well'},
             path_guess='{0.stem}.csv',
             extras=extras_arg,
@@ -276,4 +283,5 @@ def test_bad_args():
                 data_loader=pd.read_csv,
                 merge_cols={'well': 'xxx'},
         )
+
 
