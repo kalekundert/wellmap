@@ -26,8 +26,9 @@ example, the following layout might be used for a standard curve:
 3. Confirm the plate layout
 ===========================
 Confirm that the layout is correct by using the :prog:`bio96` command-line 
-program to produce a map of the layout.  This is an important step, because 
-it's much easier to spot mistakes in the map than in the layout file itself.
+program to produce a visualization of the layout.  This is an important step, 
+because it's much easier to spot mistakes in the visualization than in the 
+layout file itself.
 
 .. code-block:: console
 
@@ -70,9 +71,12 @@ The first step is to use the `bio96.load()` function to create a
 `pandas.DataFrame` containing the information from the TOML file.  Note that 
 this data frame has columns for each label we specified: *replicate*, 
 *dilution*.  It also has six columns identifying the wells in different ways: 
-*well*, *well0*, *row*, *col*, *row_i*, *col_j*.  This redundancy makes it more 
-likely that there will be columns that exactly match between the labels and the 
-data, which would make the merge step trivial.
+*well*, *well0*, *row*, *col*, *row_i*, *col_j*.  These columns are redundant, 
+but this redundancy makes the merge step easier.  For example, if the wells are 
+named "A1,A2,..." in the data, the *well* column can be used for the merge.  If 
+the wells are named "A01,A02,...", the *well0* column can be used instead.  If 
+the wells are named in some non-standard way, the *row_i* and *col_j* columns 
+can be used to calculate an appropriate merge column.
 
 .. code-block:: pycon
 
