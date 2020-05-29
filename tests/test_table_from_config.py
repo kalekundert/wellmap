@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 from wellmap import *
-from test_table_from_wells import row
 from pytest import raises
+from .test_table_from_wells import row
 
 class DummyPathManager:
 

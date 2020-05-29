@@ -6,7 +6,7 @@ import pandas as pd
 from pathlib import Path
 from pytest import raises
 from wellmap import ConfigError
-from test_table_from_wells import row
+from .test_table_from_wells import row
 
 DIR = Path(__file__).parent/'toml'
 

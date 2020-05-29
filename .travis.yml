@@ -9,10 +9,6 @@ install:
     - pip install -U pytest hypothesis pytest-cov coveralls attrs
     - pip install .
 
-    # Can't imagine why this would matter, but see:
-    # https://thomas-cokelaer.info/blog/2017/01/pytest-cov-collects-no-data-on-travis/
-    - touch tests/__init__.py
-
 script: 
     - pytest tests --cov wellmap
 

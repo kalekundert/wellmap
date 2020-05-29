@@ -4,7 +4,7 @@ import pytest
 
 from wellmap import *
 from pathlib import Path
-from test_table_from_wells import row
+from .test_table_from_wells import row
 
 DIR = Path(__file__).parent/'toml'
 
