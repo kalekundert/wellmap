@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from bio96 import *
+from wellmap import *
 from pytest import raises
 
 def test_one_well():

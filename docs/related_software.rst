@@ -4,7 +4,7 @@ Related software
 
 There are a handful of other packages that may be helpful when working with 
 microplate experiments.  The most noteworthy is plater_, which defines a 
-CSV-based file format to describe plate layouts.  The TOML-based :mod:`bio96` 
+CSV-based file format to describe plate layouts.  The TOML-based :mod:`wellmap` 
 file format has several advantages, though, including:
 
 - Less redundant.

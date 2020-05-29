@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import pytest
-from bio96 import *
+from wellmap import *
 
 def test_iter_ij_in_block():
     examples = [

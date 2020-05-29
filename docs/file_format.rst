@@ -2,7 +2,7 @@
 File format
 ***********
 
-The basic organization of a :mod:`bio96` file is as follows: first you specify 
+The basic organization of a :mod:`wellmap` file is as follows: first you specify 
 a group of wells, then you specify the experimental parameters associated with 
 those wells.  For example, the following snippet specifies that well A1 has a 
 concentration of 100:
@@ -45,7 +45,7 @@ parameter; missing values will be represented in the data frame by ``nan``.
 
 [meta]
 ======
-Miscellaneous fields that affect how :mod:`bio96` parses the file.  This is the 
+Miscellaneous fields that affect how :mod:`wellmap` parses the file.  This is the 
 only section that does not describe the organization of any wells.
 
 .. note::
@@ -195,7 +195,7 @@ Analysis scripts can still access this information using the **extras**
 argument to the `load()` function, but it will not clutter the data frame used 
 for analysis.
 
-Note that the :prog:`bio96` command by default only displays experimental 
+Note that the :prog:`wellmap` command by default only displays experimental 
 parameters that have at least two different values across the whole layout, 
 which normally excludes `[expt]` parameters.  To see these parameters anyways, 
 specify the ``<attr>`` argument.

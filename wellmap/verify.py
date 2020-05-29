@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 
 """\
-Visualize the plate layout described by a bio96 TOML file.
+Visualize the plate layout described by a wellmap TOML file.
 
 Usage:
-    bio96 <toml> [<attr>...] [options]
+    wellmap <toml> [<attr>...] [options]
 
 Arguments:
     <toml>
         TOML file describing the plate layout to display.  For a complete 
         description of the file format, refer to:
         
-        https://github.com/kalekundert/bio96/
+        https://github.com/kalekundert/wellmap/
 
     <attr>
         The name(s) of one or more attributes from the above TOML file to 
@@ -53,13 +53,13 @@ Options:
         the background.
 """
 
-import bio96
+import wellmap
 import colorcet
 import numpy as np
 import matplotlib.pyplot as plt
 import sys, os
 
-from bio96 import ConfigError
+from wellmap import ConfigError
 from nonstdlib import plural
 from matplotlib.colors import BoundaryNorm, Normalize
 from pathlib import Path
@@ -82,7 +82,7 @@ def main():
         args = docopt.docopt(__doc__)
         toml_path = Path(args['<toml>'])
 
-        df = bio96.load(toml_path)
+        df = wellmap.load(toml_path)
         cmap = colorcet.cm.get(args['--color'], plt.get_cmap(args['--color']))
 
         if not args['--foreground'] and not args['--output']:
@@ -193,8 +193,8 @@ def plot_plate(ax, df, plate, attr, dims, colors):
     ax.xaxis.tick_top()
 
 def pick_attrs(df, user_attrs):
-    bio96_cols = ['plate', 'well', 'well0', 'row', 'col', 'row_i', 'col_j', 'path']
-    user_cols = [x for x in df.columns if x not in bio96_cols]
+    wellmap_cols = ['plate', 'well', 'well0', 'row', 'col', 'row_i', 'col_j', 'path']
+    user_cols = [x for x in df.columns if x not in wellmap_cols]
 
     if user_attrs:
         # Complain if the user specified any columns that don't exist.
@@ -366,11 +366,11 @@ class Dimensions:
         self.yticksminor = np.arange(self.num_rows + 1) - 0.5
 
         self.xticklabels = [
-                bio96.col_from_j(j + self.j0)
+                wellmap.col_from_j(j + self.j0)
                 for j in self.xticks
         ]
         self.yticklabels = [
-                bio96.row_from_i(i + self.i0)
+                wellmap.row_from_i(i + self.i0)
                 for i in self.yticks
         ]
 

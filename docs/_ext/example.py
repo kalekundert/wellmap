@@ -35,13 +35,13 @@ class Example(SphinxDirective):
     :caption: :download:`{name} </{toml_path}>`
 '''
         if 'no-figure' not in self.options:
-            import bio96
+            import wellmap
             import colorcet
 
-            df = bio96.load(toml_abs_path)
+            df = wellmap.load(toml_abs_path)
             attrs = self.options.get('attrs', [])
             cmap = colorcet.cm['rainbow']
-            fig = bio96.verify.plot_layout(df, attrs, cmap=cmap)
+            fig = wellmap.verify.plot_layout(df, attrs, cmap=cmap)
             fig.savefig(svg_abs_path, bbox_inches='tight')
 
             example_rst += f'''\
@@ -50,7 +50,7 @@ class Example(SphinxDirective):
 '''
         example_str_list = StringList(example_rst.splitlines())
 
-        wrapper = nodes.container(classes=['bio96-example'])
+        wrapper = nodes.container(classes=['wellmap-example'])
         self.state.nested_parse(example_str_list, 0, wrapper)
         return [wrapper]
 

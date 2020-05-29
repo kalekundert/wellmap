@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from bio96 import *
+from wellmap import *
 from pathlib import Path
 from pytest import raises
 

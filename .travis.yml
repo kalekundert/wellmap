@@ -8,6 +8,6 @@ install:
     # paths in site-packages actually run.  I'm not totally sure.
     - pip install -e .
 script: 
-    - py.test tests --cov bio96
+    - py.test tests --cov wellmap
 after_success:
     - coveralls

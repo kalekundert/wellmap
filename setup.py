@@ -10,16 +10,16 @@ with open('README.rst') as file:
     readme = file.read()
 
 setup(
-    name='bio96',
+    name='wellmap',
     version='0.5.1',
     author='Kale Kundert',
     author_email='kale@thekunderts.net',
     description="File format for 96-well plate layouts",
     long_description=readme,
-    url='https://github.com/kalekundert/bio96',
+    url='https://github.com/kalekundert/wellmap',
     license='MIT',
     packages=[
-        'bio96',
+        'wellmap',
     ],
     install_requires=[
         'pandas',
@@ -38,11 +38,11 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'bio96 = bio96.verify:main',
+            'wellmap = wellmap.verify:main',
         ],
     },
     keywords=[
-        'bio96',
+        'wellmap',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',

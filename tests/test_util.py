@@ -4,7 +4,7 @@ import pytest
 from pytest import raises
 from hypothesis import given
 from hypothesis.strategies import integers
-from bio96 import *
+from wellmap import *
 
 # A,B,...,A   I think this might pass my checks, but it shouldn't be allowed.
 

@@ -2,17 +2,17 @@
 Basic usage
 ***********
 
-The following steps show how to get started with :mod:`bio96`:
+The following steps show how to get started with :mod:`wellmap`:
 
 .. make-list-from-sections::
 
-1. Install bio96
-================
-Install :mod:`bio96` from PyPI:
+1. Install wellmap
+==================
+Install :mod:`wellmap` from PyPI:
 
 .. code-block:: console
 
-  $ pip install bio96
+  $ pip install wellmap
 
 2. Describe the plate layout
 ============================
@@ -25,14 +25,14 @@ example, the following layout might be used for a standard curve:
 
 3. Confirm the plate layout
 ===========================
-Confirm that the layout is correct by using the :prog:`bio96` command-line 
+Confirm that the layout is correct by using the :prog:`wellmap` command-line 
 program to produce a visualization of the layout.  This is an important step, 
 because it's much easier to spot mistakes in the visualization than in the 
 layout file itself.
 
 .. code-block:: console
 
-   $ bio96 std_curve.toml
+   $ wellmap std_curve.toml
 
 This maps shows that:
 
@@ -53,7 +53,7 @@ the example standard curve layout.  This is qPCR data, where a higher
 
 5. Label the data
 =================
-Use `bio96.load()` to associate the labels specified in the TOML file (e.g. the 
+Use `wellmap.load()` to associate the labels specified in the TOML file (e.g. the 
 dilutions and replicates) with the experimental data (e.g. the :math:`C_q` 
 values).  This process has three steps:
 
@@ -63,11 +63,11 @@ values).  This process has three steps:
 
 For the sake of clarity and completeness, we will first show how to perform 
 these steps `manually <#manual-merge>`__.  Practically, though, it's easier to 
-let :mod:`bio96` perform them `automatically <#automatic-merge>`__.
+let :mod:`wellmap` perform them `automatically <#automatic-merge>`__.
 
 Manual merge
 ------------
-The first step is to use the `bio96.load()` function to create a 
+The first step is to use the `wellmap.load()` function to create a 
 `pandas.DataFrame` containing the information from the TOML file.  Note that 
 this data frame has columns for each label we specified: *replicate*, 
 *dilution*.  It also has six columns identifying the wells in different ways: 
@@ -80,9 +80,9 @@ can be used to calculate an appropriate merge column.
 
 .. code-block:: pycon
 
-   >>> import bio96
+   >>> import wellmap
    >>> import pandas as pd
-   >>> labels = bio96.load('std_curve.toml')
+   >>> labels = wellmap.load('std_curve.toml')
    >>> labels
       well well0 row col  row_i  col_j  replicate  dilution
    0    A1   A01   A   1      0      0          1  100000.0
@@ -167,11 +167,11 @@ names; see the documentation on :func:`pandas.merge` for more information.
 Automatic merge
 ---------------
 While it's good to understand how the labels are merged with the data, it's 
-better to let :mod:`bio96` perform the merge for you.  Not only is this 
+better to let :mod:`wellmap` perform the merge for you.  Not only is this 
 approach less code, it also handles some tricky corner cases behind the scenes, 
 e.g. layouts with multiple data files.  
 
-To load *and* merge the data using :func:`bio96.load`, you need to provide the 
+To load *and* merge the data using :func:`wellmap.load`, you need to provide the 
 following arguments:
 
 - **data_loader**: A function that accepts a path to a file and returns a 
@@ -193,7 +193,7 @@ unnecessary.
 
 .. code-block:: pycon
 
-   >>> df = bio96.load(
+   >>> df = wellmap.load(
    >>>         'std_curve.toml',
    >>>         data_loader=pd.read_csv,
    >>>         merge_cols=True,

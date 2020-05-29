@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import bio96
+import wellmap
 import pytest
 from pathlib import Path
 
@@ -26,8 +26,8 @@ def run_cli(args, out='Layout written'):
             sys.argv = orig_argv
 
     with capture_output() as capture:
-        with spoof_argv('bio96', '-o', f'{DIR}/$.pdf', *shlex.split(str(args))):
-            bio96.verify.main()
+        with spoof_argv('wellmap', '-o', f'{DIR}/$.pdf', *shlex.split(str(args))):
+            wellmap.verify.main()
 
         if out is None:
             return

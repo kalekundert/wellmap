@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from bio96 import *
+from wellmap import *
 
 def test_str():
     err = ConfigError("x")

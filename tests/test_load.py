@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 import pytest
-import bio96
+import wellmap
 import pandas as pd
 from pathlib import Path
 from pytest import raises
-from bio96 import ConfigError
+from wellmap import ConfigError
 from test_table_from_wells import row
 
 DIR = Path(__file__).parent/'toml'
@@ -15,7 +15,7 @@ def read_csv_and_rename(path):
 
 
 def test_one_well():
-    labels = bio96.load(DIR/'one_well_xy.toml')
+    labels = wellmap.load(DIR/'one_well_xy.toml')
     assert row(labels, 'well == "A1"') == dict(
             well='A1',
             well0='A01',
@@ -25,7 +25,7 @@ def test_one_well():
             y=1,
     )
 
-    labels = bio96.load(DIR/'one_well_xy.toml', path_guess='{0.stem}.csv')
+    labels = wellmap.load(DIR/'one_well_xy.toml', path_guess='{0.stem}.csv')
     assert row(labels, 'well == "A1"') == dict(
             path=DIR/'one_well_xy.csv',
             well='A1',
@@ -37,11 +37,11 @@ def test_one_well():
     )
 
     with raises(ConfigError, match='one_well_xy.toml'):
-        bio96.load(DIR/'one_well_xy.toml', path_required=True)
+        wellmap.load(DIR/'one_well_xy.toml', path_required=True)
     with raises(ConfigError, match='one_well_xy.toml'):
-        bio96.load(DIR/'one_well_xy.toml', data_loader=pd.read_csv)
+        wellmap.load(DIR/'one_well_xy.toml', data_loader=pd.read_csv)
 
-    labels, data = bio96.load(
+    labels, data = wellmap.load(
             DIR/'one_well_xy.toml',
             data_loader=pd.read_csv,
             path_guess='{0.stem}.csv',
@@ -61,7 +61,7 @@ def test_one_well():
             Data='xy',
     )
 
-    df = bio96.load(
+    df = wellmap.load(
             DIR/'one_well_xy.toml',
             data_loader=pd.read_csv,
             merge_cols={'well': 'Well'},
@@ -79,7 +79,7 @@ def test_one_well():
             Data='xy',
     )
 
-    df = bio96.load(
+    df = wellmap.load(
             DIR/'one_well_xy.toml',
             data_loader=read_csv_and_rename,
             merge_cols=True,
@@ -104,7 +104,7 @@ def test_one_well():
         ]
 )
 def test_one_well_with_extras(extras_arg, expected):
-    labels, extras = bio96.load(
+    labels, extras = wellmap.load(
             DIR/'one_well_xy_extras.toml',
             extras=extras_arg,
     )
@@ -118,7 +118,7 @@ def test_one_well_with_extras(extras_arg, expected):
             y=1,
     )
 
-    labels, data, extras = bio96.load(
+    labels, data, extras = wellmap.load(
             DIR/'one_well_xy_extras.toml',
             data_loader=pd.read_csv,
             path_guess='{0.stem}.csv',
@@ -153,7 +153,7 @@ def test_one_well_with_extras(extras_arg, expected):
             Data='xy',
     )
 
-    df, extras = bio96.load(
+    df, extras = wellmap.load(
             DIR/'one_well_xy_extras.toml',
             data_loader=pd.read_csv,
             merge_cols={'well': 'Well'},
@@ -163,7 +163,7 @@ def test_one_well_with_extras(extras_arg, expected):
     assert extras == expected
     assert row(df, 'well == "A1"') == a1_expected
 
-    df, extras = bio96.load(
+    df, extras = wellmap.load(
             DIR/'one_well_xy_extras.toml',
             data_loader=read_csv_and_rename,
             merge_cols=True,
@@ -174,7 +174,7 @@ def test_one_well_with_extras(extras_arg, expected):
     assert row(df, 'well == "A1"') == a1_expected
 
 def test_one_plate():
-    labels = bio96.load(DIR/'one_plate.toml')
+    labels = wellmap.load(DIR/'one_plate.toml')
     assert row(labels, 'well == "A1"') == dict(
             path=DIR/'one_plate.csv',
             plate='a',
@@ -186,7 +186,7 @@ def test_one_plate():
     )
 
 def test_two_plates():
-    df = bio96.load(
+    df = wellmap.load(
             DIR/'two_plates.toml',
             data_loader=pd.read_csv,
             merge_cols={'well': 'Well'},
@@ -216,21 +216,21 @@ def test_two_plates():
     )
 
 def test_concat():
-    labels = bio96.load(DIR/'one_concat.toml')
+    labels = wellmap.load(DIR/'one_concat.toml')
     assert len(labels) == 2
 
     with raises(ConfigError, match="Did you mean to set `meta.path`?"):
-        bio96.load(DIR/'one_concat.toml', path_required=True)
+        wellmap.load(DIR/'one_concat.toml', path_required=True)
 
-    labels = bio96.load(DIR/'two_concats_list.toml')
+    labels = wellmap.load(DIR/'two_concats_list.toml')
     assert len(labels) == 3
 
     with raises(ConfigError, match="Did you mean to set `meta.path`?"):
-        bio96.load(DIR/'two_concats_list.toml', path_required=True)
+        wellmap.load(DIR/'two_concats_list.toml', path_required=True)
 
     # Should not raise.  It's ok that `just_concat.csv` doesn't exist, because
     # `just_concat.toml` doesn't specify any wells.
-    labels = bio96.load(
+    labels = wellmap.load(
             DIR/'just_concat.toml',
             path_guess='{0.stem}.csv',
             path_required=True,
@@ -238,40 +238,40 @@ def test_concat():
     assert len(labels) == 1
 
 def test_reasonably_complex():
-    df = bio96.load(DIR/'reasonably_complex.toml')
+    df = wellmap.load(DIR/'reasonably_complex.toml')
     assert len(df) == 32
 
 def test_no_wells():
     with raises(ConfigError, match="No wells defined"):
-        bio96.load(DIR/"empty.toml")
+        wellmap.load(DIR/"empty.toml")
 
     # The following examples actually trigger a different (and more specific) 
     # exception, but it still has "No wells defined" in the message.
     with raises(ConfigError, match="No wells defined"):
-        bio96.load(DIR/"row_without_col.toml")
+        wellmap.load(DIR/"row_without_col.toml")
     with raises(ConfigError, match="No wells defined"):
-        bio96.load(DIR/"irow_without_col.toml")
+        wellmap.load(DIR/"irow_without_col.toml")
     with raises(ConfigError, match="No wells defined"):
-        bio96.load(DIR/"col_without_row.toml")
+        wellmap.load(DIR/"col_without_row.toml")
     with raises(ConfigError, match="No wells defined"):
-        bio96.load(DIR/"icol_without_row.toml")
+        wellmap.load(DIR/"icol_without_row.toml")
 
 def test_bad_args():
 
     # Doesn't make sense to specify `merge_cols` without `data_loader`:
     with raises(ValueError):
-        bio96.load(DIR/'two_plates.toml', merge_cols={})
+        wellmap.load(DIR/'two_plates.toml', merge_cols={})
 
     # Non-existent merge columns.
     with raises(ValueError, match='xxx'):
-        bio96.load(
+        wellmap.load(
                 DIR/'two_plates.toml',
                 data_loader=pd.read_csv,
                 merge_cols={'xxx': 'Well'},
         )
 
     with raises(ValueError, match='xxx'):
-        bio96.load(
+        wellmap.load(
                 DIR/'two_plates.toml',
                 data_loader=pd.read_csv,
                 merge_cols={'well': 'xxx'},

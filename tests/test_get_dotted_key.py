@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import pytest
-from bio96 import get_dotted_key
+from wellmap import get_dotted_key
 
 DEMO = {'a': {'b': 1}, 'c': 2}
 

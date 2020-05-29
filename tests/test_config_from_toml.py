@@ -2,7 +2,7 @@
 
 import pytest
 
-from bio96 import *
+from wellmap import *
 from pathlib import Path
 from test_table_from_wells import row
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-import bio96
+import wellmap
 
 import pandas as pd
-df = bio96.load(
+df = wellmap.load(
       'std_curve.toml',
       data_loader=pd.read_csv,
       merge_cols=True,

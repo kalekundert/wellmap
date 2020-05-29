@@ -1,13 +1,13 @@
 import sys, os
-import bio96
+import wellmap
 sys.path.append(os.path.dirname(__file__))
 
 source_suffix = '.rst'
 master_doc = 'index'
-project = u'bio96'
+project = u'wellmap'
 copyright = u'2015, Kale Kundert'
-version = bio96.__version__
-release = bio96.__version__
+version = wellmap.__version__
+release = wellmap.__version__
 exclude_patterns = ['_build']
 templates_path = ['_templates']
 html_static_path = ['_static']

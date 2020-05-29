@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from bio96 import *
+from wellmap import *
 from test_table_from_wells import row
 from pytest import raises
 
