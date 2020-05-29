@@ -128,16 +128,46 @@ any rows:
 
 meta.concat
 -----------
-A path or list of paths that should be loaded independently of this file and 
-concatenated to the resulting data frame.  Unlike `meta.include`, the 
-referenced paths have no effect on how this file is parsed, and are not 
-themselves affected by anything in this file.  This is useful if you want to 
-combine data from multiple independent experiments in a single analysis.
+A path or list/dictionary of paths that should be loaded independently of this 
 
-.. This is most useful for combining independent experiments into a single file 
-   for a new analysis.  This would really benefit from the ability to give each 
-   file a new plate name, which isn't implemented yet.  When it is, that should 
-   be an example.
+The paths of one or more TOML files that should be loaded independently of this 
+file and concatenated to the resulting data frame.  This is useful for 
+combining multiple independent experiments (e.g. replicates performed on 
+different days) into a single layout for analysis.  Unlike `meta.include`, the 
+referenced paths have no effect on how this file is parsed, and are not 
+themselves affected by anything in this file.
+
+The paths can be specified either as a string, a list, or a dictionary.  Use a 
+string to load a single path and a list to load multiple paths.  Use a 
+dictionary to load multiple paths and to assign a unique plate name to each 
+one.  The dictionary keys are the plate names that will be assigned.  It's 
+common to specify plate names in this manner when concatenating multiple 
+single-plate layouts (as in the example below), because it keeps the wells easy 
+to distinguish.  Note that the plate names specified via dictionary keys will 
+override the plate names specified in the layouts themselves.
+
+.. rubric:: Example:
+
+The first two layouts describe the same experiment with different samples.  The 
+third layout combines the first two for easier analysis.
+
+.. example:: file_format/expt_1.toml
+  :no-figure:
+
+  [block.4x4.A1]
+  sample = 'α'
+
+.. example:: file_format/expt_2.toml
+  :no-figure:
+
+  [block.4x4.A1]
+  sample = 'β'
+
+.. example:: file_format/concat.toml
+
+  [meta.concat]
+  X = 'expt_1.toml'
+  Y = 'expt_2.toml'
 
 meta.alert
 ----------

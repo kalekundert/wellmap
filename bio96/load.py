@@ -262,15 +262,41 @@ def config_from_toml(toml_path, path_guess=None, extras=None, on_alert=None):
     toml_path = Path(toml_path).resolve()
     config = configdict(toml.load(str(toml_path)))
 
-    def iter_paths_from_meta(key):
-        if key not in config.meta:
+    def iter_include_paths():
+        try:
+            paths = config.meta['include']
+        except KeyError:
             yield from []
+            return
+
+        if isinstance(paths, str):
+            paths = [paths]
+        elif isinstance(paths, list):
+            pass
         else:
-            paths = config.meta[key]
-            if isinstance(paths, str):
-                paths = [paths]
-            for path in paths:
-                yield resolve_path(toml_path, path)
+            raise ConfigError(f"expected 'meta.include' to be string or list, not {paths!r}")
+
+        for path in reversed(paths):
+            yield resolve_path(toml_path, path)
+
+    def iter_concat_paths():
+        try:
+            paths = config.meta['concat']
+        except KeyError:
+            yield from []
+            return
+
+        if isinstance(paths, str):
+            paths = [(None, paths)]
+        elif isinstance(paths, list):
+            paths = [(None, x) for x in paths]
+        elif isinstance(paths, dict):
+            paths = paths.items()
+        else:
+            raise ConfigError(f"expected 'meta.concat' to be string, list, or dictionary, not {paths!r}")
+
+        for plate_name, path in paths:
+            yield plate_name, resolve_path(toml_path, path)
 
     # Synthesize any available path information.
     paths = PathManager(
@@ -281,14 +307,15 @@ def config_from_toml(toml_path, path_guess=None, extras=None, on_alert=None):
     )
 
     # Include one or more remote files if any are specified.  
-    for path in reversed(list(iter_paths_from_meta('include'))):
+    for path in iter_include_paths():
         defaults, *_ = config_from_toml(path, on_alert=on_alert)
         recursive_merge(config, defaults)
 
     # Load any files to be concatenated.
     concats = []
-    for path in iter_paths_from_meta('concat'):
+    for plate_name, path in iter_concat_paths():
         df = load(path, path_guess=path_guess)
+        if plate_name: df['plate'] = plate_name
         concats.append(df)
 
     # Return any specific fields requested by the caller.

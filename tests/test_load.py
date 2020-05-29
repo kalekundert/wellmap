@@ -222,11 +222,11 @@ def test_concat():
     with raises(ConfigError, match="Did you mean to set `meta.path`?"):
         bio96.load(DIR/'one_concat.toml', path_required=True)
 
-    labels = bio96.load(DIR/'two_concats.toml')
+    labels = bio96.load(DIR/'two_concats_list.toml')
     assert len(labels) == 3
 
     with raises(ConfigError, match="Did you mean to set `meta.path`?"):
-        bio96.load(DIR/'two_concats.toml', path_required=True)
+        bio96.load(DIR/'two_concats_list.toml', path_required=True)
 
     # Should not raise.  It's ok that `just_concat.csv` doesn't exist, because
     # `just_concat.toml` doesn't specify any wells.

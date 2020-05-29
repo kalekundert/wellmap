@@ -1,0 +1,6 @@
+[meta.concat]
+a = 'one_well_xy.toml'
+b = 'one_well_xyz.toml'
+
+[well.A1]
+x = 2
