@@ -1,12 +1,16 @@
 language: python
 python:
     - "3.6"
+    - "3.7"
+    - "3.8"
 install:
-    - pip install -U coverage pytest hypothesis pytest-cov python-coveralls --upgrade attrs
-    # The -e is necessary for coverage to work.  Otherwise it seems to get 
-    # confused, maybe by looking for the paths in the repository while the 
-    # paths in site-packages actually run.  I'm not totally sure.
-    - pip install -e .
+    # In order for coverage to work, the package needs to be installed in 
+    # editable/symlink mode.  Unfortunately, this means we can't use pip to 
+    # install the package (as of version 20.1), because pip cannot use 
+    # `pyproject.toml` for editable installs.  This means we need to use `flit` directly to 
+    # install the package.
+    - pip install -U flit coverage pytest hypothesis pytest-cov coveralls
+    - flit install --symlink
 script: 
     - py.test tests --cov wellmap
 after_success:
