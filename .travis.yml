@@ -4,14 +4,9 @@ python:
     - "3.7"
     - "3.8"
 install:
-    # In order for coverage to work, the package needs to be installed in 
-    # editable/symlink mode.  Unfortunately, this means we can't use pip to 
-    # install the package (as of version 20.1), because pip cannot use 
-    # `pyproject.toml` for editable installs.  This means we need to use `flit` directly to 
-    # install the package.
-    - pip install -U flit coverage pytest hypothesis pytest-cov coveralls
-    - flit install --symlink
+    - pip install -U pytest hypothesis pytest-cov coveralls
+    - pip install .
 script: 
-    - py.test tests --cov wellmap
+    - pytest tests --cov wellmap
 after_success:
     - coveralls
