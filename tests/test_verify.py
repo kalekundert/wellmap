@@ -12,9 +12,9 @@ from pathlib import Path
 DIR = Path(__file__).parent / 'verify'
 
 def run_cli(args, out='Layout written'):
-    import sys, re, shlex, subprocess as proc
-    from nonstdlib import capture_output
-    from contextlib import contextmanager
+    import sys, re, shlex
+    from io import StringIO
+    from contextlib import contextmanager, redirect_stdout
 
     @contextmanager
     def spoof_argv(*args):
@@ -25,16 +25,17 @@ def run_cli(args, out='Layout written'):
         finally:
             sys.argv = orig_argv
 
-    with capture_output() as capture:
+    stdout = StringIO()
+    with redirect_stdout(stdout):
         with spoof_argv('wellmap', '-o', f'{DIR}/$.pdf', *shlex.split(str(args))):
             wellmap.verify.main()
 
-        if out is None:
-            return
-        if isinstance(out, str):
-            out = [out]
-        for expected in out:
-            assert re.search(expected, capture.stdout)
+    if out is None:
+        return
+    if isinstance(out, str):
+        out = [out]
+    for expected in out:
+        assert re.search(expected, stdout.getvalue())
 
 
 def test_no_wells():
