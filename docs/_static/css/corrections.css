@@ -33,8 +33,8 @@
 .rst-content .wellmap-example div.literal-block-wrapper {
   margin: 4px;
   align-self: flex-start;
-  flex: 1 0 50%;        /* Let the code grow, but don't let it take less than 
-                         * 50% of the page. */
+  flex: 1 0 200px;      /* Let the code grow, but don't let it take less than 
+                         * 300px. */
   min-width: 0;         /* By default, flex-box items have "min-width: auto".  
                          * This is in contrast to normal elements, which 
                          * default to "min-width: 0".  This difference prevents 
@@ -124,5 +124,11 @@
 }
 
 .rst-content .section ul li p:last-of-type {
+  /* Precedence rules */
   margin-bottom: 0;
+}
+
+.rst-content .section ul.paragraph-list li p {
+  /* Bradford example */
+  margin-bottom: 12px;
 }

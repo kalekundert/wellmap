@@ -1,0 +1,26 @@
+[meta]
+include = 'bradford_standards.toml'
+
+[bradford]
+format = 'biotek'
+absorbance = '595/450'
+
+[block.3x2.D1]
+sample = 'Y37A'
+[block.3x2.D4]
+sample = 'D42A'
+[block.3x2.D7]
+sample = 'T44A'
+[block.3x2.D10]
+sample = 'Y45A'
+[block.3x2.F1]
+sample = 'Y37E'
+[block.3x2.F4]
+sample = 'T44P'
+[block.3x2.F7]
+sample = 'Y45R'
+
+[row.'D,F']
+dilution = 1
+[row.'E,G']
+dilution = 5

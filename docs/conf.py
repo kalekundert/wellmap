@@ -30,6 +30,16 @@ intersphinx_mapping = {
 default_role = 'any'
 add_function_parentheses = True
 pygments_style = 'sphinx'
+rst_epilog = """\
+.. |well| replace:: `[well] <[well.A1]>`
+.. |block| replace:: `[block] <[block.WxH.A1]>`
+.. |row| replace:: `[row] <[row.A]>`
+.. |col| replace:: `[col] <[col.1]>`
+.. |irow| replace:: `[irow] <[irow.A]>`
+.. |icol| replace:: `[icol] <[icol.1]>`
+.. |plate| replace:: `[plate] <[plate.NAME]>`
+.. |expt| replace:: `[expt]`
+"""
 
 from sphinx_rtd_theme import get_html_theme_path
 html_theme = "sphinx_rtd_theme"

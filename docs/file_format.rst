@@ -104,8 +104,7 @@ layout expands on the first by specifying which sample is in each row.  Note
 that the first layout could not be used on its own, because it doesn't specify 
 any rows:
 
-.. example:: file_format/serial_dilution.toml
-  :no-figure:
+.. example:: file_format/serial_dilution.toml file_format/meta_include.toml
 
   [col]
   1.conc = 1e4
@@ -115,7 +114,7 @@ any rows:
   5.conc = 1e0
   6.conc = 0
 
-.. example:: file_format/meta_include.toml
+  --EOF--
 
   [meta]
   include = 'serial_dilution.toml'
@@ -128,8 +127,6 @@ any rows:
 
 meta.concat
 -----------
-A path or list/dictionary of paths that should be loaded independently of this 
-
 The paths of one or more TOML files that should be loaded independently of this 
 file and concatenated to the resulting data frame.  This is useful for 
 combining multiple independent experiments (e.g. replicates performed on 
@@ -139,31 +136,29 @@ themselves affected by anything in this file.
 
 The paths can be specified either as a string, a list, or a dictionary.  Use a 
 string to load a single path and a list to load multiple paths.  Use a 
-dictionary to load multiple paths and to assign a unique plate name to each 
-one.  The dictionary keys are the plate names that will be assigned.  It's 
-common to specify plate names in this manner when concatenating multiple 
-single-plate layouts (as in the example below), because it keeps the wells easy 
-to distinguish.  Note that the plate names specified via dictionary keys will 
-override the plate names specified in the layouts themselves.
+dictionary to load multiple paths and to assign a unique plate name (its key in 
+the dictionary) to each one.  Assigning plate names in this manner is useful 
+when concatenating multiple single-plate layouts (as in the example below), 
+because it keeps the wells from different plates easy to distinguish.  Note 
+that the plate names specified via dictionary keys will override any plate 
+names specified in the layouts themselves.
 
 .. rubric:: Example:
 
 The first two layouts describe the same experiment with different samples.  The 
 third layout combines the first two for easier analysis.
 
-.. example:: file_format/expt_1.toml
-  :no-figure:
+.. example:: file_format/expt_1.toml file_format/expt_2.toml file_format/concat.toml
 
   [block.4x4.A1]
   sample = 'α'
 
-.. example:: file_format/expt_2.toml
-  :no-figure:
+  --EOF--
 
   [block.4x4.A1]
   sample = 'β'
 
-.. example:: file_format/concat.toml
+  --EOF--
 
   [meta.concat]
   X = 'expt_1.toml'
@@ -530,8 +525,8 @@ within |plate| groups have precedence a half-step higher than the same group
 used outside a plate.  In other words, `[plate.NAME.row.A] <[plate.NAME]>` has 
 higher precedence than |row|, but lower precedence than |block|.
 
-The following layout is contrived, but helps to visually demonstrate as many of 
-the precedence rules as possible:
+The following layout is contrived, but helps to visually demonstrate most of 
+the precedence rules.
 
 .. example:: file_format/precedence.toml
 
