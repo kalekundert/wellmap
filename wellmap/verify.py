@@ -28,7 +28,9 @@ Arguments:
 Options:
     -o --output PATH
         Output an image of the layout to the given path.  The file type is 
-        inferred from the file extension.
+        inferred from the file extension.  If the path contains a dollar sign 
+        (e.g. '$.svg'), it will be replaced with the base name of the <toml> 
+        path.
 
     -c --color NAME  [default: rainbow]
         Use the given color scheme to illustrate which wells have which 
@@ -40,6 +42,7 @@ Options:
         viridis:  purple, green, yellow
         plasma:   purple, red, yellow
         coolwarm: blue, red
+        tab10:    blue, orange, green, red, purple, ...
 
         Matplotlib colors:
         https://matplotlib.org/examples/color/colormaps_reference.html
@@ -83,7 +86,7 @@ def main():
         toml_path = Path(args['<toml>'])
 
         df = wellmap.load(toml_path)
-        cmap = colorcet.cm.get(args['--color'], plt.get_cmap(args['--color']))
+        cmap = get_colormap(args['--color'])
 
         if not args['--foreground'] and not args['--output']:
             if os.fork() != 0:
@@ -334,6 +337,12 @@ def guess_attr_label_width(df, attrs):
 
     plt.close(fig)
     return width
+
+def get_colormap(name):
+    try:
+        return colorcet.cm[name]
+    except KeyError:
+        return plt.get_cmap(name)
 
 def get_yticklabel_width(fig, ax):
     # With some backends, getting the renderer like this may trigger a warning 
