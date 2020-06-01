@@ -2,4 +2,4 @@
 Using from R
 ************
 
-Coming soon...
+Although :mod:`wellmap` is written in Python, it's not hard to use from R.

@@ -194,61 +194,42 @@ unnecessary.
 .. code-block:: pycon
 
    >>> df = wellmap.load(
-   >>>         'std_curve.toml',
-   >>>         data_loader=pd.read_csv,
-   >>>         merge_cols=True,
-   >>>         path_guess='{0.stem}.csv',
-   >>> )
+   ...         'std_curve.toml',
+   ...         data_loader=pd.read_csv,
+   ...         merge_cols=True,
+   ...         path_guess='{0.stem}.csv',
+   ... )
    >>> df
-      well well0 row col  ...  replicate  dilution         Cq
-   0    A1   A01   A   1  ...          1  100000.0  24.180859
-   1    A2   A02   A   2  ...          1   10000.0  20.740120
-   2    A3   A03   A   3  ...          1    1000.0  17.183802
-   3    A4   A04   A   4  ...          1     100.0  13.774300
-   4    A5   A05   A   5  ...          1      10.0  10.294983
-   5    A6   A06   A   6  ...          1       1.0   6.967062
-   6    B1   B01   B   1  ...          2  100000.0  24.157118
-   7    B2   B02   B   2  ...          2   10000.0  20.779703
-   8    B3   B03   B   3  ...          2    1000.0  17.171795
-   9    B4   B04   B   4  ...          2     100.0  13.768831
-   10   B5   B05   B   5  ...          2      10.0  10.362967
-   11   B6   B06   B   6  ...          2       1.0   6.870273
-   12   C1   C01   C   1  ...          3  100000.0  24.238230
-   13   C2   C02   C   2  ...          3   10000.0  20.787008
-   14   C3   C03   C   3  ...          3    1000.0  17.147598
-   15   C4   C04   C   4  ...          3     100.0  13.779314
-   16   C5   C05   C   5  ...          3      10.0  10.292967
-   17   C6   C06   C   6  ...          3       1.0   6.735704
+      well well0 row  ... replicate  dilution         Cq
+   0    A1   A01   A  ...         1  100000.0  24.180859
+   1    A2   A02   A  ...         1   10000.0  20.740120
+   2    A3   A03   A  ...         1    1000.0  17.183802
+   3    A4   A04   A  ...         1     100.0  13.774300
+   4    A5   A05   A  ...         1      10.0  10.294983
+   5    A6   A06   A  ...         1       1.0   6.967062
+   6    B1   B01   B  ...         2  100000.0  24.157118
+   7    B2   B02   B  ...         2   10000.0  20.779703
+   8    B3   B03   B  ...         2    1000.0  17.171795
+   9    B4   B04   B  ...         2     100.0  13.768831
+   10   B5   B05   B  ...         2      10.0  10.362967
+   11   B6   B06   B  ...         2       1.0   6.870273
+   12   C1   C01   C  ...         3  100000.0  24.238230
+   13   C2   C02   C  ...         3   10000.0  20.787008
+   14   C3   C03   C  ...         3    1000.0  17.147598
+   15   C4   C04   C  ...         3     100.0  13.779314
+   16   C5   C05   C  ...         3      10.0  10.292967
+   17   C6   C06   C  ...         3       1.0   6.735704
+   <BLANKLINE>
+   [18 rows x 10 columns]
 
 6. Analyze the data
 ===================
 Analyze the data given the connection between the labels and the data.  The 
 example below makes a linear regression of the data in log-space:
 
-.. code-block:: pycon
-
-   >>> import numpy as np
-   >>> import matplotlib.pyplot as plt
-   >>> from scipy.stats import linregress
-
-   >>> x = df['dilution']
-   >>> y = df['Cq']
-   >>> m, b, r, p, err = linregress(np.log10(x), y)
-
-   >>> x_fit = np.logspace(0, 5)
-   >>> y_fit = np.polyval((m, b), np.log10(x_fit))
-
-   >>> r2 = r**2
-   >>> eff = 100 * (10**(1/m) - 1)
-   >>> label = f'R²={r2:.5f}\neff={eff:.2f}%'
-
-   >>> plt.plot(x_fit, y_fit, '--', label=label)
-   >>> plt.plot(x, y, '+')
-   >>> plt.legend(loc='best')
-   >>> plt.xscale('log')
-   >>> plt.xlabel('dilution')
-   >>> plt.ylabel('Cq')
-   >>> plt.show()
+.. literalinclude:: basic_usage/std_curve.py
+   :language: python
+   :caption: :download:`std_curve.py <basic_usage/std_curve.py>`
 
 .. figure:: basic_usage/std_curve_plot.svg
 
