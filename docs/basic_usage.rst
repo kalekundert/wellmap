@@ -46,6 +46,7 @@ useful in interactive sessions such as Jupyter notebooks:
 
 .. code-block:: pycon
 
+   >>> import wellmap
    >>> wellmap.show("std_curve.toml")
    <Figure size 320.75x255 with 4 Axes>
 
