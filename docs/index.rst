@@ -8,7 +8,7 @@
    :hidden:
 
    basic_usage
-   using_from_r
+   basic_usage_with_r
    example_layouts
    related_software
    getting_help

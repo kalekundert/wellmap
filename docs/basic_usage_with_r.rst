@@ -9,8 +9,10 @@ from R by installing the *wellmapr* package:
 
   > devtools::install_github("kalekundert/wellmap", subdir="wellmapr")
 
-Usage in R is almost identical to usage in Python.  Below is the example from 
-the `basic_usage` tutorial, translated into R:
+You should be able to follow along with the `basic_usage` tutorial, because 
+usage in R is almost identical to usage in python.  For example, here is the 
+example from step 5 of the tutorial (the first step that actually involves 
+writing python code), translated into R:
 
 .. code-block:: r
 
@@ -39,7 +41,10 @@ the `basic_usage` tutorial, translated into R:
   16   C5   C05   C   5     2     4 <environment: 0x5650196d57b0>         3    1e+01 10.292967
   17   C6   C06   C   6     2     5 <environment: 0x5650196dd5b8>         3    1e+00  6.735704
 
-It is also possible to visualize layouts directly from R:
+Note that in order to use the :prog:`wellmap` command-line program described in 
+the `basic_usage` tutorial, you must install :mod:`wellmap` using *pip* as 
+shown in said tutorial.  Installing *wellmapr* alone will not install this 
+program.  However, it is still possible to visualize layouts directly from R:
 
 .. code-block:: r
 
@@ -47,7 +52,3 @@ It is also possible to visualize layouts directly from R:
 
 .. figure:: basic_usage/std_curve_map.svg
 
-Note that in order to use the :prog:`wellmap` command-line program described in 
-the `basic_usage` tutorial, you must install :mod:`wellmap` using *pip* as 
-shown in said tutorial.  Installing *wellmapr* alone will not install this 
-program.

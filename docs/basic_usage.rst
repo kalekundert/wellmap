@@ -8,7 +8,7 @@ The following steps show how to get started with :mod:`wellmap`:
 
 1. Install wellmap
 ==================
-Install :mod:`wellmap` from PyPI:
+Install :mod:`wellmap` from PyPI.  Note that python>=3.6 is required:
 
 .. code-block:: console
 
@@ -40,6 +40,14 @@ This maps shows that:
 - Each column is a different dilution.
 
 .. figure:: basic_usage/std_curve_map.svg
+
+It is also possible to create maps like this directly from python, which may be 
+useful in interactive sessions such as Jupyter notebooks:
+
+.. code-block:: pycon
+
+   >>> wellmap.show("std_curve.toml")
+   <Figure size 320.75x255 with 4 Axes>
 
 4. Collect the data
 ===================
