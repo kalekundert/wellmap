@@ -1,0 +1,19 @@
+Package: wellmapr
+Title: File format for 96-well plate layouts
+Version: 0.5.1
+Authors@R: as.person(c(
+  "Kale Kundert <kale@thekunderts.net> [aut, cre]"
+  ))
+Description: Wrapper for the "wellmap" Python module.
+License: MIT
+Depends:
+  reticulate (>= 1.14)
+Config/reticulate:
+  list(
+    packages = list(
+      list(package = "wellmap", pip = TRUE)
+    )
+  )
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.0
+Encoding: UTF-8
