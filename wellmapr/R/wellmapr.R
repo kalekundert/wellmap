@@ -225,8 +225,8 @@ load <- function(toml_path, data_loader=NULL, merge_cols=NULL,
 #' It's wise to visualize TOML layouts before doing any analysis, to ensure 
 #' that all of the wells are correctly annotated.  The `wellmap` command-line 
 #' program is a useful tool for doing this, but sometimes it's more convenient 
-#' to make visualizations directly from Rstudio.  That is what this function is 
-#' for.
+#' to make visualizations directly from R/Rstudio.  That's what this function 
+#' is for.
 #' 
 #' @param toml_path
 #' The path to a file describing the layout of one or more plates.  See the 
@@ -247,11 +247,16 @@ load <- function(toml_path, data_loader=NULL, merge_cols=NULL,
 #' understood by either [colorcet](http://colorcet.pyviz.org/) or 
 #' [matplotlib](https://matplotlib.org/examples/color/colormaps_reference.html) 
 #' can be used.
-show <- function(toml_path, attrs, color) {
+#'
+#' @export
+show <- function(toml_path, attrs=NULL, color="rainbow") {
   wellmap <- reticulate::import("wellmap")
   fig <- wellmap$show(
                toml_path=toml_path,
                attrs=attrs,
                color=color)
-  fig$show()
+
+  # Show the figure because R won't display it automatically.  
+  plt <- reticulate::import("matplotlib.pyplot")
+  plt$show()
 }

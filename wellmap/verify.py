@@ -115,7 +115,7 @@ def show(toml_path, attrs=None, color='rainbow'):
     that all of the wells are correctly annotated.  The :prog:`wellmap` 
     command-line program is a useful tool for doing this, but sometimes it's 
     more convenient to make visualizations directly from python (e.g. when 
-    working in a jupyter notebook).  That is what this function is for.
+    working in a jupyter notebook).  That's what this function is for.
 
     :param str,pathlib.Path toml_path:
         The path to a file describing the layout of one or more plates.  See 

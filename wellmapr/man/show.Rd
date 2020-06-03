@@ -4,7 +4,7 @@
 \alias{show}
 \title{Visualize the given microplate layout.}
 \usage{
-show(toml_path, attrs, color)
+show(toml_path, attrs = NULL, color = "rainbow")
 }
 \arguments{
 \item{toml_path}{The path to a file describing the layout of one or more plates.  See the
@@ -27,6 +27,6 @@ can be used.}
 It's wise to visualize TOML layouts before doing any analysis, to ensure
 that all of the wells are correctly annotated.  The \code{wellmap} command-line
 program is a useful tool for doing this, but sometimes it's more convenient
-to make visualizations directly from Rstudio.  That is what this function is
-for.
+to make visualizations directly from R/Rstudio.  That's what this function
+is for.
 }
