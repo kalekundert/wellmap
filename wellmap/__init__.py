@@ -4,7 +4,7 @@
 File format for 96-well plate layouts.
 """
 
-__version__ = '0.5.1'
+__version__ = '0.6.0'
 
 from .util import *
 from .load import *
