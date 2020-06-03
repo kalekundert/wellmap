@@ -571,12 +571,3 @@ the precedence rules.
 .. _date: https://github.com/toml-lang/toml#local-date
 .. _time: https://github.com/toml-lang/toml#local-time
 
-.. |well| replace:: `[well] <[well.A1]>`
-.. |block| replace:: `[block] <[block.WxH.A1]>`
-.. |row| replace:: `[row] <[row.A]>`
-.. |col| replace:: `[col] <[col.1]>`
-.. |irow| replace:: `[irow] <[irow.A]>`
-.. |icol| replace:: `[icol] <[icol.1]>`
-.. |plate| replace:: `[plate] <[plate.NAME]>`
-.. |expt| replace:: `[expt]`
-

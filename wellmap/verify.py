@@ -85,14 +85,11 @@ def main():
         args = docopt.docopt(__doc__)
         toml_path = Path(args['<toml>'])
 
-        df = wellmap.load(toml_path)
-        cmap = get_colormap(args['--color'])
-
         if not args['--foreground'] and not args['--output']:
             if os.fork() != 0:
                 sys.exit()
 
-        fig = plot_layout(df, args['<attr>'], cmap=cmap)
+        fig = show(toml_path, args['<attr>'], args['--color'])
 
         if args['--output']:
             out_path = args['--output'].replace('$', toml_path.stem)
@@ -109,6 +106,41 @@ def main():
     except ConfigError as err:
         err.toml_path = toml_path
         print(err)
+
+def show(toml_path, attrs=None, color='rainbow'):
+    """
+    Visualize the given microplate layout.
+
+    It's wise to visualize TOML layouts before doing any analysis, to ensure 
+    that all of the wells are correctly annotated.  The :prog:`wellmap` 
+    command-line program is a useful tool for doing this, but sometimes it's 
+    more convenient to make visualizations directly from python (e.g. when 
+    working in a jupyter notebook).  That is what this function is for.
+
+    :param str,pathlib.Path toml_path:
+        The path to a file describing the layout of one or more plates.  See 
+        the :doc:`/file_format` page for details about this file.
+
+    :param list attrs:
+        A list of attributes from the above TOML file to visualize.  For 
+        example, if the TOML file contains something equivalent to 
+        ``well.A1.conc = 1``, then "conc" would be a valid attribute.  If no 
+        attributes are specified, the default is to display any attributes that 
+        have at least two different values. 
+
+    :param str color:
+        The name of the color scheme to use.  Each different value for each 
+        different attribute will be assigned a color from this scheme.  Any 
+        name understood by either colorcet_ or matplotlib_ can be used.
+
+    :rtype: matplotlib.figure.Figure
+
+    .. _matplotlib: https://matplotlib.org/examples/color/colormaps_reference.html
+    .. _colorcet: http://colorcet.pyviz.org/
+    """
+    df = wellmap.load(toml_path)
+    cmap = get_colormap(color)
+    return plot_layout(df, attrs, cmap=cmap)
 
 
 def plot_layout(df, user_attrs, cmap):

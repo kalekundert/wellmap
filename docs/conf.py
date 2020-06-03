@@ -18,6 +18,7 @@ extensions = [
         #'show_nodes',
         'sphinx.ext.autodoc',
         'sphinx.ext.autosectionlabel',
+        'sphinx.ext.autosummary',
         'sphinx.ext.intersphinx',
         'sphinx.ext.napoleon',
         'sphinx.ext.viewcode',
@@ -26,10 +27,12 @@ extensions = [
 intersphinx_mapping = {
         'python': ('https://docs.python.org/3', None),
         'pd': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+        'mpl': ('https://matplotlib.org/', None),
 }
 default_role = 'any'
 add_function_parentheses = True
 pygments_style = 'sphinx'
+autosummary_generate = True
 rst_epilog = """\
 .. |well| replace:: `[well] <[well.A1]>`
 .. |block| replace:: `[block] <[block.WxH.A1]>`

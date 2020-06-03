@@ -8,4 +8,5 @@ __version__ = '0.5.1'
 
 from .util import *
 from .load import *
+from .verify import show
 from . import verify

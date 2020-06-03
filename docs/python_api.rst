@@ -1,4 +1,8 @@
 Python API
 ==========
-.. autofunction:: wellmap.load
+.. autosummary::
+  :toctree: api
+
+  wellmap.load
+  wellmap.show
 

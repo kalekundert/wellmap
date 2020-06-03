@@ -30,6 +30,8 @@ from .util import *
 def load(toml_path, data_loader=None, merge_cols=None,
         path_guess=None, path_required=False, extras=None, on_alert=None):
     """
+    Load a microplate layout from a TOML file.
+
     Parse the given TOML file and return a `pandas.DataFrame` with a row for 
     each well and a column for each experimental condition specified in that 
     file.  If the **data_loader** and **merge_cols** arguments are provided 
@@ -38,7 +40,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
 
     :param str,pathlib.Path toml_path:
         The path to a file describing the layout of one or more plates.  See 
-        the :doc:`file_format` page for details about this file.
+        the :doc:`/file_format` page for details about this file.
 
     :param callable data_loader:
         Indicates that `load()` should attempt to load the actual data 
@@ -46,8 +48,8 @@ def load(toml_path, data_loader=None, merge_cols=None,
         itself.  The argument should be a function that takes a `pathlib.Path` 
         to a data file, parses it, and returns a `pandas.DataFrame` containing 
         the parsed data.  The function may also take an argument named 
-        "extras", in which case the **extras** return value will be provided to 
-        the data loader.  Note that specifying a data loader implies that 
+        "extras", in which case the **extras** return value (described below) 
+        will be provided.  Note that specifying a data loader implies that 
         **path_required** is True.
 
     :param bool,dict merge_cols:
@@ -103,10 +105,10 @@ def load(toml_path, data_loader=None, merge_cols=None,
        
     :param str path_guess:
         Where to look for a data file if none is specified in the given TOML 
-        file.  In other words, this is the default value for ``meta.path``.  
-        This path is interpreted relative to the TOML file itself (unless it's 
-        an absolute path) and is formatted with a `pathlib.Path` representing 
-        said TOML file.  In code, that would be: 
+        file.  In other words, this is the default value for `meta.path`.  This 
+        path is interpreted relative to the TOML file itself (unless it's an 
+        absolute path) and is formatted with a `pathlib.Path` representing said 
+        TOML file.  In code, that would be: 
         ``path_guess.format(Path(toml_path))``.  A typical value would be 
         something like ``'{0.stem}.csv'``.
 
