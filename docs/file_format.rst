@@ -525,8 +525,8 @@ within |plate| groups have precedence a half-step higher than the same group
 used outside a plate.  In other words, `[plate.NAME.row.A] <[plate.NAME]>` has 
 higher precedence than |row|, but lower precedence than |block|.
 
-The following layout is contrived, but helps to visually demonstrate most of 
-the precedence rules.
+The following layout is contrived, but visually demonstrates most of the 
+precedence rules:
 
 .. example:: file_format/precedence.toml
 

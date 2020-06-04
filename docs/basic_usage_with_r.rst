@@ -44,7 +44,8 @@ writing python code), translated into R:
 Note that in order to use the :prog:`wellmap` command-line program described in 
 the `basic_usage` tutorial, you must install :mod:`wellmap` using *pip* as 
 shown in said tutorial.  Installing *wellmapr* alone will not install this 
-program.  However, it is still possible to visualize layouts directly from R:
+program.  However, it is possible to visualize layouts directly from R without 
+separately installing :mod:`wellmap`:
 
 .. code-block:: r
 
