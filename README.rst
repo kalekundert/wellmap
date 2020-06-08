@@ -10,10 +10,10 @@ can also be a challenge to write analysis scripts flexible enough to handle the
 different plate layouts that will inevitably come up as more and more 
 experiments are run.
 
-The ``wellmap`` package solves these challenges by introducing a `TOML-based 
-file format`__ that succinctly describes the organization of wells on plates.  
-The file format is designed to be human-readable and -writable, so it can serve 
-as a standalone digital record.  The file format can also be easily parsed in 
+The *wellmap* package solves these challenges by introducing a `TOML-based file 
+format`__ that succinctly describes the organization of wells on plates.  The 
+file format is designed to be human-readable and -writable, so it can serve as 
+a standalone digital record.  The file format can also be easily parsed in 
 python and R to help write analysis scripts that will work regardless of how 
 you (or your collaborators) organize wells on your plates.
 
