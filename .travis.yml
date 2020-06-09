@@ -1,24 +1,12 @@
-matrix:
-  include:
-    - language: python
-      python:
-        - "3.6"
-        - "3.7"
-        - "3.8"
-      install:
-        - pip install -U pytest hypothesis pytest-cov coveralls attrs
-        - pip install .
-      script: 
-        - pytest tests --cov wellmap
-      after_success:
-        - coveralls
-
-    - language: r
-      r_packages:
-        - covr
-      before_install:
-        - cd wellmapr
-      after_install:
-        - Rscript -e 'reticulate::install_miniconda()'
-      after_success:
-        - Rscript -e 'covr::coveralls()'
+language: python
+python:
+  - "3.6"
+  - "3.7"
+  - "3.8"
+install:
+  - pip install -U pytest hypothesis pytest-cov coveralls attrs
+  - pip install .
+script: 
+  - pytest tests --cov wellmap
+after_success:
+  - coveralls
