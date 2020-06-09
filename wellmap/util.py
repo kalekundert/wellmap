@@ -170,8 +170,11 @@ def iter_well_indices(key):
     yield from iter_indices(key, ij_from_well, ijs_from_range)
 
 def check_range(x0, x1, xn, single_step_ok=False):
-    # Make sure the range makes sense, i.e. you can get from the first 
-    # element to the last in steps of the given size.
+    """
+    Raise a `ConfigError` if you can't get from the first element to the last 
+    in steps of the given size.
+    """
+    # row/col indices are filled into the error messages by `iter_indices()`.
     if not x0 < x1 < (xn + single_step_ok):
         raise ConfigError(f"Expected {{0}} < {{1}} {'≤' if single_step_ok else '<'} {{3}}.")
     if (xn - x0) % (x1 - x0) != 0:
