@@ -28,6 +28,7 @@ html:
 
 clean:
 	rm -rf $(BUILDDIR)/*
+	rm -rf api file_format
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
