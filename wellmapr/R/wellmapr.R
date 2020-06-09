@@ -97,6 +97,14 @@
 #' supported.  Specifying this argument causes the value(s) corresponding to 
 #' the given key(s) to be returned, see below.
 #' 
+#' @param report_dependencies
+#' If *TRUE*, return a vector of all the TOML files that were read in the 
+#' process of loading the layout from the given `toml_path`.  See the 
+#' description of `dependencies` below for more details.  You can use this 
+#' information in analysis scripts (e.g. in conjunction with 
+#' `file.info()$mtime`) to avoid repeating expensive analyses if the underlying 
+#' layout hasn't changed.
+#'
 #' @param on_alert
 #' A callback to invoke if the given TOML file contains a warning for the user.  
 #' The default behavior is to print the warning to the terminal.  If a callback 
@@ -161,11 +169,24 @@
 #'   simply be `1`.  With `extras=['a', 'b']`, the same return value would 
 #'   be `list(a=1, b=2)` instead.
 #'
+#' If `report_dependencies` was provided:
+#'
+#' - `dependencies`: A vector of absolute paths to every layout file that was 
+#'   referenced by `toml_path`.  This includes `toml_path` itself, and the 
+#'   paths to any 
+#'   [included](https://wellmap.readthedocs.io/en/latest/file_format.html#meta-include) 
+#'   or 
+#'   [concatenated](https://wellmap.readthedocs.io/en/latest/file_format.html#meta-concat) 
+#'   layout files.  It does not include paths to [data 
+#'   files](https://wellmap.readthedocs.io/en/latest/file_format.html#meta-path), 
+#'   as these are included already in the *path* column of the `layout` or 
+#'   `merged` data frames.
+#'
 #' @export
 
 load <- function(toml_path, data_loader=NULL, merge_cols=NULL,
                  path_guess=NULL, path_required=FALSE, extras=NULL,
-                 on_alert=NULL) {
+                 report_dependencies=FALSE, on_alert=NULL) {
 
   # The 'data_loader' argument requires a little bit of manipulation:
   #
@@ -209,15 +230,25 @@ load <- function(toml_path, data_loader=NULL, merge_cols=NULL,
 
   # Call 'wellmap.load()':
 
+  builtins <- reticulate::import("builtins")
   wellmap <- reticulate::import("wellmap")
-  wellmap$load(
+
+  retvals <- wellmap$load(
                toml_path=toml_path,
                data_loader=wrapped_data_loader,
                merge_cols=merge_cols,
                path_guess=path_guess, 
                path_required=path_required,
                extras=extras,
+               report_dependencies=report_dependencies,
                on_alert=wrapped_on_alert)
+
+  if (report_dependencies) {
+    n <- length(retvals)
+    retvals[[n]] <- sapply(builtins$list(retvals[[n]]), py_str)
+  }
+
+  retvals
 }
 
 #' Visualize the given microplate layout.

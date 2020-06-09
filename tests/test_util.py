@@ -318,4 +318,25 @@ def test_iter_well_indices():
             list(iter_well_indices(key))
         
 
+@pytest.mark.parametrize(
+        'dict, key, expected', [
+            ({'a': 1}, 'a', 1),
+            ({'a': {'b': 1}}, 'a', {'b': 1}),
+            ({'a': {'b': 1}}, 'a.b', 1),
+            ({'a': {'b': 1}}, 'a . b', 1),
+        ]
+)
+def test_dotted_key(dict, key, expected):
+    assert util.get_dotted_key(dict, key) == expected
 
+@pytest.mark.parametrize(
+        'dict, key', [
+            ({}, 'a'),
+            ({'a': 1}, 'b'),
+            ({'a': {'b': 1}}, 'b'),
+            ({'a': {'b': 1}}, 'a.c'),
+        ]
+)
+def test_dotted_key_err(dict, key):
+    with pytest.raises(KeyError, match=key.replace('.', r'\.')):
+        util.get_dotted_key(dict, key)

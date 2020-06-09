@@ -11,6 +11,7 @@ load(
   path_guess = NULL,
   path_required = FALSE,
   extras = NULL,
+  report_dependencies = FALSE,
   on_alert = NULL
 )
 }
@@ -94,6 +95,12 @@ can be specified.  \href{https://github.com/toml-lang/toml#keys}{Dotted keys} ar
 supported.  Specifying this argument causes the value(s) corresponding to
 the given key(s) to be returned, see below.}
 
+\item{report_dependencies}{If \emph{TRUE}, return a set of all the TOML files that were read in the process
+of loading the layout from the given \code{toml_path}.  See the description of
+\code{dependencies} below for more details.  You can use this information in
+analysis scripts (e.g. in conjunction with \code{file.info()$mtime}) to avoid
+repeating expensive analyses if the underlying layout hasn't changed.}
+
 \item{on_alert}{A callback to invoke if the given TOML file contains a warning for the user.
 The default behavior is to print the warning to the terminal.  If a callback
 is provided, it must take two arguments: the path to to the TOML file
@@ -158,6 +165,19 @@ b = 2
 If we were to load this file with \code{extras='a'}, this return value would
 simply be \code{1}.  With \verb{extras=['a', 'b']}, the same return value would
 be \code{list(a=1, b=2)} instead.
+}
+
+If \code{report_dependencies} was provided:
+\itemize{
+\item \code{dependencies}: A vector of absolute paths to every layout file that was
+referenced by \code{toml_path}.  This includes \code{toml_path} itself, and the
+paths to any
+\href{https://wellmap.readthedocs.io/en/latest/file_format.html#meta-include}{included}
+or
+\href{https://wellmap.readthedocs.io/en/latest/file_format.html#meta-concat}{concatenated}
+layout files.  It does not include paths to \href{https://wellmap.readthedocs.io/en/latest/file_format.html#meta-path}{data files},
+as these are included already in the \emph{path} column of the \code{layout} or
+\code{merged} data frames.
 }
 }
 \description{

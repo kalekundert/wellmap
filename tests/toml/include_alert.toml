@@ -1,0 +1,3 @@
+[meta]
+include = 'just_alert.toml'
+alert = "Goodbye world!"

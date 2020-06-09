@@ -187,8 +187,16 @@ def indices_from_range(x0, x1, xn):
 
 def get_dotted_key(dict, key):
     result = dict
+    subkeys = []
+
     for subkey in key.split('.'):
-        result = result.get(subkey.strip(), {})
+        subkeys.append(subkey)
+
+        try:
+            result = result[subkey.strip()]
+        except KeyError:
+            raise KeyError('.'.join(subkeys)) from None
+
     return result
 
 def quoted_join(it):

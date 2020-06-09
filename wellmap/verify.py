@@ -11,7 +11,7 @@ Arguments:
         TOML file describing the plate layout to display.  For a complete 
         description of the file format, refer to:
         
-        https://github.com/kalekundert/wellmap/
+        https://wellmap.readthedocs.io/en/latest/file_format.html
 
     <attr>
         The name(s) of one or more attributes from the above TOML file to 

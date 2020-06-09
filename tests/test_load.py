@@ -36,6 +36,11 @@ def test_one_well():
             y=1,
     )
 
+    _, deps = wellmap.load(DIR/'one_well_xy.toml', report_dependencies=True)
+    assert deps == {
+            DIR/'one_well_xy.toml'
+    }
+
     with raises(ConfigError, match='one_well_xy.toml'):
         wellmap.load(DIR/'one_well_xy.toml', path_required=True)
     with raises(ConfigError, match='one_well_xy.toml'):
@@ -99,8 +104,8 @@ def test_one_well():
 
 @pytest.mark.parametrize(
         "extras_arg,expected", [
-            ('extras', {'a': 1, 'b': 2}),
-            (['extras.a', 'extras.b'], {'extras.a': 1, 'extras.b': 2}),
+            ('extras', {'a': 1, 'b': 1}),
+            (['extras.a', 'extras.b'], {'extras.a': 1, 'extras.b': 1}),
         ]
 )
 def test_one_well_with_extras(extras_arg, expected):
@@ -123,6 +128,16 @@ def test_one_well_with_extras(extras_arg, expected):
             x=1,
             y=1,
     )
+
+    _, extras, deps = wellmap.load(
+            DIR/'one_well_xy_extras.toml',
+            extras=extras_arg,
+            report_dependencies=True,
+    )
+    assert extras == expected
+    assert deps == {
+            DIR/'one_well_xy_extras.toml',
+    }
 
     # Load labels and data, but don't merge.
     labels, data, extras = wellmap.load(

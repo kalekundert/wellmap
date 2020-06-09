@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import toml
-import re, itertools, inspect
+import sys, re, itertools, inspect
 import pandas as pd
 from pathlib import Path
 from inform import plural
@@ -27,8 +27,9 @@ from .util import *
 #   represents a well, and each column represents one of the fields in the well 
 #   dictionaries.  Columns identifying the plate and well are also added.
 
-def load(toml_path, data_loader=None, merge_cols=None,
-        path_guess=None, path_required=False, extras=None, on_alert=None):
+def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None, 
+        path_required=False, extras=None, report_dependencies=False, 
+        on_alert=None):
     """
     Load a microplate layout from a TOML file.
 
@@ -128,13 +129,21 @@ def load(toml_path, data_loader=None, merge_cols=None,
         Specifying this argument causes the value(s) corresponding to the given 
         key(s) to be returned, see below.
 
+    :param bool report_dependencies:
+        If true, return a set of all the TOML files that were read in the 
+        process of loading the layout from the given **toml_path**.  See the 
+        description of **dependencies** below for more details.  You can use 
+        this information in analysis scripts (e.g. in conjunction with 
+        `os.path.getmtime`) to avoid repeating expensive analyses if the 
+        underlying layout hasn't changed.
+
     :param callable on_alert:
         A callback to invoke if the given TOML file contains a warning for the 
-        user.  The default behavior is to print the warning to the terminal.  
-        If a callback is provided, it must take two arguments: a `pathlib.Path` 
-        to the TOML file containing the alert, and the message itself.  Note 
-        that this could be called more than once, e.g. if there are included or 
-        concatenated files.
+        user.  The default behavior is to print the warning to the terminal via
+        stderr.  If a callback is provided, it must take two arguments: a 
+        `pathlib.Path` to the TOML file containing the alert, and the message 
+        itself.  Note that this could be called more than once, e.g. if there 
+        are included or concatenated files.
 
     :returns:
         If neither **data_loader** nor **merge_cols** were provided:
@@ -190,23 +199,40 @@ def load(toml_path, data_loader=None, merge_cols=None,
           If we were to load this file with ``extras='a'``, this return 
           value would simply be ``1``.  With ``extras=['a', 'b']``, the same 
           return value would be ``{'a': 1, 'b': 2}`` instead.
+
+        If **report_dependencies** was provided:
+
+        - **dependencies** – A set containing absolute paths to every layout 
+          file that was referenced by **toml_path**.  This includes 
+          **toml_path** itself, and the paths to any `included <meta.include>` 
+          or `concatenated <meta.concat>` layout files.  It does not include 
+          paths to `data files <meta.path>`, as these are included already in 
+          the *path* column of the **layout** or **merged** data frames.
     """
 
     try:
         ## Parse the TOML file:
-        config, paths, concats, extras = config_from_toml(
-                toml_path, path_guess, extras, on_alert)
+        config, paths, concats, extras, deps = config_from_toml(
+                toml_path,
+                path_guess=path_guess,
+                extra_keys=extras,
+                on_alert=on_alert,
+        )
 
-        def add_extras(*args):
+        def add_extras(*args, include_deps=True):
             """
             Helper function to work out which values to return, depending on 
             whether or not the caller wants any "extras" (i.e. key/value pairs 
-            in the TOML file that wouldn't otherwise be parsed).
+            in the TOML file that wouldn't otherwise be parsed) or "deps" (i.e. 
+            all the layout files that this one depends on).
             """
             if len(extras) == 1:
                 args += list(extras.values())[0],
             if len(extras) > 1:
                 args += extras,
+
+            if include_deps and report_dependencies:
+                args += deps,
 
             return args if len(args) != 1 else args[0]
 
@@ -226,7 +252,7 @@ def load(toml_path, data_loader=None, merge_cols=None,
             if sig.parameters['extras'].kind != inspect.Parameter.POSITIONAL_OR_KEYWORD:
                 return {}
 
-            return {'extras': add_extras()}
+            return {'extras': add_extras(include_deps=False)}
 
         layout = table_from_config(config, paths)
         layout = pd.concat([layout, *concats], sort=False)
@@ -280,9 +306,19 @@ def load(toml_path, data_loader=None, merge_cols=None,
         err.toml_path = toml_path
         raise
 
-def config_from_toml(toml_path, path_guess=None, extras=None, on_alert=None):
+def config_from_toml(toml_path, *, path_guess=None, extra_keys=None, on_alert=None):
     toml_path = Path(toml_path).resolve()
     config = configdict(toml.load(str(toml_path)))
+    concats = []
+    deps = {toml_path}
+
+    def iter_extra_keys():
+        if extra_keys is None:
+            return
+        elif isinstance(extra_keys, str):
+            yield extra_keys
+        else:
+            yield from extra_keys
 
     def iter_include_paths():
         try:
@@ -298,6 +334,10 @@ def config_from_toml(toml_path, path_guess=None, extras=None, on_alert=None):
         else:
             raise ConfigError(f"expected 'meta.include' to be string or list, not {paths!r}")
 
+        # Yield the paths in reverse order so that later paths take precedence 
+        # over earlier paths.  This is needed because `recursive_merge()` by 
+        # default does not overwrite values, so the values that are merged 
+        # first take precedence.
         for path in reversed(paths):
             yield resolve_path(toml_path, path)
 
@@ -320,6 +360,12 @@ def config_from_toml(toml_path, path_guess=None, extras=None, on_alert=None):
         for plate_name, path in paths:
             yield plate_name, resolve_path(toml_path, path)
 
+    # Find any specific fields requested by the caller.
+    extras = {}
+    for key in iter_extra_keys():
+        try: extras[key] = get_dotted_key(config, key)
+        except KeyError: pass
+
     # Synthesize any available path information.
     paths = PathManager(
             config.meta.get('path'),
@@ -330,41 +376,39 @@ def config_from_toml(toml_path, path_guess=None, extras=None, on_alert=None):
 
     # Include one or more remote files if any are specified.  
     for path in iter_include_paths():
-        defaults, *_ = config_from_toml(path, on_alert=on_alert)
-        recursive_merge(config, defaults)
+        subconfig, _, subconcats, subextras, subdeps = config_from_toml(
+                path,
+                extra_keys=extra_keys,
+                on_alert=on_alert,
+        )
+        recursive_merge(config, subconfig)
+        recursive_merge(extras, subextras)
+        concats += subconcats
+        deps |= {path, *subdeps}
 
     # Load any files to be concatenated.
-    concats = []
     for plate_name, path in iter_concat_paths():
-        df = load(path, path_guess=path_guess)
+        df, subdeps = load(
+                path,
+                path_guess=path_guess,
+                report_dependencies=True,
+                on_alert=on_alert,
+        )
         if plate_name: df['plate'] = plate_name
+        deps |= {path, *subdeps}
         concats.append(df)
-
-    # Return any specific fields requested by the caller.
-    def iter_extra_keys():
-        if extras is None:
-            return
-        elif isinstance(extras, str):
-            yield extras
-        else:
-            yield from extras
-
-    extras_out = {
-            key: get_dotted_key(config, key)
-            for key in iter_extra_keys()
-    }
 
     # Print out any messages contained in the file.
     if 'alert' in config.meta:
         if on_alert:
             on_alert(toml_path, config.meta['alert'])
         else:
-            try: print(f"{toml_path.relative_to(Path.cwd())}:")
-            except ValueError: print(f"{toml_path}:")
-            print(config.meta['alert'])
+            try: print(f"{toml_path.relative_to(Path.cwd())}:", file=sys.stderr)
+            except ValueError: print(f"{toml_path}:", file=sys.stderr)
+            print(config.meta['alert'], file=sys.stderr)
 
     config.pop('meta', None)
-    return config, paths, concats, extras_out
+    return config, paths, concats, extras, deps
 
 def table_from_config(config, paths):
     config = configdict(config)

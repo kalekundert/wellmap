@@ -1,0 +1,6 @@
+[meta]
+concat = 'one_concat.toml'
+
+[well.A3]
+x = 3
+y = 3
