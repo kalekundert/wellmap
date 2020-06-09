@@ -18,5 +18,7 @@ matrix:
         - covr
       before_install:
         - cd wellmapr
+      after_install:
+        - Rscript -e 'reticulate::install_miniconda()'
       after_success:
         - Rscript -e 'covr::coveralls()'
