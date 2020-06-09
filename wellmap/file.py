@@ -134,7 +134,7 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
         process of loading the layout from the given **toml_path**.  See the 
         description of **dependencies** below for more details.  You can use 
         this information in analysis scripts (e.g. in conjunction with 
-        `os.path.getmtime`) to avoid repeating expensive analyses if the 
+        :func:`os.path.getmtime`) to avoid repeating expensive analyses if the 
         underlying layout hasn't changed.
 
     :param callable on_alert:

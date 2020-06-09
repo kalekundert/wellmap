@@ -9,7 +9,7 @@ from pathlib import Path
 # written out as *.pdf files, so you can look at those by hand if you want to 
 # be sure the plots are correct (which is *not* tested).
 
-DIR = Path(__file__).parent / 'verify'
+DIR = Path(__file__).parent / 'plot'
 
 def run_cli(args, out='Layout written'):
     import sys, re, shlex
@@ -28,7 +28,7 @@ def run_cli(args, out='Layout written'):
     stdout = StringIO()
     with redirect_stdout(stdout):
         with spoof_argv('wellmap', '-o', f'{DIR}/$.pdf', *shlex.split(str(args))):
-            wellmap.verify.main()
+            wellmap.plot.main()
 
     if out is None:
         return
