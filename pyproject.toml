@@ -26,6 +26,13 @@ classifiers = [
   'Topic :: Scientific/Engineering :: Bio-Informatics',
 ]
 [tool.flit.metadata.requires-extra]
+tests = [
+  'pytest',
+  'hypothesis',
+  'pytest-cov',
+  'coveralls',
+  'attrs',
+]
 docs = [
   'sphinxcontrib-programoutput',
   'sphinx_rtd_theme',
