@@ -23,7 +23,12 @@ jobs:
           pip install '.[tests]'
       - name: Run test suite
         run: |
-          pytest
+          pytest tests --cov wellmap
+      - uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.github_token }}
+          parallel: true
+
 
   test-r:
     name: Test R
