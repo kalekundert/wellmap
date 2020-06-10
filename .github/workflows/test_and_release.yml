@@ -24,10 +24,10 @@ jobs:
       - name: Run test suite
         run: |
           pytest tests --cov wellmap
-      - uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.github_token }}
-          parallel: true
+          coveralls
+      - name: Report test coverage
+        run: |
+          coveralls
 
 
   test-r:
