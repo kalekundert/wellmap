@@ -64,11 +64,11 @@ jobs:
         run: |
           reticulate::py_config()
           rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
-      - name: Report test coverage
-        env:
-          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
-        run: |
-          covr::coveralls()
+          #- name: Report test coverage
+          #  env:
+          #    COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+          #  run: |
+          #    covr::coveralls()
 
   release:
     name: Release to PyPI
