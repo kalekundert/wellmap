@@ -12,7 +12,7 @@ test_that("`load()` works on a simple layout", {
                          x=1,
                          y=1)
 
-  expect_equivalent(layout, expected)
+  expect_equivalent(!!layout, !!expected)
 })
 
 test_that("`read.csv()` is a valid `data_loader()`", {
@@ -37,7 +37,7 @@ test_that("`read.csv()` is a valid `data_loader()`", {
                          Well="A1",
                          Data="xy")
 
-  expect_equivalent(layout, expected)
+  expect_equivalent(!!layout, !!expected)
 })
 
 test_that("`data_loader()` gets the `extras` argument", {
@@ -65,7 +65,7 @@ test_that("`data_loader()` gets the `extras` argument", {
                          Data="xy")
 
 
-  expect_equivalent(layout[[1]], expected)
+  expect_equivalent(!!layout[[1]], !!expected)
   expect_equivalent(layout[[2]], list(a=1, b=1))
 })
 
