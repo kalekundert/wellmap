@@ -47,3 +47,6 @@ wellmap = "wellmap.plot:main"
 'Bug Tracker' = 'https://github.com/kalekundert/wellmap/issues'
 'Continuous Integration' = 'https://travis-ci.org/kalekundert/wellmap'
 'Test Coverage' = 'https://coveralls.io/github/kalekundert/wellmap'
+
+[tool.semantic-release]
+version_variable = wellmap/__init__.py:__version__
