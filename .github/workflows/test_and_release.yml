@@ -43,7 +43,10 @@ jobs:
       - uses: r-lib/actions/setup-r@v1
       - name: Install numpy
         shell: bash
-        run: pip install numpy
+        run:
+          which python
+          pip install numpy ..
+          pip freeze
       - name: Install test dependencies
         run: |
           install.packages(c("remotes", "rcmdcheck"))
