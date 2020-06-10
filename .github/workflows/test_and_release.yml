@@ -13,17 +13,17 @@ jobs:
         python-version: [3.6, 3.7, 3.8]
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install test dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install '.[tests]'
-    - name: Run test suite
-      run: |
-        pytest
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install '.[tests]'
+      - name: Run test suite
+        run: |
+          pytest
 
   test-r:
     name: Test R
@@ -35,10 +35,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: r-lib/actions/setup-r@v1
       - uses: actions/cache@v2
-        path: ~/work/_temp/Library
-        key: ${{ runner.os }}-R
+        with:
+          path: ~/work/_temp/Library
+          key: ${{ runner.os }}-R
+      - uses: actions/setup-python@v2
+      - uses: r-lib/actions/setup-r@v1
+      - name: Install numpy
+        shell: bash
+        run: pip install numpy
       - name: Install test dependencies
         run: |
           install.packages(c("remotes", "rcmdcheck"))
