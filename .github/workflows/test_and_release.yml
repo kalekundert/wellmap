@@ -40,12 +40,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-        #- uses: actions/cache@v2
-        #  with:
-        #    path: ~/work/_temp/Library
-        #    key: ${{ runner.os }}-R
+      - uses: actions/cache@v2
+        with:
+          path: ~/work/_temp/Library
+          key: R-${{ runner.os }}-{{ hashFiles('DESCRIPTION') }}
       - uses: actions/setup-python@v2
       - uses: r-lib/actions/setup-r@v1
+      - name: Install test dependencies (apt-get)
+        shell: bash
+        run: |
+          sudo apt-get install libcurl4-openssl-dev
       - name: Install test dependencies (python)
         shell: bash
         run: |
