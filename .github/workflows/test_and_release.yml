@@ -68,6 +68,7 @@ jobs:
   release:
     name: Release to PyPI
     runs-on: ubuntu-latest
+    if: github.ref == "master"
     needs:
       - test-python
       - test-r
