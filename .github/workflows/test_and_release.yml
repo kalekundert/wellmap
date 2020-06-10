@@ -40,19 +40,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: ~/work/_temp/Library
-          key: ${{ runner.os }}-R
+        #- uses: actions/cache@v2
+        #  with:
+        #    path: ~/work/_temp/Library
+        #    key: ${{ runner.os }}-R
       - uses: actions/setup-python@v2
       - uses: r-lib/actions/setup-r@v1
-      - name: Install numpy
+      - name: Install test dependencies (python)
         shell: bash
         run: |
           which python
           pip install numpy ..
           pip freeze
-      - name: Install test dependencies
+      - name: Install test dependencies (R)
         run: |
           install.packages(c("remotes", "rcmdcheck", "covr"))
           remotes::install_deps(dependencies = TRUE)
