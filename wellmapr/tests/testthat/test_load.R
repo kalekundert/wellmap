@@ -1,5 +1,6 @@
 library(wellmapr)
 context("wellmapr")
+options("stringsAsFactors" = FALSE)
 
 test_that("`load()` works on a simple layout", {
   layout <- wellmapr::load('toml/one_well_xy.toml')
@@ -10,8 +11,7 @@ test_that("`load()` works on a simple layout", {
                          row_i=0,
                          col_j=0,
                          x=1,
-                         y=1,
-                         stringsAsFactors=FALSE)
+                         y=1)
 
   expect_equivalent(!!layout, !!expected)
 })
@@ -36,8 +36,7 @@ test_that("`read.csv()` is a valid `data_loader()`", {
                          x=1,
                          y=1,
                          Well="A1",
-                         Data="xy",
-                         stringsAsFactors=FALSE)
+                         Data="xy")
 
   expect_equivalent(!!layout, !!expected)
 })
@@ -64,9 +63,7 @@ test_that("`data_loader()` gets the `extras` argument", {
                          x=1,
                          y=1,
                          Well="A1",
-                         Data="xy",
-                         stringsAsFactors=FALSE)
-
+                         Data="xy")
 
   expect_equivalent(!!layout[[1]], !!expected)
   expect_equivalent(layout[[2]], list(a=1, b=1))
