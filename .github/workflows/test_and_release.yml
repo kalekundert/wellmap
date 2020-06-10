@@ -22,12 +22,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install '.[tests]'
       - name: Run test suite
+        run: |
+          pytest tests --cov wellmap
+      - name: Report test coverage
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
         run: |
-          pytest tests --cov wellmap
           coveralls
-
 
   test-r:
     name: Test R
@@ -53,14 +54,16 @@ jobs:
           pip freeze
       - name: Install test dependencies
         run: |
-          install.packages(c("remotes", "rcmdcheck"))
+          install.packages(c("remotes", "rcmdcheck", "covr"))
           remotes::install_deps(dependencies = TRUE)
       - name: Run test suite
-        env:
-          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
         run: |
           reticulate::py_config()
           rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
+      - name: Report test coverage
+        env:
+          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+        run: |
           covr::coveralls()
 
   release:
