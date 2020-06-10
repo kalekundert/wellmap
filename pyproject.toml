@@ -48,6 +48,6 @@ wellmap = "wellmap.plot:main"
 'Continuous Integration' = 'https://travis-ci.org/kalekundert/wellmap'
 'Test Coverage' = 'https://coveralls.io/github/kalekundert/wellmap'
 
-[tool.semantic-release]
+[tool.semantic_release]
 version_variable = 'wellmap/__init__.py:__version__'
 
