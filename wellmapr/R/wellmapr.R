@@ -182,6 +182,7 @@
 #'   as these are included already in the *path* column of the `layout` or 
 #'   `merged` data frames.
 #'
+#' @import reticulate
 #' @export
 
 load <- function(toml_path, data_loader=NULL, merge_cols=NULL,
@@ -201,7 +202,7 @@ load <- function(toml_path, data_loader=NULL, merge_cols=NULL,
   #   function has an 'extras' argument if the given callback does.
 
   if (is.null(data_loader)) {
-    wrapped_data_loader = NULL
+    wrapped_data_loader <- NULL
   } else {
     have_extras <- "extras" %in% names(formals(data_loader))
     if (have_extras) {
@@ -214,14 +215,14 @@ load <- function(toml_path, data_loader=NULL, merge_cols=NULL,
       }
     }
 
-    wrapped_data_loader = reticulate::py_func(wrapped_data_loader)
+    wrapped_data_loader <- reticulate::py_func(wrapped_data_loader)
   }
 
   # Similar to above, the `on_alert` argument also needs to convert a 
   # `pathlib.Path` into a string.
 
   if (is.null(on_alert)) {
-    wrapped_on_alert = NULL
+    wrapped_on_alert <- NULL
   } else {
     wrapped_on_alert <- function(path, message) {
       on_alert(reticulate::py_str(path), message)
@@ -245,7 +246,7 @@ load <- function(toml_path, data_loader=NULL, merge_cols=NULL,
 
   if (report_dependencies) {
     n <- length(retvals)
-    retvals[[n]] <- sapply(builtins$list(retvals[[n]]), py_str)
+    retvals[[n]] <- sapply(builtins$list(retvals[[n]]), reticulate::py_str)
   }
 
   retvals
@@ -279,6 +280,7 @@ load <- function(toml_path, data_loader=NULL, merge_cols=NULL,
 #' [matplotlib](https://matplotlib.org/examples/color/colormaps_reference.html) 
 #' can be used.
 #'
+#' @import reticulate
 #' @export
 show <- function(toml_path, attrs=NULL, color="rainbow") {
   wellmap <- reticulate::import("wellmap")

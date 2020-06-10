@@ -5,7 +5,7 @@ Authors@R: as.person(c(
   "Kale Kundert <kale@thekunderts.net> [aut, cre]"
   ))
 Description: Wrapper for the "wellmap" Python module.
-License: MIT
+License: file LICENSE
 Depends:
   reticulate (>= 1.14)
 Config/reticulate:
