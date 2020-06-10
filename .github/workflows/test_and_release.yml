@@ -43,7 +43,7 @@ jobs:
       - uses: r-lib/actions/setup-r@v1
       - name: Install numpy
         shell: bash
-        run:
+        run: |
           which python
           pip install numpy ..
           pip freeze
