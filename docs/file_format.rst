@@ -175,32 +175,33 @@ time you look at the data.
 ======
 Specify parameters that apply to every well in the layout, e.g. parameters that 
 aren't being varied.  These parameters are important to record for two reasons 
-that may not be obvious.  First, they contribute to the complete annotation of 
-the experiment, which will make the experiment easier for others (including 
-yourself, after a few months) to understand.  Second, they make it easier to 
-write reusable analysis scripts, because the scripts can rely on every layout 
-specifying every relevant parameter (not only those that are being varied).
+that may not be immediately obvious.  First, they contribute to the complete 
+annotation of the experiment, which will make the experiment easier for others 
+(including yourself, after a few months) to understand.  Second, they make it 
+easier to write reusable analysis scripts, because the scripts can rely on 
+every layout specifying every relevant parameter, not only those parameters 
+that are being varied.
 
 Avoid using this section for metadata such as your name, the date, the name of 
 the experiment, etc.  While this kind of metadata does apply to every well, it 
 doesn't affect how the data will be analyzed.  Including it here needlessly 
 bloats the data frame returned by `load()`.  It's better to put this 
-information in top-level key/value pairs (e.g. outside of any table_).  
+information in top-level key/value pairs (e.g. outside of any well group).  
 Analysis scripts can still access this information using the **extras** 
 argument to the `load()` function, but it will not clutter the data frame used 
 for analysis.
 
 Note that the :prog:`wellmap` command by default only displays experimental 
 parameters that have at least two different values across the whole layout, 
-which normally excludes `[expt]` parameters.  To see these parameters anyways, 
-specify the ``<attr>`` argument.
+which normally excludes `[expt]` parameters.  To see such a parameter anyways, 
+provide its name as one of the ``<attr>`` arguments.
 
 .. rubric:: Example:
 
-This layouts demonstrates the difference between `[expt]` parameters and 
+This layout demonstrates the difference between `[expt]` parameters and 
 metadata.  All of the wells on this plate have the same sample, but the sample 
-is relevant to the analysis and might vary in different layouts.  In contrast, 
-the name and date are just (useful) metadata.
+is relevant to the analysis and might vary in other layouts analyzed by the 
+same scripts.  In contrast, the name and date are just (useful) metadata.
 
 .. example:: file_format/expt.toml
   :attrs: sample
