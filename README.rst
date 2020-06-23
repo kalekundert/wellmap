@@ -25,11 +25,11 @@ __ https://wellmap.readthedocs.io/en/latest/file_format.html
 .. image:: https://img.shields.io/pypi/pyversions/wellmap.svg
    :target: https://pypi.python.org/pypi/wellmap
 
-.. image:: https://img.shields.io/github/workflow/status/kalekundert/wellmap/Test%20and%20release/master
-   :target: https://github.com/kalekundert/wellmap/actions
-
 .. image:: https://readthedocs.org/projects/wellmap/badge/?version=latest
    :target: http://wellmap.readthedocs.io/en/latest/
+
+.. image:: https://img.shields.io/github/workflow/status/kalekundert/wellmap/Test%20and%20release/master
+   :target: https://github.com/kalekundert/wellmap/actions
 
 .. image:: https://img.shields.io/coveralls/kalekundert/wellmap.svg
    :target: https://coveralls.io/github/kalekundert/wellmap?branch=master

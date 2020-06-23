@@ -117,8 +117,10 @@ The second step is to load a `pandas.DataFrame` containing the actual data.
 How this is done depends on what kind of data it is, and how it is formatted.  
 The only requirement is that the data frame must have column(s) identifying the 
 wells, so that it can be merged with the labels.  The example data given above 
-is in a very convenient format, so we just need to read the CSV file.  More 
-often, this step will involve parsing, organizing, and renaming the data.
+is already formatted properly, so we just need to read the CSV file.  More 
+often, this step will involve `tidying`__ the data.
+
+__ http://vita.had.co.nz/papers/tidy-data.html
 
 .. code-block:: pycon
 

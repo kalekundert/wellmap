@@ -393,17 +393,13 @@ different sample:
 
 .. example:: file_format/block.toml
 
-  [block.2x2.A1]
-  sample = 'α'
+  [block.2x2]
+  A1.sample = 'α'
+  A3.sample = 'β'
 
-  [block.1x2.A3]
-  sample = 'β'
-
-  [block.1x2.A4]
-  sample = 'γ'
-
-  [block.4x2.C1]
-  sample = 'δ'
+  [block.4x1]
+  C1.sample = 'γ'
+  D1.sample = 'δ'
 
 The following layout uses the `pattern syntax`_ to specify the same sample in 
 multiple blocks:
@@ -476,10 +472,10 @@ Syntax                             Meaning
 
 This syntax requires exactly 4 comma-separated elements in exactly the 
 following order:  the first, second, and fourth must be valid indices, and the 
-third must be an ellipsis ("...").  The first index defines the start of the 
-pattern, the fourth defines the end (inclusive), and the second defines the 
-step size.  It is an error if you cannot get from the start to the end taking 
-steps of the given size.
+third must be an ellipsis ("...").  The first and fourth indices define the 
+start and end of the pattern (inclusive).  The offset between the first and 
+second indices defines the step size.  It must be possible to get from the 
+start to the end in steps of the given size.
 
 Note that for wells and blocks, the ellipsis pattern can propagate across both 
 rows and columns.  In this case, the second index specifies the step size in 
