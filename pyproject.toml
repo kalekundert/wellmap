@@ -49,6 +49,7 @@ wellmap = "wellmap.plot:main"
 'Test Coverage' = 'https://coveralls.io/github/kalekundert/wellmap'
 
 [tool.semantic_release]
+build_command = 'python -m pip install flit && flit build'
 version_variable = [
   'wellmap/__init__.py:__version__',
   'wellmapr/DESCRIPTION:Version'
