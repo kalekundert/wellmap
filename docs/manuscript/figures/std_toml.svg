@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg xmlns="http://www.w3.org/2000/svg">
+<g font-family="monospace" font-size="14px">
+<text x="0" y="14" xml:space="preserve"><tspan fill="#408080" font-style="italic">#&#160;std.toml</tspan></text>
+<text x="0" y="33" xml:space="preserve"><tspan fill="#008000" font-weight="bold">[block.1x3]</tspan></text>
+<text x="0" y="52" xml:space="preserve">A1.ug_mL&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">2000</tspan></text>
+<text x="0" y="71" xml:space="preserve">A2.ug_mL&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">1500</tspan></text>
+<text x="0" y="90" xml:space="preserve">A3.ug_mL&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">1000</tspan></text>
+<text x="0" y="109" xml:space="preserve">A4.ug_mL&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">750</tspan></text>
+<text x="0" y="128" xml:space="preserve">A5.ug_mL&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">500</tspan></text>
+<text x="0" y="147" xml:space="preserve">A6.ug_mL&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">250</tspan></text>
+<text x="0" y="166" xml:space="preserve">A7.ug_mL&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">125</tspan></text>
+<text x="0" y="185" xml:space="preserve">A8.ug_mL&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">25</tspan></text>
+<text x="0" y="204" xml:space="preserve">A9.ug_mL&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">0</tspan></text>
+<text x="0" y="223" xml:space="preserve"></text></g></svg>

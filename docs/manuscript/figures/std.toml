@@ -1,0 +1,11 @@
+# std.toml
+[block.1x3]
+A1.ug_mL = 2000
+A2.ug_mL = 1500
+A3.ug_mL = 1000
+A4.ug_mL = 750
+A5.ug_mL = 500
+A6.ug_mL = 250
+A7.ug_mL = 125
+A8.ug_mL = 25
+A9.ug_mL = 0

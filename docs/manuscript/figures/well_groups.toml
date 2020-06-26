@@ -1,0 +1,35 @@
+[row]
+A.x = 2
+B.x = 4
+C.x = 6
+D.x = 8
+
+[col]
+1.y = 2
+2.y = 4
+3.y = 6
+4.y = 8
+
+[block.2x2]
+A1.z = 2
+A3.z = 4
+C1.z = 6
+C3.z = 8
+
+[irow]
+A.u = 2
+B.u = 4
+C.u = 6
+D.u = 8
+
+[icol]
+1.v = 2
+2.v = 4
+3.v = 6
+4.v = 8
+
+[well.A1]
+w = 2
+
+[expt]
+w = 8

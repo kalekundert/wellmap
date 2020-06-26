@@ -1,0 +1,142 @@
+I think BMC Bioinformatics is probably what I should be aiming for.  But I 
+might at least try submitting to Bioinformatics or PLOS Comp Biol, which I 
+think are as high as I could realistically target.
+
+Bioinfomatics
+=============
+Impact factor: 4.5
+Article type: Application Note
+  
+  Applications Notes are short descriptions of novel software or new algorithm 
+  implementations, databases and network services (web servers, and 
+  interfaces).  Software or data must be freely available to non-commercial 
+  users.  Availability and Implementation must be clearly stated in the 
+  article. Authors must also ensure that the software is available for a full 
+  two years following publication. Web services must not require mandatory 
+  registration by the user.  Additional supplementary data can be published 
+  online-only by the journal.  This supplementary material should be referred 
+  to in the abstract of the Application Note. If describing software, the 
+  software should run under nearly all conditions on a wide range of machines.  
+  Web servers should not be browser specific. Application Notes must not 
+  describe trivial utilities, nor involve significant investment of time for 
+  the user to install. The name of the application should be included in the 
+  title.
+
+Criteria:
+
+Examples:
+
+- https://doi.org/10.1093/bioinformatics/bth271
+
+- Not a lot of recent examples...
+
+PLOS Computational Biology
+==========================
+Impact factor: 4.4
+Article type: Software articles
+
+  https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002799
+
+  The idea of free reuse, redistribution, and modification of scientific 
+  software is at the core of the PLOS Computational Biology Software Section.  
+  For a manuscript to be published as a Software Article, we require that all 
+  software use a license approved by the Open Source Initiative (OSI). OSI's 
+  approval criteria (http://www.opensource.org/docs/osd) ensure transparency, 
+  reproducibility, and if applied to scientific software, push science forward 
+  by allowing researchers to build on existing work. Scientifically, we require 
+  that the article has been shown to provide new biological insights and are 
+  not only just incremental improvements over existing approaches. All articles 
+  require a presubmission inquiry. For a detailed description of all criteria 
+  see http://www.ploscompbiol.org/static/guidelines.action#software.
+
+Criteria:
+
+[ ] PLOS Computational Biology publishes articles describing outstanding open 
+    source software of exceptional importance that has been shown to provide 
+    new biological insights, either as a part of the software article, or 
+    published elsewhere.
+
+    - No biological insights...
+    - But the example below doesn't seem to have biological insights either 
+      (from the title).  I should read it more closely.
+
+[x] The software must already be widely adopted, or have the promise of wide 
+    adoption by a broad community of users.
+
+[x] The software must be downloadable anonymously in source code form and 
+    licensed under an Open Source Initiative (OSI) compliant license.
+
+[x] The source code must be accompanied with documentation on building and 
+    installing the software from source, as well as for using the software, 
+    including instructions on how a user can test the software on supplied test 
+    data.
+
+[x] Software articles require a cover letter that includes explanations on how 
+    the above criteria are met.
+
+Examples:
+
+- https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1007696
+
+Notes:
+
+- Might be a bit lacking in terms of "new biological insights".
+
+Computer Methods and Programs in Biomedicine
+============================================
+Impact factor: 3.4
+Article type: Systems and programs
+
+  In addition to papers describing software related to the methodology section 
+  above, papers on biomedical computer applications, original from the point of 
+  view of theoretical or technological approach, or describing the adaptation 
+  of existing software to the solution of specific problems, may be considered. 
+  No restrictions are made on the use of computer languages; the description 
+  and exchange of software widely applied in biomedical research and medical 
+  practice is considered of most importance. Papers on programs intended for 
+  Section II should cover the following items: (i) Introduction; (ii) 
+  Computational methods and theory; (iii) System or program description, 
+  preferably with structograms, or block diagrams and flow charts; (iv) Samples 
+  of typical system or program runs; (v) Hardware and software specifications; 
+  (vi) Mode of availability of the system or program; clear information is 
+  required; (vii) Listing of literature in order of citation in the text; 
+  (viii) Appendix expanding, when necessary, material in the text.
+
+Examples:
+
+BMC Bioinformatics
+==================
+Impact factor: 2.5
+Article type: Software article
+Aims and scope:
+
+  BMC Bioinformatics is an open access, peer-reviewed journal  that considers 
+  articles on all aspects of the development, testing and novel application of 
+  computational and statistical methods for the modeling and analysis of all 
+  kinds of biological data, as well as other areas of computational biology.
+
+  Software articles should describe a tool likely to be of broad utility that 
+  represents a significant advance over previously published software (usually 
+  demonstrated by direct comparison with available related software).
+
+Examples:
+
+- SNPFile – A software library and file format for large scale association 
+  mapping and population genetics studies
+- A simple spreadsheet-based, MIAME-supportive format for microarray data: 
+  MAGE-TAB
+- An intuitive Python interface for Bioconductor libraries demonstrates the 
+  utility of language translators
+
+Source Code for Biology and Medicine
+====================================
+CiteScore: 1.1
+
+Journal of Open Source Software
+===============================
+Pros:
+- Seems like it would be the least time commitment.
+
+Cons:
+- Don't think many people read it.
+

@@ -1,0 +1,17 @@
+[meta]
+include = 'std.toml'
+[bradford]
+format = 'biotek'
+absorbance = '595/450'
+
+[block.3x2]
+D1.sample  = 'Y37A'
+D4.sample  = 'D42A'
+D7.sample  = 'T44A'
+D10.sample = 'Y45A'
+F1.sample  = 'Y37E'
+F4.sample  = 'T44P'
+F7.sample  = 'Y45R'
+[row]
+'D,F'.dilution = 1
+'E,G'.dilution = 5

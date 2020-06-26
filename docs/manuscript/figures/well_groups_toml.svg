@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg xmlns="http://www.w3.org/2000/svg">
+<g font-family="monospace" font-size="14px">
+<text x="0" y="14" xml:space="preserve"><tspan fill="#008000" font-weight="bold">[row]</tspan></text>
+<text x="0" y="33" xml:space="preserve">A.x&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">2</tspan></text>
+<text x="0" y="52" xml:space="preserve">B.x&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">4</tspan></text>
+<text x="0" y="71" xml:space="preserve">C.x&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">6</tspan></text>
+<text x="0" y="90" xml:space="preserve">D.x&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">8</tspan></text>
+<text x="0" y="109" xml:space="preserve"></text>
+<text x="0" y="128" xml:space="preserve"><tspan fill="#008000" font-weight="bold">[col]</tspan></text>
+<text x="0" y="147" xml:space="preserve"><tspan fill="#666666">1.</tspan>y&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">2</tspan></text>
+<text x="0" y="166" xml:space="preserve"><tspan fill="#666666">2.</tspan>y&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">4</tspan></text>
+<text x="0" y="185" xml:space="preserve"><tspan fill="#666666">3.</tspan>y&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">6</tspan></text>
+<text x="0" y="204" xml:space="preserve"><tspan fill="#666666">4.</tspan>y&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">8</tspan></text>
+<text x="0" y="223" xml:space="preserve"></text>
+<text x="0" y="242" xml:space="preserve"><tspan fill="#008000" font-weight="bold">[block.2x2]</tspan></text>
+<text x="0" y="261" xml:space="preserve">A1.z&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">2</tspan></text>
+<text x="0" y="280" xml:space="preserve">A3.z&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">4</tspan></text>
+<text x="0" y="299" xml:space="preserve">C1.z&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">6</tspan></text>
+<text x="0" y="318" xml:space="preserve">C3.z&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">8</tspan></text>
+<text x="0" y="337" xml:space="preserve"></text>
+<text x="0" y="356" xml:space="preserve"><tspan fill="#008000" font-weight="bold">[irow]</tspan></text>
+<text x="0" y="375" xml:space="preserve">A.u&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">2</tspan></text>
+<text x="0" y="394" xml:space="preserve">B.u&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">4</tspan></text>
+<text x="0" y="413" xml:space="preserve">C.u&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">6</tspan></text>
+<text x="0" y="432" xml:space="preserve">D.u&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">8</tspan></text>
+<text x="0" y="451" xml:space="preserve"></text>
+<text x="0" y="470" xml:space="preserve"><tspan fill="#008000" font-weight="bold">[icol]</tspan></text>
+<text x="0" y="489" xml:space="preserve"><tspan fill="#666666">1.</tspan>v&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">2</tspan></text>
+<text x="0" y="508" xml:space="preserve"><tspan fill="#666666">2.</tspan>v&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">4</tspan></text>
+<text x="0" y="527" xml:space="preserve"><tspan fill="#666666">3.</tspan>v&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">6</tspan></text>
+<text x="0" y="546" xml:space="preserve"><tspan fill="#666666">4.</tspan>v&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">8</tspan></text>
+<text x="0" y="565" xml:space="preserve"></text>
+<text x="0" y="584" xml:space="preserve"><tspan fill="#008000" font-weight="bold">[well.A1]</tspan></text>
+<text x="0" y="603" xml:space="preserve">w&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">2</tspan></text>
+<text x="0" y="622" xml:space="preserve"></text>
+<text x="0" y="641" xml:space="preserve"><tspan fill="#008000" font-weight="bold">[expt]</tspan></text>
+<text x="0" y="660" xml:space="preserve">w&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">8</tspan></text>
+<text x="0" y="679" xml:space="preserve"></text></g></svg>

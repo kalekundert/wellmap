@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg xmlns="http://www.w3.org/2000/svg">
+<g font-family="monospace" font-size="14px">
+<text x="0" y="14" xml:space="preserve"><tspan fill="#008000" font-weight="bold">[meta]</tspan></text>
+<text x="0" y="33" xml:space="preserve">include&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#BA2121">&#39;std.toml&#39;</tspan></text>
+<text x="0" y="52" xml:space="preserve"><tspan fill="#008000" font-weight="bold">[bradford]</tspan></text>
+<text x="0" y="71" xml:space="preserve">format&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#BA2121">&#39;biotek&#39;</tspan></text>
+<text x="0" y="90" xml:space="preserve">absorbance&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#BA2121">&#39;595/450&#39;</tspan></text>
+<text x="0" y="109" xml:space="preserve"></text>
+<text x="0" y="128" xml:space="preserve"><tspan fill="#008000" font-weight="bold">[block.3x2]</tspan></text>
+<text x="0" y="147" xml:space="preserve">D1.sample&#160;&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#BA2121">&#39;Y37A&#39;</tspan></text>
+<text x="0" y="166" xml:space="preserve">D4.sample&#160;&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#BA2121">&#39;D42A&#39;</tspan></text>
+<text x="0" y="185" xml:space="preserve">D7.sample&#160;&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#BA2121">&#39;T44A&#39;</tspan></text>
+<text x="0" y="204" xml:space="preserve">D10.sample&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#BA2121">&#39;Y45A&#39;</tspan></text>
+<text x="0" y="223" xml:space="preserve">F1.sample&#160;&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#BA2121">&#39;Y37E&#39;</tspan></text>
+<text x="0" y="242" xml:space="preserve">F4.sample&#160;&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#BA2121">&#39;T44P&#39;</tspan></text>
+<text x="0" y="261" xml:space="preserve">F7.sample&#160;&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#BA2121">&#39;Y45R&#39;</tspan></text>
+<text x="0" y="280" xml:space="preserve"><tspan fill="#008000" font-weight="bold">[row]</tspan></text>
+<text x="0" y="299" xml:space="preserve"><tspan fill="#BA2121">&#39;D,F&#39;</tspan>.dilution&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">1</tspan></text>
+<text x="0" y="318" xml:space="preserve"><tspan fill="#BA2121">&#39;E,G&#39;</tspan>.dilution&#160;<tspan fill="#666666">=</tspan>&#160;<tspan fill="#666666">5</tspan></text>
+<text x="0" y="337" xml:space="preserve"></text></g></svg>
