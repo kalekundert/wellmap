@@ -2,6 +2,9 @@
 !*.svg
 *.pdf
 
+## Misc
+.dep
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
