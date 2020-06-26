@@ -25,6 +25,8 @@ __ https://wellmap.readthedocs.io/en/latest/file_format.html
 .. image:: https://img.shields.io/pypi/pyversions/wellmap.svg
    :target: https://pypi.python.org/pypi/wellmap
 
+.. image:: https://img.shields.io/badge/R-3.0,4.0-blue.svg
+
 .. image:: https://readthedocs.org/projects/wellmap/badge/?version=latest
    :target: http://wellmap.readthedocs.io/en/latest/
 
