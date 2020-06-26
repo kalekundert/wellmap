@@ -38,4 +38,4 @@ Documentation
 =============
 See the complete documentation `here <http://wellmap.readthedocs.io/>`_.
 
-.. image:: docs/example_layouts/qpcr_timecourse.svg
+.. image:: docs/manuscript/figures/well_groups.svg
