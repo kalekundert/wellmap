@@ -1,6 +1,6 @@
 Package: wellmapr
 Title: File format for 96-well plate layouts
-Version: 0.7.0
+Version: 1.0.0
 Authors@R: as.person(c(
   "Kale Kundert <kale@thekunderts.net> [aut, cre]"
   ))
