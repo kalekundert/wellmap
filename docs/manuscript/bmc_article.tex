@@ -43,8 +43,8 @@
 
 %%% loading packages, author definitions
 
-\documentclass[twocolumn]{bmcart}
-%\documentclass{bmcart}
+%\documentclass[twocolumn]{bmcart}
+\documentclass{bmcart}
 
 %%% Load packages
 %\usepackage{amsthm,amsmath}
@@ -72,17 +72,20 @@
 
 \def\includegraphic{}
 \def\includegraphics{}
+%\usepackage{graphicx}
 
 
 
 %%% Put your definitions there:
 \startlocaldefs
+\usepackage{siunitx}
 \usepackage{booktabs}
 \usepackage{url}
 \usepackage{listings}
 \renewcommand{\lstlistingname}{Listing}
 \renewcommand{\familydefault}{\sfdefault}
 \lstset{basicstyle=\ttfamily}
+\DeclareSIUnit[per-mode=symbol]\ugmL{\micro\gram\per\milli\liter}
 \endlocaldefs
 
 
@@ -131,7 +134,7 @@
 
 \address[id=wyss]{%
   \orgname{Wyss Institute for Biologically Inspired Engineering, Harvard University},
-  \city{Cambridge, Massachusetts},
+  \city{Boston, Massachusetts},
   \postcode{02138}
   \cny{USA}
 }
@@ -149,7 +152,7 @@
 %\note{Sample of title note}     % note to the article
 \end{artnotes}
 
-%\end{fmbox}% comment this for two column layout
+\end{fmbox}% comment this for two column layout
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%                                          %%
@@ -211,7 +214,7 @@ visit: \url{https://wellmap.rtfd.io}
 
 \end{abstractbox}
 
-\end{fmbox}% uncomment this for two column layout
+%\end{fmbox}% uncomment this for two column layout
 
 \end{frontmatter}
 
@@ -308,10 +311,10 @@ information, refer to the online documentation: \url{https://wellmap.rtfd.io}
 \subsection*{Creating wellmap files}
 
 Wellmap files are organized into groups of wells, such as ``row A'', ``columns
-3-5'', ``a 2x2 block with A1 in the top left'', etc.  Each well group can be
+3--5'', ``a 2x2 block with A1 in the top left'', etc.  Each well group can be
 associated with any number of experimental parameters, such as ``mutant:
-Y37A'', ``concentration: 100 µg/mL'', ``timepoint: 30 min'', etc. For example,
-the following snippet specifies that row A contains the Y37A
+Y37A'', ``concentration: \SI{100}{\ugmL}'', ``timepoint: \SI{30}{\minute}'',
+etc.  For example, the following snippet specifies that row A contains the Y37A
 mutant:
 
 \begin{lstlisting}
@@ -321,8 +324,9 @@ mutant = 'Y37A'
 
 As mentioned above, the wellmap file format is based on
 TOML~\cite{preston-werner2020}.  Typically, square brackets are used to
-identify groups of wells and equals signs are used to set experimental
-parameters. Note however that all of the following are equivalent:
+identify groups of wells and any ``key = value'' lines that follow are used to
+specify experimental parameters for those wells.  Note however that all of the
+following are equivalent:
 
 \begin{lstlisting}
 [row.A]
@@ -371,11 +375,11 @@ get from the start to the end in steps of the given size. Refer again to Table
 
 The wellmap file format has full support for layouts spanning multiple
 plates. These are two ways to specify such layouts. The first is to
-define ``plate'' groups, which encompass all of the wells on a particular
+define \texttt{plate} groups, which encompass all of the wells on a particular
 plate. These groups are unique in that they can contain other groups.
 For example, the snippet below specifies that all of the wells on
 plate ``day1'' have the Y37A mutant, and the wells on row A of that
-plate have a concentration of 100 µg/mL:
+plate have a concentration of \SI{100}{\ugmL}:
 
 \begin{lstlisting}
 [plate.day1]
@@ -417,7 +421,7 @@ For some experiments, it is necessary to control for the possibility
 of position-dependent effects, such as slight temperature gradients
 across the plate, by ``interleaving'' conditions between adjacent
 rows or columns. Any position-dependent effects will then be canceled
-out when the conditions is question are compared. Despite the added
+out when the conditions in question are compared. Despite the added
 complexity, these layouts can be easily described using the \texttt{irow}
 and \texttt{icol} groups. The ``i'' in these names stands for ``interleaved''.
 As demonstrated in Figure~\ref{fig:well-groups}, these groups are
@@ -465,15 +469,14 @@ data frame with a row for each well and a column for each experimental
 parameter. This data frame can subsequently be merged with the raw
 data to associate each data point with the parameters specified in
 the layout file. The \texttt{load()} function can also perform this
-merge automatically, if sufficient information about the raw data
-is provided.
+merge automatically, if requested.
 
 In many cases, converting an existing analysis script to use wellmap
 will take little effort and will make the script both simpler and
 more powerful. Little effort because the wellmap API uses standard
 data types and follows the ``Unix philosophy'' of doing just one
 thing (and doing it well)~\cite{raymond2004}. Simpler because any
-code that was previously devoted to specifying layout information
+code that was previously devoted to determining layout information
 can be replaced with a single command to parse a wellmap file. More
 powerful because the script will be able to analyze any layout that
 provides the expected experimental parameters, regardless of how the
@@ -492,7 +495,7 @@ Bradford assays, Miller assays, and minimum inhibitory concentration
 not an onerous process. There are just two steps, both compatible
 with any workflow. First, write a short text file describing the layout
 of each experiment. Second, adapt any analysis scripts to load information
-from the layout files using a simple API.
+from said files using a simple API.
 
 There are several noteworthy advantages to using wellmap instead
 of an ad hoc approach to record plate layouts. The first is that wellmap
@@ -562,7 +565,7 @@ used for both visualization and analysis. Incorporating wellmap into
 an analysis pipeline is straight-forward and offers benefits ranging
 from greater flexibility to better data management. In summary, we
 hope that this software will be broadly useful to the large community
-of scientists who routine perform microplate experiments.
+of scientists who routinely perform microplate experiments.
 
 \section*{Availability and requirements}
 \begin{description}
@@ -653,7 +656,7 @@ Not applicable
 \section*{Figures}
 
 \begin{figure}[h!]
-  %\includegraphics{figures/well_groups}
+  %\includegraphics[width=122mm]{wellgroups}
   \caption{\label{fig:well-groups}%
     \csentence{A demonstration of the most commonly-used well groups.}
     (a) A contrived layout that uses seven different well groups. Each row
@@ -665,7 +668,7 @@ Not applicable
 \end{figure}
 
 \begin{figure}[h!]
-  %\includegraphics{figures/bradford}
+  %\includegraphics[width=122mm]{bradford}
   \caption{\label{fig:bradford}%
     \csentence{A real-life example of a layout used for a Bradford assay.} (a)
     A layout file describing just the concentrations of a standard curve, which
