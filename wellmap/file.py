@@ -54,55 +54,56 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
         **path_required** is True.
 
     :param bool,dict merge_cols:
-        Indicates that `load()` should attempt to merge the plate layout and 
-        the actual data associated with it into a single data frame.  This 
-        functionality requires several conditions to be met:
-       
-        1. The **data_loader** argument must be specified (otherwise there'd be 
-           no data to merge).
-
-        2. The data frame returned by **data_loader()** must be `"tidy"`__.  
-           Briefly, a data frame is tidy if each of its columns represents a 
-           single variable (e.g.  time, fluorescence) and each of its rows 
-           represents a single observation.  
-            
-           __ http://vita.had.co.nz/papers/tidy-data.html
-
-        3. The data frame returned by **data_loader()** must have one (or more) 
-           columns/variables indicating which well each row/observation comes 
-           from.  For example, a column called "Well" with values like "A1", 
-           "A2", "B1", "B2", etc. would satisfy this requirement.
-        
-        The **merge_cols** argument specifies which columns to use when merging 
-        the data frames representing the layout and the actual data (i.e. the 
-        two data frames that would be returned if **data_loader** was specified 
-        but **merge_cols** was not) into one.  The argument can either be a 
-        bool or a dictionary:
+        Indicates whether or not---and if so, how---`load()` should merge the 
+        data frames representing the plate layout and the actual data (provided 
+        by **data_loader**).  The argument can either be a boolean or a 
+        dictionary:
 
         If *False* (or falsey, e.g. ``None``, ``{}``, etc.), the data frames 
         will be returned separately and not be merged.  This is the default 
         behavior.
 
-        If *True*, the data frames will be merged using any columns that share 
-        the same name.  For example, the layout will always have a column named 
-        *well*, so if the actual data also has a column named *well*, the merge 
-        would happen on those columns.
+        If *True*, the data frames will be merged using any columns that 
+        share the same name.  For example, the layout will always have a 
+        column named *well*, so if the actual data also has a column named 
+        *well*, the merge would happen on those columns.
 
-        If a dictionary, the keys and values identify the names of the columns 
-        that correspond with each other for the purpose of merging.  Each key 
-        should be one of the columns from the data frame representing the 
-        layout loaded from the TOML file.  This data frame has 8 columns which 
-        identify the wells: *plate*, *path*, *well*, *well0*, *row*, *col*, 
-        *row_i*, *row_j*.  See the "Returns" section below for more details on 
-        the differences between these columns.  Note that the *path* column is 
-        included in the merge automatically and never has to be specified.  
-        Each value should be one of the columns from the data frame 
-        representing the actual data.  This data frame will have whatever 
-        columns were created by **data_loader()**.  
+        If a dictionary, the data frames will be merged using the columns 
+        identified in each key-value pair of the dictionary.  The keys should 
+        be column names from the data frame representing the plate layout 
+        (described below; see the **layout** return value), and the values 
+        should be column names from the data frame returned by 
+        **data_loader**.  Below are some examples of this argument:
 
-        Note that the columns named in each key-value pair must contain values 
-        that correspond exactly (i.e. not "A1" and "A01").  It is the 
-        responsibility of **data_loader()** to ensure that this is possible.
+        - :code:`{'well0': 'Well'}`: Indicates that the "Well" column in the 
+          data contains zero-padded well names, like "A01", "A02", etc.
+
+        - :code:`{'row_i': 'Row', 'col_j': 'Col'}`: Indicates that the 'Row' 
+          and 'Col' columns in the data contain 0-indexed coordinates (e.g. 0, 
+          1, 2, ...) identifying each row and column, respectively.
+
+        Some details and caveats:
+
+        - In order to successfully merge two columns, the values in those 
+          columns must correspond exactly.  For example, a column that contains 
+          unpadded well names like "A1" cannot be merged with a column that 
+          contains padded well names like "A01".  This is why the **layout** 
+          data frame contains so many redundant columns: to increase the chance 
+          that one will correpond with a column provided by the data.  In some 
+          cases, though, it may be necessary for the **data_loader** function 
+          to construct an appropriate merge column.
+
+        - The data frame returned by **data_loader()** must be `"tidy"`__.  
+          Briefly, a data frame is tidy if each of its columns represents a 
+          single variable (e.g.  time, fluorescence) and each of its rows 
+          represents a single observation.
+
+          __ http://vita.had.co.nz/papers/tidy-data.html
+
+        - The *path* column of the layout is automatically included in the 
+          merge and never has to be specified (although it is not an error to 
+          do so).  This is makes sense because `load()` itself knows what path 
+          each data frame was loaded from.
        
     :param str path_guess:
         Where to look for a data file if none is specified in the given TOML 

@@ -13,6 +13,11 @@
   margin-bottom: 12px;
 }
 
+.field-list p {
+  margin-bottom: 12px !important;
+}
+
+
 /* Try to show the example code side-by-side with the image. */
 
 .rst-content .wellmap-example {
