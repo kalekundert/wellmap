@@ -500,6 +500,8 @@ def wells_from_config(config):
     
     ## Create new wells implied by any 'row' & 'col' blocks.
 
+    from itertools import product
+
     def simplify_keys(dim):
         before = config.get(dim, {})
         after = {}
@@ -516,30 +518,47 @@ def wells_from_config(config):
 
         return after
 
-    def sanity_check(dim1, *dim2s):
-        if config.get(dim1) \
-                and not wells \
-                and not blocks \
-                and not any(config.get(x) for x in dim2s):
-            raise ConfigError(f"Found {plural(config[dim1]):# [{dim1}] spec/s}, but no [{'/'.join(dim2s)}] specs.  No wells defined.")
+    def sanity_check(dim1, dim2, span):
+        if config.get(dim1) and not span:
+            raise ConfigError(f"Found {plural(config[dim1]):# [{dim1}] spec/s}, but no {dim2}.  No wells defined.")
 
     rows = simplify_keys('row')
     cols = simplify_keys('col')
     irows = simplify_keys('irow')
     icols = simplify_keys('icol')
 
-    sanity_check('row', 'col', 'icol')
-    sanity_check('col', 'row', 'irow')
-    for ij in itertools.product(rows, cols):
-        wells.setdefault(ij, {})
+    occupied_non_irow_rows = range_from_indices(
+            *(i for i,j in wells.keys()),
+            *rows.keys(),
+    )
+    occupied_non_icol_cols = range_from_indices(
+            *(j for i,j in wells.keys()),
+            *cols.keys(),
+    )
+    occupied_rows = range_from_indices(
+            *occupied_non_irow_rows,
+            *(interleave(ii,j) for ii,j in itertools.product(
+                irows.keys(), occupied_non_icol_cols))
+    )
+    occupied_cols = range_from_indices(
+            *occupied_non_icol_cols,
+            *(interleave(jj,i) for i,jj in itertools.product(
+                occupied_non_irow_rows, icols.keys()))
+    )
 
-    sanity_check('irow', 'col')
-    for ii, j in itertools.product(irows, cols):
+    sanity_check('row', 'columns', occupied_cols)
+    sanity_check('irow', 'columns', occupied_cols)
+    sanity_check('col', 'rows', occupied_rows)
+    sanity_check('icol', 'rows', occupied_rows)
+
+    for ij in itertools.product(rows, occupied_cols):
+        wells.setdefault(ij, {})
+    for ij in itertools.product(occupied_rows, cols):
+        wells.setdefault(ij, {})
+    for ii, j in itertools.product(irows, occupied_cols):
         ij = interleave(ii, j), j
         wells.setdefault(ij, {})
-
-    sanity_check('icol', 'row')
-    for i, jj in itertools.product(rows, icols):
+    for i, jj in itertools.product(occupied_rows, icols):
         ij = i, interleave(jj, i)
         wells.setdefault(ij, {})
 

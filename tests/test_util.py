@@ -221,6 +221,20 @@ def test_inclusive_range(x0, x1, xn, expected):
     assert list(inclusive_range(x0, x1, xn)) == expected
 
 @pytest.mark.parametrize(
+        'xs, expected', [
+            ([], []),
+            ([1], [1]),
+            ([1,2], [1,2]),
+            ([2,1], [1,2]),
+            ([1,3], [1,2,3]),
+            ([3,1], [1,2,3]),
+        ]
+)
+def test_range_from_indices(xs, expected):
+    actual = util.range_from_indices(*xs)
+    assert list(actual) == expected
+
+@pytest.mark.parametrize(
         'key, indices', [
             # A B C D E F G H
             # 0 1 2 3 4 5 6 7

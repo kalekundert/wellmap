@@ -285,6 +285,21 @@ def test_multiple_rows():
             (1,0): {'x': 2, 'y': 1},
     }
 
+    config = {
+            'row': {
+                'A': {'x': 1},
+                'C': {'x': 2},
+            },
+            'col': {
+                '1': {'y': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (1,0): {        'y': 1},
+            (2,0): {'x': 2, 'y': 1},
+    }
+
 def test_multiple_cols():
     config = {
             'row': {
@@ -300,6 +315,21 @@ def test_multiple_cols():
             (0,1): {'x': 1, 'y': 2},
     }
 
+    config = {
+            'row': {
+                'A': {'x': 1},
+            },
+            'col': {
+                '1': {'y': 1},
+                '3': {'y': 2},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (0,1): {'x': 1        },
+            (0,2): {'x': 1, 'y': 2},
+    }
+
 def test_row_range():
     config = {
             'row': {
@@ -311,6 +341,7 @@ def test_row_range():
     }
     assert wells_from_config(config) == {
             (0,0): {'x': 1, 'y': 1},
+            (1,0): {        'y': 1},
             (2,0): {'x': 1, 'y': 1},
     }
 
@@ -339,6 +370,7 @@ def test_col_range():
     }
     assert wells_from_config(config) == {
             (0,0): {'x': 1, 'y': 1},
+            (0,1): {'x': 1        },
             (0,2): {'x': 1, 'y': 1},
     }
 
@@ -377,6 +409,22 @@ def test_row_without_col():
             (0,0): {'x': 1, 'y': 1},
     }
 
+    config = {
+            'block': {
+                '2x2': {
+                    'A1': {'y': 1},
+                },
+            },
+            'row': {
+                'A': {'x': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (0,1): {'x': 1, 'y': 1},
+            (1,0): {        'y': 1},
+            (1,1): {        'y': 1},
+    }
 
 def test_col_without_row():
     config = {
@@ -399,7 +447,24 @@ def test_col_without_row():
             (0,0): {'x': 1, 'y': 1},
     }
 
-def test_interleaved_row():
+    config = {
+            'block': {
+                '2x2': {
+                    'A1': {'x': 1},
+                },
+            },
+            'col': {
+                '1': {'y': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (0,1): {'x': 1,       },
+            (1,0): {'x': 1, 'y': 1},
+            (1,1): {'x': 1,       },
+    }
+
+def test_one_irow():
     config = {
             'irow': {
                 'A': {'x': 1},
@@ -413,8 +478,12 @@ def test_interleaved_row():
     }
     assert wells_from_config(config) == {
             (0,0): {'x': 1, 'y': 1},
-            (1,1): {'x': 1, 'y': 2},
+            (0,1): {        'y': 2},
             (0,2): {'x': 1, 'y': 3},
+            (0,3): {        'y': 4},
+            (1,0): {        'y': 1},
+            (1,1): {'x': 1, 'y': 2},
+            (1,2): {        'y': 3},
             (1,3): {'x': 1, 'y': 4},
     }
 
@@ -430,13 +499,17 @@ def test_interleaved_row():
             },
     }
     assert wells_from_config(config) == {
-            (1,0): {'x': 2, 'y': 1},
+            (0,0): {        'y': 1},
             (0,1): {'x': 2, 'y': 2},
-            (1,2): {'x': 2, 'y': 3},
+            (0,2): {        'y': 3},
             (0,3): {'x': 2, 'y': 4},
+            (1,0): {'x': 2, 'y': 1},
+            (1,1): {        'y': 2},
+            (1,2): {'x': 2, 'y': 3},
+            (1,3): {        'y': 4},
     }
 
-def test_interleaved_col():
+def test_one_icol():
     config = {
             'row': {
                 'A': {'x': 1},
@@ -450,8 +523,12 @@ def test_interleaved_col():
     }
     assert wells_from_config(config) == {
             (0,0): {'x': 1, 'y': 1},
+            (0,1): {'x': 1        },
+            (1,0): {'x': 2        },
             (1,1): {'x': 2, 'y': 1},
             (2,0): {'x': 3, 'y': 1},
+            (2,1): {'x': 3        },
+            (3,0): {'x': 4        },
             (3,1): {'x': 4, 'y': 1},
     }
 
@@ -467,10 +544,14 @@ def test_interleaved_col():
             },
     }
     assert wells_from_config(config) == {
+            (0,0): {'x': 1        },
             (0,1): {'x': 1, 'y': 2},
             (1,0): {'x': 2, 'y': 2},
+            (1,1): {'x': 2        },
+            (2,0): {'x': 3        },
             (2,1): {'x': 3, 'y': 2},
             (3,0): {'x': 4, 'y': 2},
+            (3,1): {'x': 4        },
     }
 
 def test_irow_without_col():
@@ -482,6 +563,80 @@ def test_irow_without_col():
     with raises(ConfigError, match="irow"):
         wells_from_config(config)
 
+    config = {
+            'well': {
+                'A1': {'y': 1},
+            },
+            'irow': {
+                'A': {'x': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+    }
+
+    config = {
+            'block': {
+                '2x1': {
+                    'A1': {'y': 1},
+                },
+            },
+            'irow': {
+                'A': {'x': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (0,1): {        'y': 1},
+            (1,1): {'x': 1        },
+    }
+
+    config = {
+            'block': {
+                '2x1': {
+                    'A1': {'y': 1},
+                },
+            },
+            'irow': {
+                'B': {'x': 2},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {        'y': 1},
+            (0,1): {'x': 2, 'y': 1},
+            (1,0): {'x': 2        },
+    }
+
+    config = {
+            'block': {
+                '1x2': {
+                    'A1': {'y': 1},
+                },
+            },
+            'irow': {
+                'A': {'x': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (1,0): {        'y': 1},
+    }
+
+    config = {
+            'block': {
+                '1x2': {
+                    'A1': {'y': 1},
+                },
+            },
+            'irow': {
+                'B': {'x': 2},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {        'y': 1},
+            (1,0): {'x': 2, 'y': 1},
+    }
+
 def test_icol_without_row():
     config = {
             'icol': {
@@ -490,6 +645,80 @@ def test_icol_without_row():
     }
     with raises(ConfigError, match="icol"):
         wells_from_config(config)
+
+    config = {
+            'well': {
+                'A1': {'x': 1},
+            },
+            'icol': {
+                '1': {'y': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+    }
+
+    config = {
+            'block': {
+                '1x2': {
+                    'A1': {'x': 1},
+                },
+            },
+            'icol': {
+                '1': {'y': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (1,0): {'x': 1,       },
+            (1,1): {        'y': 1},
+    }
+
+    config = {
+            'block': {
+                '1x2': {
+                    'A1': {'x': 1},
+                },
+            },
+            'icol': {
+                '2': {'y': 2},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1        },
+            (0,1): {        'y': 2},
+            (1,0): {'x': 1, 'y': 2},
+    }
+
+    config = {
+            'block': {
+                '2x1': {
+                    'A1': {'x': 1},
+                },
+            },
+            'icol': {
+                '1': {'y': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (0,1): {'x': 1,       },
+    }
+
+    config = {
+            'block': {
+                '2x1': {
+                    'A1': {'x': 1},
+                },
+            },
+            'icol': {
+                '2': {'y': 2},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1        },
+            (0,1): {'x': 1, 'y': 2},
+    }
 
 def test_top_level_params():
     config = {
@@ -570,8 +799,6 @@ def test_block_precedence():
             (0, 1): {'p': '2x1'},
             (1, 0): {'p': '1x2'},
     }
-
-
 
 def test_multi_letter_well():
     config = {

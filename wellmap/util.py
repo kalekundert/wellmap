@@ -110,7 +110,6 @@ def iter_ij_in_block(top_left, width, height):
         for dj in range(width):
             yield i + di, j + dj
 
-
 def iter_indices(key, index_from_subkey, indices_from_range):
     subkeys = key.split(',')
 
@@ -186,6 +185,9 @@ def inclusive_range(x0, x1, xn):
 def indices_from_range(x0, x1, xn):
     check_range(x0, x1, xn)
     yield from inclusive_range(x0, x1, xn)
+
+def range_from_indices(*xs):
+    return range(min(xs), max(xs) + 1) if xs else []
 
 
 def get_dotted_key(dict, key):
