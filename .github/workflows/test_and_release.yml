@@ -84,7 +84,7 @@ jobs:
           # python-semantic-release can decide if a new release is needed.
           fetch-depth: 0
 
-      - uses: relekang/python-semantic-release@v7.2.0
+      - uses: relekang/python-semantic-release@v7.4.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pypi_token: ${{ secrets.PYPI_TOKEN }}
