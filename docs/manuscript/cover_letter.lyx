@@ -133,9 +133,8 @@ Wellmap: A file format for 96-well plates
  In this manuscript, I introduce a clear and succinct text file format for
  describing the layout of wells on microplates.
  Compared to other methods of annotating these experiments, the wellmap
- file format has several advantages: it's easy to read, easy to write, easy
- to share, easy to check for mistakes, and easy to incorporate into analysis
- scripts.
+ file format is easier to read, easier to write, easier to share, easier
+ to check for mistakes, and easier to incorporate into analysis scripts.
  Considering both these advantages and the widespread use of microplates
  in modern biology, I believe that this software will be of broad interest
  to the readers of this journal.
