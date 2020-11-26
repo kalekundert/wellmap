@@ -11,7 +11,7 @@ Depends:
 Config/reticulate:
   list(
     packages = list(
-      list(package = "wellmap", pip = TRUE)
+      list(package = "wellmap", version = "2.0.0", pip = TRUE)
     )
   )
 Roxygen: list(markdown = TRUE)

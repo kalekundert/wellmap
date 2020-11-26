@@ -51,4 +51,7 @@ wellmap = "wellmap.plot:main"
 [tool.semantic_release]
 build_command = 'python -m pip install flit && flit build'
 version_variable = 'wellmap/__init__.py:__version__'
-version_pattern = 'wellmapr/DESCRIPTION:Version: {version}'
+version_pattern = [
+    'wellmapr/DESCRIPTION:Version: {version}',
+    'wellmapr/DESCRIPTION:list\(package = "wellmap", version = "{version}"'
+]
