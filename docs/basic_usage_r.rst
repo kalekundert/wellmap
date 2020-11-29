@@ -9,7 +9,7 @@ The following steps show how to get started with |wellmapr| in R:
 1. Install wellmapr
 ===================
 Install |wellmapr| from GitHub.  It's good to be aware that |wellmapr| is 
-written in Python and made available to R using the `reticulate`_ package.  
+written in python and made available to R using the `reticulate`_ package.  
 This detail shouldn't affect you in normal usage, but may be relevant if the 
 installation doesn't go smoothly:
 
@@ -235,7 +235,7 @@ following arguments:
 Here we also provide the **path_guess** argument, which specifies that the 
 experimental data can be found in a CSV file with the same base name as the 
 layout.  Note that this argument uses the syntax for string formatting in 
-Python, as described in the :doc:`API documentation <python_api>`.  It also 
+python, as described in the :doc:`API documentation <python_api>`.  It also 
 would've been possible to specify the path to the CSV directly from the TOML 
 file (see `meta.path`), in which case this argument would've been unnecessary.
 

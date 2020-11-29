@@ -1,8 +1,8 @@
 ***********************
-Basic usage with Python
+Basic usage with python
 ***********************
 
-The following steps show how to get started with :mod:`wellmap` in Python:
+The following steps show how to get started with :mod:`wellmap` in python:
 
 .. make-list-from-sections::
 
@@ -277,6 +277,5 @@ The example below makes a linear regression of the data in log-space:
    be expected) on each cycle.  100% indicates perfect doubling; 94% is a 
    little on the low side.
 
-.. _TOML: https://github.com/toml-lang/toml
 .. _tidy: https://www.jstatsoft.org/article/view/v059i10
 
