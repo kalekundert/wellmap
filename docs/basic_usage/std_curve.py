@@ -6,9 +6,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import linregress
 
+def load_cq(path):
+    return (pd
+            .read_csv(path)
+            .rename(columns={'Cq': 'row'})
+            .melt(
+                    id_vars=['row'],
+                    var_name='col',
+                    value_name='Cq',
+            )
+    )
+
 df = wellmap.load(
       'std_curve.toml',
-      data_loader=pd.read_csv,
+      data_loader=load_cq,
       merge_cols=True,
       path_guess='{0.stem}.csv',
 )

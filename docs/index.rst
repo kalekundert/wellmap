@@ -7,8 +7,8 @@
    :caption: Getting Started
    :hidden:
 
-   basic_usage
-   basic_usage_with_r
+   basic_usage_python
+   basic_usage_r
    example_layouts
    related_software
    getting_help
