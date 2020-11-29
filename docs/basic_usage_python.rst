@@ -75,7 +75,7 @@ microplate instruments to export data in this format.
    :file: basic_usage/std_curve.csv
    :header-rows: 1
 
-Below is the code to load this data into a `pandas.DataFrame` with the 
+Below is the code to load this data into a tidy `pandas.DataFrame` with the 
 following columns:
 
 - *row*: A letter identifying a row on the microplate, e.g. A-H

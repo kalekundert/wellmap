@@ -87,7 +87,8 @@ microplate instruments to export data in this format.
    :file: basic_usage/std_curve.csv
    :header-rows: 1
 
-Below is the code to load this data into a tibble_ with the following columns:
+Below is the code to load this data into a tidy tibble_ with the following 
+columns:
 
 - *row*: A letter identifying a row on the microplate, e.g. A-H
 - *col*: A number identifying a column on the microplate, e.g. 1-12
