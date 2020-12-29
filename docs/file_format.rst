@@ -201,7 +201,7 @@ provide its name as one of the ``<attr>`` arguments.
 This layout demonstrates the difference between `[expt]` parameters and 
 metadata.  All of the wells on this plate have the same sample, but the sample 
 is relevant to the analysis and might vary in other layouts analyzed by the 
-same scripts.  In contrast, the name and date are just (useful) metadata.
+same script.  In contrast, the name and date are just (useful) metadata.
 
 .. example:: file_format/expt.toml
   :attrs: sample
@@ -443,39 +443,33 @@ Pattern syntax
 ==============
 You can specify multiple indices for any row, column, block, or well.  This can 
 often help reduce redundancy, which in turn helps reduce the chance of 
-mistakes.  The basic syntax is just comma-separated indices:
+mistakes.  The following table shows some examples of this syntax:
 
-=================================  =================================
+=================================  ==================================
 Syntax                             Meaning
-=================================  =================================
+=================================  ==================================
 ``[row.'A,B']``                    A, B
-``[col.'1,2']``                    1, 2
-``[well.'A1,A2']``                 A1, A2
-=================================  =================================
-
-Note that the quotes are necessary with this syntax because TOML doesn't allow 
-unquoted keys to contain commas.
-
-It is also possible to specify simple patterns of indices using the "ellipsis" 
-syntax:
-
-=================================  ==================================
-Syntax                             Meaning
-=================================  ==================================
 ``[row.'A,B,...,H']``              A, B, C, D, E, F, G, H
 ``[row.'A,C,...,G']``              A, C, E, G
+``[col.'1,2']``                    1, 2
 ``[col.'1,2,...,8']``              1, 2, 3, 4, 5, 6, 7, 8
 ``[col.'1,3,...,7']``              1, 3, 5, 7
+``[well.'A1,A2']``                 A1, A2
 ``[well.'A1,A2,...,A6']``          A1, A2, A3, A4, A5, A6
 ``[well.'A1,C3,...,E5']``          A1, A3, A5, C1, C3, C5, E1, E3, E5
 =================================  ==================================
 
-This syntax requires exactly 4 comma-separated elements in exactly the 
-following order:  the first, second, and fourth must be valid indices, and the 
-third must be an ellipsis ("...").  The first and fourth indices define the 
-start and end of the pattern (inclusive).  The offset between the first and 
-second indices defines the step size.  It must be possible to get from the 
-start to the end in steps of the given size.
+The most basic form of this syntax uses commas to specify multiple positions 
+for a single row, column, block, or well.  Note that the quotes are necessary 
+with this syntax because TOML doesn't allow unquoted keys to contain commas.
+
+A more advanced form of this syntax uses ellipses to specify simple patterns.  
+This form requires exactly 4 comma-separated elements in exactly the following 
+order:  the first, second, and fourth must be valid indices, and the third must 
+be an ellipsis ("...").  The first and fourth indices define the start and end 
+of the pattern (inclusive).  The offset between the first and second indices 
+defines the step size.  It must be possible to get from the start to the end in 
+steps of the given size.
 
 Note that for wells and blocks, the ellipsis pattern can propagate across both 
 rows and columns.  In this case, the second index specifies the step size in 
@@ -502,7 +496,7 @@ In these situations, which value is used depends on which well group has higher
 "precedence".  Below is a list of each well group, in order from highest to 
 lowest precedence.  In general, well groups that are more "specific" have 
 higher precedence.  Note that the order in which the wells appear in the layout 
-doesn't matter (except for |block| groups having the same area):
+doesn't affect precedence (except for |block| groups having the same area):
 
 - |well|
 - |block|
