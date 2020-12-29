@@ -84,16 +84,17 @@ following columns:
   
 .. code-block:: pycon
 
+    >>> import pandas as pd
     >>> def load_cq(path):
-    >>>     return (pd
-    >>>             .read_csv(path)
-    >>>             .rename(columns={'Cq': 'row'})
-    >>>             .melt(
-    >>>                     id_vars=['row'],
-    >>>                     var_name='col',
-    >>>                     value_name='Cq',
-    >>>             )
-    >>>     )
+    ...     return (pd
+    ...             .read_csv(path)
+    ...             .rename(columns={'Cq': 'row'})
+    ...             .melt(
+    ...                     id_vars=['row'],
+    ...                     var_name='col',
+    ...                     value_name='Cq',
+    ...             )
+    ...     )
     >>> data = load_cq('std_curve.csv')
     >>> data
        row col         Cq
