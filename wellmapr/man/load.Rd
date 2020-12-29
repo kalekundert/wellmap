@@ -164,7 +164,7 @@ b = 2
 }
 
 If we were to load this file with \code{extras='a'}, this return value would
-simply be \code{1}.  With \verb{extras=['a', 'b']}, the same return value would
+simply be \code{1}.  With \code{extras=list('a', 'b')}, the same return value would
 be \code{list(a=1, b=2)} instead.
 }
 

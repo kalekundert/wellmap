@@ -236,7 +236,7 @@ following arguments:
 Here we also provide the **path_guess** argument, which specifies that the 
 experimental data can be found in a CSV file with the same base name as the 
 layout.  Note that this argument uses the syntax for string formatting in 
-python, as described in the :doc:`API documentation <python_api>`.  It also 
+python, as described in the :doc:`API documentation <api_python>`.  It also 
 would've been possible to specify the path to the CSV directly from the TOML 
 file (see `meta.path`), in which case this argument would've been unnecessary.
 

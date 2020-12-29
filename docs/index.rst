@@ -18,6 +18,7 @@
    :hidden:
    
    file_format
-   python_api
+   api_python
+   api_r
    command_line
 
