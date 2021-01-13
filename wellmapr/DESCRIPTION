@@ -1,6 +1,6 @@
 Package: wellmapr
 Title: File format for 96-well plate layouts
-Version: 2.0.0
+Version: 2.1.0
 Authors@R: as.person(c(
   "Kale Kundert <kale@thekunderts.net> [aut, cre]"
   ))
@@ -11,7 +11,7 @@ Depends:
 Config/reticulate:
   list(
     packages = list(
-      list(package = "wellmap", version = "2.0.0", pip = TRUE)
+      list(package = "wellmap", version = "2.1.0", pip = TRUE)
     )
   )
 Roxygen: list(markdown = TRUE)
