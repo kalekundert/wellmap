@@ -4,7 +4,7 @@
 Visualize the plate layout described by a wellmap TOML file.
 
 Usage:
-    wellmap <toml> [<attr>...] [options]
+    wellmap <toml> [<attr>...] [-o <path>] [-p] [-c <color>] [-f]
 
 Arguments:
     <toml>
@@ -32,17 +32,27 @@ Options:
         (e.g. '$.svg'), it will be replaced with the base name of the <toml> 
         path.
 
-    -c --color NAME  [default: rainbow]
+    -p --print
+        Print a paper copy of the layout, e.g. to reference when setting up an 
+        experiment.  The default printer for the system will be used.  To see 
+        the current default printer, run: `lpstat -d`.  To change the default 
+        printer, run: `lpoptions -d <printer name>`.  When printing, the 
+        default color scheme is changed to 'dimgray'.  This can still be 
+        overridden using the '--color' flag.
+
+    -c --color NAME
         Use the given color scheme to illustrate which wells have which 
         properties.  The given NAME must be one of the color scheme names 
         understood by either `matplotlib` or `colorcet`.  See the links below 
-        for the full list of supported colors, but some common choices are:
+        for the full list of supported colors, but some common choices are 
+        given below.  The default is 'rainbow':
 
         rainbow:  blue, green, yellow, orange, red
         viridis:  purple, green, yellow
         plasma:   purple, red, yellow
         coolwarm: blue, red
         tab10:    blue, orange, green, red, purple, ...
+        dimgray:  gray, black
 
         Matplotlib colors:
         https://matplotlib.org/examples/color/colormaps_reference.html
@@ -60,7 +70,7 @@ import wellmap
 import colorcet
 import numpy as np
 import matplotlib.pyplot as plt
-import sys, os
+import sys, os, shlex
 
 from wellmap import ConfigError
 from inform import plural
@@ -80,22 +90,40 @@ BOTTOM_MARGIN = PAD_HEIGHT
 
 def main():
     import docopt
+    from subprocess import Popen, PIPE
 
     try:
         args = docopt.docopt(__doc__)
         toml_path = Path(args['<toml>'])
+        show_gui = not args['--output'] and not args['--print']
 
-        if not args['--foreground'] and not args['--output']:
+        if show_gui and not args['--foreground']:
             if os.fork() != 0:
                 sys.exit()
 
-        fig = show(toml_path, args['<attr>'], args['--color'])
+        default_color = 'dimgray' if args['--print'] else 'rainbow'
+        color = args['--color'] or default_color
+
+        fig = show(toml_path, args['<attr>'], color)
 
         if args['--output']:
             out_path = args['--output'].replace('$', toml_path.stem)
             fig.savefig(out_path)
             print("Layout written to:", out_path)
-        else:
+
+        if args['--print']:
+            lpr = [
+                'lpr',
+                '-o', 'ppi=600',
+                '-o', 'position=top-left',
+                '-o', 'page-top=36',  # 72 pt == 1 in
+                '-o', 'page-left=72',
+            ]
+            p = Popen(lpr, stdin=PIPE)
+            fig.savefig(p.stdin, format='png', dpi=600)
+            print("Layout sent to printer.")
+
+        if show_gui:
             title = str(toml_path)
             if args['<attr>']: title += f' [{", ".join(args["<attr>"])}]'
             fig.canvas.set_window_title(title)
