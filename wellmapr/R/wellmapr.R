@@ -89,13 +89,10 @@
 #' `path_guess` are acceptable for this purpose.
 #' 
 #' @param extras
-#' One or more keys to extract directly from the given TOML file.  Typically, 
-#' this would be used to get information pertaining to the whole analysis and 
-#' not any wells in particular (e.g. instruments used, preferred algorithms, 
-#' plotting parameters, etc.).  Either one key (string) or multiple keys (list) 
-#' can be specified.  [Dotted keys](https://github.com/toml-lang/toml#keys) are 
-#' supported.  Specifying this argument causes the value(s) corresponding to 
-#' the given key(s) to be returned, see below.
+#' If *TRUE*, return a named list containing any key/value pairs present in the 
+#' TOML file but not part of the layout.  Typically, this would be used to get 
+#' information pertaining to the whole analysis and not any wells in particular 
+#' (e.g. instruments used, preferred algorithms, plotting parameters, etc.).
 #' 
 #' @param report_dependencies
 #' If *TRUE*, return a vector of all the TOML files that were read in the 
@@ -156,18 +153,16 @@
 #'   
 #' If `extras` was provided:
 #' 
-#' - `extras`: The value(s) corresponding to the specified "extra" key(s).  If 
-#'   only one extra key was specified, only that value will be returned.  If 
-#'   multiple extra keys were specified, a named list containing the value for 
-#'   each such key will be returned.  For example, consider the following TOML 
+#' - `extras`: A named list containing any key/value pairs present in the TOML 
+#'   file but not part of the layout.  For example, consider the following TOML 
 #'   file:
 #' 
 #'       a = 1
 #'       b = 2
+#'       well.A1.c = 3
 #' 
-#'   If we were to load this file with `extras='a'`, this return value would 
-#'   simply be `1`.  With `extras=['a', 'b']`, the same return value would 
-#'   be `list(a=1, b=2)` instead.
+#'   If we were to load this file with `extras=True`, this return value would 
+#'   be `list(a=1, b=2)`.
 #'
 #' If `report_dependencies` was provided:
 #'

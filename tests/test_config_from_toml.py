@@ -251,49 +251,29 @@ def test_concat_err():
         'params', [
             dict(
                 path=DIR/'just_extras_ab.toml',
-                extra_keys='extras',
-                expected_extras={'extras': {'a': 1, 'b': 1}},
-            ),
-            dict(
-                path=DIR/'just_extras_ab.toml',
-                extra_keys=['extras.a', 'extras.b'],
-                expected_extras={'extras.a': 1, 'extras.b': 1},
+                expected={'extras': {'a': 1, 'b': 1}},
             ),
             dict(
                 path=DIR/'include_extras.toml',
-                extra_keys='extras',
-                expected_extras={'extras': {'a': 1, 'b': 1}},
-            ),
-            dict(
-                path=DIR/'include_extras.toml',
-                extra_keys=['extras.a', 'extras.b'],
-                expected_extras={'extras.a': 1, 'extras.b': 1},
+                expected={'extras': {'a': 1, 'b': 1}},
             ),
             dict(
                 path=DIR/'include_two_extras.toml',
-                extra_keys='extras',
-                expected_extras={'extras': {'a': 2, 'b': 1, 'c': 1}},
-            ),
-            dict(
-                path=DIR/'include_two_extras.toml',
-                extra_keys=['extras.a', 'extras.b', 'extras.c'],
-                expected_extras={'extras.a': 2, 'extras.b': 1, 'extras.c': 1},
+                expected={'extras': {'a': 2, 'b': 1, 'c': 1}},
             ),
 
             # Concatenated files are not searched for extras.
             dict(
                 path=DIR/'concat_extras.toml',
-                extra_keys='extras',
-                expected_extras={},
+                expected={},
             ),
         ]
 )
 def test_extras(params):
     config, paths, concats, extras, deps = config_from_toml(
             params['path'],
-            extra_keys=params['extra_keys'],
     )
-    assert extras == params['expected_extras']
+    assert extras == params['expected']
 
 @pytest.mark.parametrize(
         'path, expected_alerts', [(

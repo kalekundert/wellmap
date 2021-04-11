@@ -28,7 +28,7 @@ from .util import *
 #   dictionaries.  Columns identifying the plate and well are also added.
 
 def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None, 
-        path_required=False, extras=None, report_dependencies=False, 
+        path_required=False, extras=False, report_dependencies=False, 
         on_alert=None):
     """
     Load a microplate layout from a TOML file.
@@ -89,9 +89,9 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
           unpadded well names like "A1" cannot be merged with a column that 
           contains padded well names like "A01".  This is why the **layout** 
           data frame contains so many redundant columns: to increase the chance 
-          that one will correpond with a column provided by the data.  In some 
-          cases, though, it may be necessary for the **data_loader** function 
-          to construct an appropriate merge column.
+          that one will correspond exactly with a column provided by the data.  
+          In some cases, though, it may be necessary for the **data_loader** 
+          function to construct an appropriate merge column.
 
         - The data frame returned by **data_loader()** must be `"tidy"`__.  
           Briefly, a data frame is tidy if each of its columns represents a 
@@ -120,15 +120,12 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
         met.  Data files found via **path_guess** are acceptable for this 
         purpose.
 
-    :param str,list extras:
-        One or more keys to extract directly from the given TOML file.  
-        Typically, this would be used to get information pertaining to the 
-        whole analysis and not any wells in particular (e.g. instruments used, 
-        preferred algorithms, plotting parameters, etc.).  Either one key 
-        (string) or multiple keys (list of strings) can be specified.  `Dotted 
-        keys <https://github.com/toml-lang/toml#keys>`__ are supported.  
-        Specifying this argument causes the value(s) corresponding to the given 
-        key(s) to be returned, see below.
+    :param bool extras:
+        If true, return a dictionary containing any key/value pairs present in 
+        the TOML file but not part of the layout.  Typically, this would be 
+        used to get information pertaining to the whole analysis and not any 
+        wells in particular (e.g. instruments used, preferred algorithms, 
+        plotting parameters, etc.).
 
     :param bool report_dependencies:
         If true, return a set of all the TOML files that were read in the 
@@ -188,18 +185,16 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
           
         If **extras** was provided:
  
-        - **extras** – The value(s) corresponding to the specified "extra" 
-          key(s).  If only one extra key was specified, only that value will be 
-          returned.  If multiple extra keys were specified, a `dict` containing 
-          the value for each such key will be returned.  For example, consider 
-          the following TOML file::
+        - **extras** – A dictionary containing any key/value pairs present in 
+          the TOML file but not part of the layout.  For example, consider the 
+          following TOML file::
  
               a = 1
               b = 2
+              well.A1.c = 3
  
-          If we were to load this file with ``extras='a'``, this return 
-          value would simply be ``1``.  With ``extras=['a', 'b']``, the same 
-          return value would be ``{'a': 1, 'b': 2}`` instead.
+          If we were to load this file with ``extras=True``, this return 
+          value would be ``{'a': 1, 'b': 2}``.
 
         If **report_dependencies** was provided:
 
@@ -213,26 +208,23 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
 
     try:
         ## Parse the TOML file:
+        extras_requested = extras
         config, paths, concats, extras, deps = config_from_toml(
                 toml_path,
                 path_guess=path_guess,
-                extra_keys=extras,
                 on_alert=on_alert,
         )
 
-        def add_extras(*args, include_deps=True):
+        def augment_return_value(*args):
             """
             Helper function to work out which values to return, depending on 
             whether or not the caller wants any "extras" (i.e. key/value pairs 
             in the TOML file that wouldn't otherwise be parsed) or "deps" (i.e. 
             all the layout files that this one depends on).
             """
-            if len(extras) == 1:
-                args += list(extras.values())[0],
-            if len(extras) > 1:
+            if extras_requested:
                 args += extras,
-
-            if include_deps and report_dependencies:
+            if report_dependencies:
                 args += deps,
 
             return args if len(args) != 1 else args[0]
@@ -243,7 +235,7 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
             (i.e. key/value pairs in the TOML file requested by the caller) to 
             the **data_loader** function.
             """
-            if not extras:
+            if not extras_requested:
                 return {}
 
             sig = inspect.signature(data_loader)
@@ -253,7 +245,7 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
             if sig.parameters['extras'].kind != inspect.Parameter.POSITIONAL_OR_KEYWORD:
                 return {}
 
-            return {'extras': add_extras(include_deps=False)}
+            return {'extras': extras}
 
         layout = table_from_config(config, paths)
         layout = pd.concat([layout, *concats], sort=False)
@@ -269,7 +261,7 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
         if data_loader is None:
             if merge_cols is not None:
                 raise ValueError("Specified columns to merge, but no function to load data!")
-            return add_extras(layout)
+            return augment_return_value(layout)
 
         data = pd.DataFrame()
 
@@ -280,7 +272,7 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
 
         ## Merge the layout and the data into a single data frame:
         if not merge_cols:
-            return add_extras(layout, data)
+            return augment_return_value(layout, data)
 
         if merge_cols is True:
             # Let pandas choose which columns to merge on.
@@ -301,7 +293,7 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
             }
 
         merged = pd.merge(layout, data, **kwargs)
-        return add_extras(merged)
+        return augment_return_value(merged)
 
     except ConfigError as err:
         err.toml_path = toml_path
@@ -312,14 +304,6 @@ def config_from_toml(toml_path, *, path_guess=None, extra_keys=None, on_alert=No
     config = configdict(toml.load(str(toml_path)))
     concats = []
     deps = {toml_path}
-
-    def iter_extra_keys():
-        if extra_keys is None:
-            return
-        elif isinstance(extra_keys, str):
-            yield extra_keys
-        else:
-            yield from extra_keys
 
     def iter_include_paths():
         try:
@@ -361,11 +345,8 @@ def config_from_toml(toml_path, *, path_guess=None, extra_keys=None, on_alert=No
         for plate_name, path in paths:
             yield plate_name, resolve_path(toml_path, path)
 
-    # Find any specific fields requested by the caller.
-    extras = {}
-    for key in iter_extra_keys():
-        try: extras[key] = get_dotted_key(config, key)
-        except KeyError: pass
+    # Find any non-wellmap fields requested by the caller.
+    extras = config.user
 
     # Synthesize any available path information.
     paths = PathManager(

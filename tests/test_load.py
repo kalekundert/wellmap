@@ -102,25 +102,15 @@ def test_one_well():
             Data='xy',
     )
 
-@pytest.mark.parametrize(
-        "extras_arg,expected", [
-            ('extras', {'a': 1, 'b': 1}),
-            (['extras.a', 'extras.b'], {'extras.a': 1, 'extras.b': 1}),
-        ]
-)
-def test_one_well_with_extras(extras_arg, expected):
+def test_one_well_with_extras():
+    expected = {'extras': {'a': 1, 'b': 1}}
 
     def data_loader(path, extras):
         assert extras == expected
         return pd.read_csv(path)
 
-    # No data
-    labels, extras = wellmap.load(
-            DIR/'one_well_xy_extras.toml',
-            extras=extras_arg,
-    )
-    assert extras == expected
-    assert row(labels, 'well == "A1"') == dict(
+    # No data:
+    a1_expected = dict(
             well='A1',
             well0='A01',
             row='A', col='1',
@@ -129,24 +119,38 @@ def test_one_well_with_extras(extras_arg, expected):
             y=1,
     )
 
-    _, extras, deps = wellmap.load(
+    labels, extras = wellmap.load(
             DIR/'one_well_xy_extras.toml',
-            extras=extras_arg,
+            extras=True,
+    )
+    assert row(labels, 'well == "A1"') == a1_expected
+    assert extras == expected
+
+    # No data, with extras present but not requested:
+    labels = wellmap.load(
+            DIR/'one_well_xy_extras.toml',
+    )
+    assert row(labels, 'well == "A1"') == a1_expected
+
+    # No data, with extras and dependencies requested:
+    labels, extras, deps = wellmap.load(
+            DIR/'one_well_xy_extras.toml',
+            extras=True,
             report_dependencies=True,
     )
+    assert row(labels, 'well == "A1"') == a1_expected
     assert extras == expected
     assert deps == {
             DIR/'one_well_xy_extras.toml',
     }
 
-    # Load labels and data, but don't merge.
+    # Load labels and data, but don't merge:
     labels, data, extras = wellmap.load(
             DIR/'one_well_xy_extras.toml',
             data_loader=data_loader,
             path_guess='{0.stem}.csv',
-            extras=extras_arg,
+            extras=True,
     )
-    assert extras == expected
     assert row(labels, 'well == "A1"') == dict(
             path=DIR/'one_well_xy_extras.csv',
             well='A1',
@@ -161,8 +165,9 @@ def test_one_well_with_extras(extras_arg, expected):
             path=DIR/'one_well_xy_extras.csv',
             Data='xy',
     )
+    assert extras == expected
 
-    # Automatic merge
+    # Automatic merge:
     a1_expected = dict(
             path=DIR/'one_well_xy_extras.csv',
             well='A1',
@@ -180,20 +185,20 @@ def test_one_well_with_extras(extras_arg, expected):
             data_loader=data_loader,
             merge_cols={'well': 'Well'},
             path_guess='{0.stem}.csv',
-            extras=extras_arg,
+            extras=True,
     )
-    assert extras == expected
     assert row(df, 'well == "A1"') == a1_expected
+    assert extras == expected
 
     df, extras = wellmap.load(
             DIR/'one_well_xy_extras.toml',
             data_loader=read_csv_and_rename,
             merge_cols=True,
             path_guess='{0.stem}.csv',
-            extras=extras_arg,
+            extras=True,
     )
-    assert extras == expected
     assert row(df, 'well == "A1"') == a1_expected
+    assert extras == expected
 
 def test_one_plate():
     labels = wellmap.load(DIR/'one_plate.toml')

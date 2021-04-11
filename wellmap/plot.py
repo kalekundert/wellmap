@@ -29,8 +29,8 @@ Options:
     -o --output PATH
         Output an image of the layout to the given path.  The file type is 
         inferred from the file extension.  If the path contains a dollar sign 
-        (e.g. '$.svg'), it will be replaced with the base name of the <toml> 
-        path.
+        (e.g. '$.svg'), the dollar sign will be replaced with the base name of 
+        the <toml> path.
 
     -p --print
         Print a paper copy of the layout, e.g. to reference when setting up an 
