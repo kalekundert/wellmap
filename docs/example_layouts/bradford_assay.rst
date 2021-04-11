@@ -25,8 +25,8 @@ example:
   .. code-block:: pycon
 
     >>> import wellmap
-    >>> df, ex = wellmap.load('bradford_assay.toml', extras='bradford')
+    >>> df, ex = wellmap.load('bradford_assay.toml', extras=True)
     >>> ex
-    {'format': 'biotek', 'absorbance': '595/450'}
+    {'bradford': {'format': 'biotek', 'absorbance': '595/450'}}
 
 .. example:: bradford_standards.toml bradford_assay.toml
