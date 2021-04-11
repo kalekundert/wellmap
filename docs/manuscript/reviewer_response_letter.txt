@@ -1,0 +1,7 @@
+I thank the reviewer for taking the time to read this manuscript and make suggestions on how to improve it.  Below are my responses to the specific points raised:
+
+1. I agree that the original title was slightly misleading in this regard, so I changed it to "Wellmap: A file format for microplate layouts"
+
+2. I agree that the original manuscript did not include enough discussion of the various alternatives to wellmap, so I added a paragraph to the discussion briefly describing the pros and cons of the various alternatives.  I also modified the "Related software" page of the wellmap online documentation to include a slightly more detailed version of this discussion.  I did not include platetools in the manuscript, because I could not figure out exactly what it does from reading its documentation (although it does seem to be related to microplate layouts).
+
+

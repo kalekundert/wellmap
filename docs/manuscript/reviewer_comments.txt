@@ -1,0 +1,15 @@
+Reviewer reports:
+Reviewer 1: The manuscript titled "Wellmap: A file format for 96-well plates" 
+describes a better approach to analyzing microplate data. In my opinion, this 
+new tool could be helpful for wet-lab researchers in analyzing data with ease 
+due to its layout visualization feature.
+
+As minor remarks,
+
+1. although the text describes that Wellmap could accommodate any layout, the 
+   tile says only "96-wells".
+
+2. Author demands Wellmap is better comparing plater, plate_maps, etc. I think 
+   it would be helpful for readers to appreciate Wellmap if a pros and cons 
+   comparison with existing tools (plater, plate_maps, platetools, cellHTS, 
+   Plateo, Bioplate) incorporated in the discussion.

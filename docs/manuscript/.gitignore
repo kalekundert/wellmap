@@ -2,6 +2,10 @@
 !*.svg
 *.pdf
 
+# Track changes
+original_submission*
+*track_changes*
+
 ## Misc
 .dep
 
