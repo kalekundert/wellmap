@@ -50,7 +50,7 @@ test_that("`data_loader()` gets the `extras` argument", {
                            'toml/one_well_xy_extras.toml',
                            data_loader=data_loader,
                            merge_cols=TRUE,
-                           extras="extras",
+                           extras=TRUE,
                            path_guess="{0.stem}.csv")
   layout[[1]]$path <- NULL
 
@@ -66,7 +66,7 @@ test_that("`data_loader()` gets the `extras` argument", {
                          Data="xy")
 
   expect_equivalent(!!layout[[1]], !!expected)
-  expect_equivalent(layout[[2]], list(a=1, b=1))
+  expect_equivalent(layout[[2]], list(extras=list(a=1, b=1)))
 })
 
 test_that("`on_alert()` path converted into string", {
