@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v3.0.0 (2021-04-11)
+### Feature
+* Simplify the *extras* argument ([`7558f7a`](https://github.com/kalekundert/wellmap/commit/7558f7ad18917fc3ef9beef60921b7fbe94ff0a3))
+
+### Breaking
+* Scipts using the *extras* argument will need to be corrected.  ([`7558f7a`](https://github.com/kalekundert/wellmap/commit/7558f7ad18917fc3ef9beef60921b7fbe94ff0a3))
+
+### Documentation
+* Fix the Bradford assay example ([`6e06004`](https://github.com/kalekundert/wellmap/commit/6e060040cb40d2611866c2e38d88f74dfadb50a3))
+
 ## v2.1.0 (2021-01-13)
 ### Feature
 * Teach wellmap how to print layouts ([`2e1cfe4`](https://github.com/kalekundert/wellmap/commit/2e1cfe4ffb06b69a21a61037b926f60d8175a496))
