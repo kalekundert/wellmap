@@ -21,4 +21,5 @@
    api_python
    api_r
    command_line
+   versions
 

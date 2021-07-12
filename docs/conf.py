@@ -23,6 +23,7 @@ extensions = [
         'sphinx.ext.napoleon',
         'sphinx.ext.viewcode',
         'sphinxcontrib.programoutput',
+        'myst_parser',
 ]
 intersphinx_mapping = {
         'python': ('https://docs.python.org/3', None),
