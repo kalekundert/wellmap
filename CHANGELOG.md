@@ -6,6 +6,16 @@ code, while major version upgrades (e.g. 1.1 to 2.0) might.
 
 <!--next-version-placeholder-->
 
+## v3.0.1 (2021-10-01)
+### Fix
+* Allow multiple patterns to define the same well ([`d0d852c`](https://github.com/kalekundert/wellmap/commit/d0d852c6fcffc47ec063ffaab163fe0dbcdff13b))
+
+### Documentation
+* Add link the semantic versioning website ([`eb2f5f2`](https://github.com/kalekundert/wellmap/commit/eb2f5f23d1847c60a9f037e312a030dad4552b30))
+* Include the change log in the online docs ([`727f03f`](https://github.com/kalekundert/wellmap/commit/727f03fdfc255dc133a6198f96c20569ee9f386f))
+* Revise manuscript after peer review ([`0823802`](https://github.com/kalekundert/wellmap/commit/08238027018c3afddd0bad5b2d4339800329b8d6))
+* Briefly describe each alternative sfotware ([`336b47a`](https://github.com/kalekundert/wellmap/commit/336b47a1267589bce760f36da832d4aaf60258bd))
+
 ## v3.0.0 (2021-04-11)
 ### Feature
 * Simplify the *extras* argument ([`7558f7a`](https://github.com/kalekundert/wellmap/commit/7558f7ad18917fc3ef9beef60921b7fbe94ff0a3))
