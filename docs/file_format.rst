@@ -416,7 +416,7 @@ multiple blocks:
 =========
 Specify parameters for the given well (e.g. "A1").  You can use the `pattern 
 syntax`_ specify multiple wells at once, e.g. ``[well.'A1,A3']`` or 
-``[well.'A1,B3,...C11']``.
+``[well.'A1,B3,...,C11']``.
 
 .. rubric:: Examples:
 
