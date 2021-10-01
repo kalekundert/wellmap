@@ -1,8 +1,8 @@
 # Versions
 
-Wellmap uses semantic versioning.  Briefly, this means that minor version 
-upgrades (e.g. 1.1 to 1.2) will never break any existing code, while major 
-version upgrades (e.g. 1.1 to 2.0) might.
+Wellmap uses [semantic versioning](https://semver.org/).  Briefly, this means 
+that minor version upgrades (e.g. 1.1 to 1.2) will never break any existing 
+code, while major version upgrades (e.g. 1.1 to 2.0) might.
 
 <!--next-version-placeholder-->
 
