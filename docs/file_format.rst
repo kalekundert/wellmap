@@ -495,8 +495,7 @@ happen:
 In these situations, which value is used depends on which well group has higher 
 "precedence".  Below is a list of each well group, in order from highest to 
 lowest precedence.  In general, well groups that are more "specific" have 
-higher precedence.  Note that the order in which the wells appear in the layout 
-doesn't affect precedence (except for |block| groups having the same area):
+higher precedence:
 
 - |well|
 - |block|
@@ -549,6 +548,24 @@ precedence rules:
 
    # Specify how many wells to show.
    [block.5x5.A1]
+
+Note that the order in which the well groups appear in the layout usually 
+doesn't matter.  It only matters if there are two well groups with equal 
+precedence, in which case the one that appears later will be given higher 
+precedence.  This situation only really comes up when using patterns.  For 
+example, note how earlier values are overridden by later values in the 
+following layout:
+
+.. example:: file_format/order.toml
+
+  [well.A1]
+  sample = 'α'
+
+  [well.'A1,A2']
+  sample = 'β'
+
+  [well.A2]
+  sample = 'γ'
 
 
 .. _toml: https://github.com/toml-lang/toml

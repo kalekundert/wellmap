@@ -819,16 +819,47 @@ def test_multi_letter_well():
             (26,0): {'x': 1},
     }
 
-def test_redundant_well_names():
+def test_redundant_wells_alias():
+    # Referring to the same well with two different names like this is 
+    # definitely a bad idea, but it's not really practical to forbid this while 
+    # allowing patterns to have overlapping wells.
     config = {
             'well': {
-                'A1': {'x': 1},
+                'A1':  {'x': 1},
                 'A01': {'y': 1},
             },
     }
-    with raises(ConfigError, match='[well.(A1|A01)]'):
-        wells_from_config(config)
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+    }
 
+def test_redundant_wells_diff():
+    config = {
+            'well': {
+                'A1': {'x': 1},
+                'A1,A2': {'y': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (0,1): {        'y': 1},
+    }
+
+def test_redundant_wells_same():
+    config = {
+            'well': {
+                'A1':    {'x': 1},
+                'A1,A2': {'x': 2},
+                'A2':    {'x': 3},
+
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 2},
+            (0,1): {'x': 3},
+    }
+
+def test_redundant_cols_diff():
     config = {
             'row': {
                 'A': {},
@@ -843,6 +874,23 @@ def test_redundant_well_names():
             (0,1): {        'y': 1},
     }
 
+def test_redundant_cols_same():
+    config = {
+            'row': {
+                'A': {},
+            },
+            'col': {
+                '1':   {'x': 1},
+                '1,2': {'x': 2},
+                '2':   {'x': 3},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 2},
+            (0,1): {'x': 3},
+    }
+
+def test_redundant_rows_diff():
     config = {
             'row': {
                 'A': {'x': 1},
@@ -855,4 +903,20 @@ def test_redundant_well_names():
     assert wells_from_config(config) == {
             (0,0): {'x': 1, 'y': 1},
             (1,0): {        'y': 1},
+    }
+
+def test_redundant_rows_same():
+    config = {
+            'row': {
+                'A':   {'x': 1},
+                'A,B': {'x': 2},
+                'B':   {'x': 3},
+            },
+            'col': {
+                '1': {},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 2},
+            (1,0): {'x': 3},
     }

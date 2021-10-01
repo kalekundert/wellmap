@@ -453,9 +453,8 @@ def wells_from_config(config):
 
     ## Create and fill in wells defined by 'well' blocks.
     for ij, subconfig in iter_wells(config.wells):
-        if ij in wells:
-            raise ConfigError(f"[well.{well_from_ij(*ij)}] defined more than once.")
-        wells[ij] = deepcopy(subconfig)
+        wells.setdefault(ij, {})
+        recursive_merge(wells[ij], subconfig, overwrite=True)
 
     ## Create new wells implied by any 'block' blocks:
     blocks = {}
@@ -495,7 +494,7 @@ def wells_from_config(config):
         
         for a, subconfig in iter[dim](before):
             after.setdefault(a, {})
-            recursive_merge(after[a], subconfig)
+            recursive_merge(after[a], subconfig, overwrite=True)
 
         return after
 
