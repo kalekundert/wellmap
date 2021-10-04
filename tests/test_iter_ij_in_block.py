@@ -3,8 +3,8 @@
 import pytest
 from wellmap import *
 
-def test_iter_ij_in_block():
-    examples = [
+@pytest.mark.parametrize(
+        'args, expected', [
             (((0,0), 0, 0), []),
             (((0,0), 0, 1), []),
             (((0,0), 1, 0), []),
@@ -28,7 +28,8 @@ def test_iter_ij_in_block():
             (((1,0), 2, 1), [(1,0), (1,1)]),
             (((1,0), 1, 2), [(1,0), (2,0)]),
             (((1,0), 2, 2), [(1,0), (1,1), (2,0), (2,1)]),
-    ]
-    for args, expected in examples:
-        print(args)
-        assert set(iter_ij_in_block(*args)) == set(expected)
+        ],
+)
+def test_iter_ij_in_block(args, expected):
+    print(args)
+    assert set(iter_ij_in_block(*args)) == set(expected)
