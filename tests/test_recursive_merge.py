@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-from wellmap import *
+import wellmap
+import pytest
 
-def test_recursive_merge():
-    examples = [
+@pytest.mark.parametrize(
+        'a, b, overwrite, x', [
             ({},              {},              False, {}),
             ({},              {'x': 1},        False, {'x': 1}),
             ({'x': 1},        {'x': 1},        False, {'x': 1}),
@@ -33,8 +34,9 @@ def test_recursive_merge():
             ({'x': {'y': 1}}, {'x': {'y': 2}}, True,  {'x': {'y': 2}}),
             ({'x': {'y': 1}}, {'x': 1},        True,  {'x': 1}),
             ({'x': {'y': 1}}, {},              True,  {'x': {'y': 1}}),
-    ]
-    for a, b, overwrite, x in examples:
-        recursive_merge(a, b, overwrite)
-        assert a == x
+        ],
+)
+def test_recursive_merge(a, b, overwrite, x):
+    wellmap.recursive_merge(a, b, overwrite)
+    assert a == x
 

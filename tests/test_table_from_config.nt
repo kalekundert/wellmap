@@ -1,0 +1,146 @@
+test_table_from_config:
+  -
+    id: only-plate
+    config:
+      expt:
+        y: 2
+      well:
+        A1:
+          x: 1
+
+    expected:
+      -
+        path: '/path/to/data'
+        well: 'A1'
+        well0: 'A01'
+        row: 'A'
+        col: '1'
+        row_i: 0
+        col_j: 0
+        x: 1
+        y: 2
+
+  -
+    id: named-plates
+    config:
+      plate:
+        Q:
+          {well: {A1: {x: 1}}}
+        R:
+          {well: {A1: {x: 2}}}
+
+    expected:
+      -
+        plate: 'Q'
+        path: '/path/to/q'
+        well: 'A1'
+        well0: 'A01'
+        row: 'A'
+        col: '1'
+        row_i: 0
+        col_j: 0
+        x: 1
+      -
+        plate: 'R'
+        path: '/path/to/r'
+        well: 'A1'
+        well0: 'A01'
+        row: 'A'
+        col: '1'
+        row_i: 0
+        col_j: 0
+        x: 2
+
+  -
+    id: named-plates-with-defaults
+    config:
+      expt:
+        {z: 1}
+      well:
+        {A1: {x: 1, y: 1}}
+      plate:
+        Q:
+          {well: {A1: {x: 2}}}
+        R:
+          {well: {A1: {y: 2}}}
+
+    expected:
+      -
+        plate: 'Q'
+        path: '/path/to/q'
+        well: 'A1'
+        well0: 'A01'
+        row: 'A'
+        col: '1'
+        row_i: 0
+        col_j: 0
+        x: 2
+        y: 1
+        z: 1
+      -
+        plate: 'R'
+        path: '/path/to/r'
+        well: 'A1'
+        well0: 'A01'
+        row: 'A'
+        col: '1'
+        row_i: 0
+        col_j: 0
+        x: 1
+        y: 2
+        z: 1
+
+  -
+    id: top-level
+    config:
+      plate:
+        Q:
+          y: 3
+          well:
+            {A1: {x: 1}}
+        R:
+          y: 4
+          well:
+            {A1: {x: 2}}
+
+    expected:
+      -
+        plate: 'Q'
+        path: '/path/to/q'
+        well: 'A1'
+        well0: 'A01'
+        row: 'A'
+        col: '1'
+        row_i: 0
+        col_j: 0
+        x: 1
+        y: 3
+      -
+        plate: 'R'
+        path: '/path/to/r'
+        well: 'A1'
+        well0: 'A01'
+        row: 'A'
+        col: '1'
+        row_i: 0
+        col_j: 0
+        x: 2
+        y: 4
+
+  -
+    id: err-no-plate-name
+    config:
+      plate:
+        x: 1
+    error:
+      type: ConfigError
+      message: Illegal attribute 'x'
+  -
+    id: err-expt-in-plate
+    config:
+      plate:
+        Q:
+          expt: 1
+    error:
+      type: ConfigError
+      message: \[expt\] in \[plate\]

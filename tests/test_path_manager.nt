@@ -1,0 +1,98 @@
+test_index_for_only_plate:
+  -
+    id: base
+    files:
+      a.dat:
+    manager: PathManager('a.dat', None, DIR/'z.toml')
+    expected:
+      path: DIR/'a.dat'
+  -
+    id: base-not-found
+    manager: PathManager('a.dat', None, DIR/'z.toml')
+    error:
+      type: ConfigError
+      message: a\.dat
+  -
+    id: ambiguous
+    manager: PathManager(None, {'a': 'a.dat'}, DIR/'z.toml')
+    error:
+      type: ConfigError
+      message: \('a'\)
+  -
+    id: ambiguous-empty
+    # Don't need `paths` to be non-empty; it's ambiguous to even be specified.
+    manager: PathManager(None, {}, DIR/'z.toml')
+    error:
+      type: ConfigError
+      message: \(\)
+  -
+    id: guess
+    files:
+      a.dat:
+    manager: PathManager(None, None, DIR/'a.toml', '{0.stem}.dat')
+    expected:
+      path: DIR/'a.dat'
+  -
+    id: guess-not-found
+    manager: PathManager(None, None, DIR/'a.toml', '{0.stem}.dat')
+    error:
+      type: ConfigError
+      message: a\.dat
+  -
+    id: no-path
+    manager: PathManager(None, None, DIR/'z.toml')
+    expected:
+      {}
+
+test_index_for_named_plate:
+  -
+    id: dict
+    files:
+      a.dat:
+      b.dat:
+    manager: PathManager(None, {'a': 'a.dat', 'b': 'b.dat'}, DIR/'z.toml')
+    expected:
+      a:
+        plate: 'a'
+        path: DIR/'a.dat'
+      b:
+        plate: 'b'
+        path: DIR/'b.dat'
+    errors:
+      c:
+        type: ConfigError
+        message: 'c'
+  -
+    id: str
+    files:
+      a.dat:
+      b.dat:
+    manager: PathManager(None, '{}.dat', DIR/'z.toml')
+    expected:
+      a:
+        plate: 'a'
+        path: DIR/'a.dat'
+      b:
+        plate: 'b'
+        path: DIR/'b.dat'
+    errors:
+      c:
+        type: ConfigError
+        message: 'c'
+  -
+    id: no-paths
+    manager: PathManager(None, None, DIR/'z.toml')
+    expected:
+      a:
+        plate: 'a'
+      b:
+        plate: 'b'
+      c:
+        plate: 'c'
+  -
+    id: err-unknown-type
+    manager: PathManager(None, ['a'], DIR/'z.toml')
+    errors:
+      a:
+        type: ConfigError
+        message: list

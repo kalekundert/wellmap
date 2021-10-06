@@ -1,6 +1,0 @@
-[meta]
-concat = 'one_well_xy.toml'
-
-[well.A2]
-x = 2
-y = 2

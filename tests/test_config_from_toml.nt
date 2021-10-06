@@ -1,0 +1,509 @@
+test_config_from_toml:
+  -
+    id: extras
+    files:
+      main.toml:
+        > a = 1
+    extras:
+      a: 1
+  -
+    id: alert
+    files:
+      main.toml:
+        > [meta]
+        > alert = "A"
+    alerts:
+      -
+        path: main.toml
+        message: A
+  -
+    id: include
+    files:
+      main.toml:
+        > [meta]
+        > include = 'include.toml'
+        >
+        > [well.A1]
+        > x = 2
+
+      include.toml:
+        > [well.A1]
+        > x = 1
+        > y = 1
+
+    config:
+      well:
+        A1:
+          x: 2
+          y: 1
+  -
+    id: include-list
+    files:
+      main.toml:
+        > [meta]
+        > include = [
+        >   'include_1.toml',
+        >   'include_2.toml',
+        > ]
+        >
+        > [well.A1]
+        > x = 3
+
+      include_1.toml:
+        > [well.A1]
+        > x = 1
+        > y = 1
+        > z = 1
+
+      include_2.toml:
+        > [well.A1]
+        > x = 2
+        > y = 2
+        >
+
+    config:
+      well:
+        A1:
+          x: 3
+          y: 2
+          z: 1
+  -
+    id: include-nested
+    files:
+      main.toml:
+        > [meta]
+        > include = 'include_2.toml'
+        >
+        > [well.A1]
+        > x = 3
+
+      include_2.toml:
+        > [meta]
+        > include = 'include_1.toml'
+        >
+        > [well.A1]
+        > x = 2
+        > y = 2
+
+      include_1.toml:
+        > [well.A1]
+        > x = 1
+        > y = 1
+        > z = 1
+        >
+
+    config:
+      well:
+        A1:
+          x: 3
+          y: 2
+          z: 1
+  -
+    id: include-concat
+    files:
+      main.toml:
+        > [meta]
+        > include = 'concat_a1_a2.toml'
+        >
+        > [well.A2]
+        > x = 3
+
+      concat_a1_a2.toml:
+        > [meta]
+        > concat = 'a1.toml'
+        >
+        > [well.A2]
+        > x = 2
+        > y = 2
+
+      a1.toml:
+        > [well.A1]
+        > x = 1
+        > y = 1
+
+    config:
+      well:
+        A2:
+          x: 3
+          y: 2
+
+    concats:
+      -
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+          y: 1
+  -
+    id: include-extras
+    files:
+      main.toml:
+        > [meta]
+        > include = 'extras.toml'
+      extras.toml:
+        > a = 1
+    extras:
+      a: 1
+  -
+    id: include-extras-list
+    files:
+      main.toml:
+        > meta.include = [
+        >     'extras_3.toml',
+        >     'extras_2.toml',
+        > ]
+        > a = 1
+      extras_2.toml:
+        > a = 2
+        > b = 2
+      extras_3.toml:
+        > a = 3
+        > b = 3
+        > c = 3
+    extras:
+      a: 1
+      b: 2
+      c: 3
+  -
+    id: include-extras-nested
+    files:
+      main.toml:
+        > meta.include = 'extras_2.toml'
+        > a = 1
+      extras_2.toml:
+        > meta.include = 'extras_3.toml'
+        > a = 2
+        > b = 2
+      extras_3.toml:
+        > a = 3
+        > b = 3
+        > c = 3
+    extras:
+      a: 1
+      b: 2
+      c: 3
+  -
+    id: include-alert
+    files:
+      main.toml:
+        > [meta]
+        > include = 'alert.toml'
+        > alert = "A"
+      alert.toml:
+        > [meta]
+        > alert = "B"
+    alerts:
+      -
+        path: alert.toml
+        message: B
+      -
+        path: main.toml
+        message: A
+  -
+    id: include-err-nonexistent
+    files:
+      main.toml:
+        > [meta]
+        > include = 'does_not_exist.toml'
+    error: FileNotFoundError
+  -
+    id: include-err-wrong-type
+    files:
+      main.toml:
+        > [meta]
+        > include = 0
+    error:
+      type: wellmap.ConfigError
+      message: expected 'meta.include' to be string or list, not 0
+  -
+    id: concat
+    files:
+      main.toml:
+        > [meta]
+        > concat = 'concat.toml'
+        >
+        > [well.A2]
+        > x = 1
+
+      concat.toml:
+        > [well.A1]
+        > x = 2
+
+    config:
+      well:
+        A2:
+          x: 1
+
+    concats:
+      -
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 2
+  -
+    id: concat-data
+    files:
+      main.toml:
+        > [meta]
+        > concat = 'concat.toml'
+        >
+        > [well.A2]
+        > x = 1
+
+      concat.toml:
+        > [well.A1]
+        > x = 2
+
+      concat.csv:
+        > Well,Data
+        > A1,two
+
+    kwargs:
+      path_guess: '{0.stem}.csv'
+
+    config:
+      well:
+        A2:
+          x: 1
+
+    concats:
+      -
+        -
+          path: DIR/'concat.csv'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 2
+  -
+    id: concat-list
+    files:
+      main.toml:
+        > [meta]
+        > concat = [
+        >     'concat_2.toml',
+        >     'concat_3.toml',
+        > ]
+        >
+        > [well.A1]
+        > x = 1
+
+      concat_2.toml:
+        > [well.A1]
+        > x = 2
+
+      concat_3.toml:
+        > [well.A1]
+        > x = 3
+
+    config:
+      well:
+        A1:
+          x: 1
+
+    concats:
+      -
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 2
+      -
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 3
+  -
+    id: concat-dict
+    files:
+      main.toml:
+        > [meta.concat]
+        > a = 'concat_2.toml'
+        > b = 'concat_3.toml'
+        >
+        > [well.A1]
+        > x = 1
+
+      concat_2.toml:
+        > [well.A1]
+        > x = 2
+
+      concat_2.csv:
+        > Well,Data
+        > A1,two
+
+      concat_3.toml:
+        > [well.A1]
+        > x = 3
+
+      concat_3.csv:
+        > Well,Data
+        > A1,three
+
+    kwargs:
+      path_guess: '{0.stem}.csv'
+
+    config:
+      well:
+        A1:
+          x: 1
+
+    concats:
+      -
+        -
+          path: DIR/'concat_2.csv'
+          plate: 'a'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 2
+      -
+        -
+          path: DIR/'concat_3.csv'
+          plate: 'b'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 3
+  -
+    id: concat-nested
+    files:
+      main.toml:
+        > [meta]
+        > concat = 'concat_2.toml'
+        >
+        > [well.A1]
+        > x = 1
+
+      concat_2.toml:
+        > [meta]
+        > concat = 'concat_3.toml'
+        >
+        > [well.A2]
+        > x = 2
+
+      concat_3.toml:
+        > [well.A3]
+        > x = 3
+
+    config:
+      well:
+        A1:
+          x: 1
+
+    concats:
+      -
+        -
+          well: 'A2'
+          well0: 'A02'
+          row: 'A'
+          col: '2'
+          row_i: 0
+          col_j: 1
+          x: 2
+        -
+          well: 'A3'
+          well0: 'A03'
+          row: 'A'
+          col: '3'
+          row_i: 0
+          col_j: 2
+          x: 3
+  -
+    id: concat-extras
+    # Concatenated files are not searched for extras.
+    files:
+      main.toml:
+        > [meta]
+        > concat = 'concat.toml'
+
+      concat.toml:
+        > a = 1
+        >
+        > [well.A1]
+        > x = 1
+
+    extras:
+      {}
+
+    concats:
+      -
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+  -
+    id: concat-alert
+    files:
+      main.toml:
+        > [meta]
+        > concat = 'alert.toml'
+        > alert = "A"
+      alert.toml:
+        > [meta]
+        > alert = "B"
+        > [well.A1]
+        > x = 1
+
+    alerts:
+      -
+        path: alert.toml
+        message: B
+      -
+        path: main.toml
+        message: A
+
+    concats:
+      -
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+  -
+    id: concat-err-nonexistent
+    files:
+      main.toml:
+        > [meta]
+        > concat = 'does_not_exist.toml'
+    error: FileNotFoundError
+  -
+    id: concat-err-wrong-type
+    files:
+      main.toml:
+        > [meta]
+        > concat = 0
+    error:
+      type: wellmap.ConfigError
+      message: expected 'meta.concat' to be string, list, or dictionary, not 0
+

@@ -1,0 +1,734 @@
+test_load:
+  -
+    id: one-well
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+  -
+    id: one-well-guess
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,2
+
+    kwargs:
+      path_guess: '{0.stem}.csv'
+
+    expected:
+      labels:
+        -
+          path: DIR/'main.csv'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+  -
+    id: one-well-deps
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+
+    kwargs:
+      report_dependencies: True
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+      deps:
+        - DIR/'main.toml'
+  -
+    id: one-well-err-path-required
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+
+    kwargs:
+      path_required: True
+
+    error:
+      type: ConfigError
+      message: main\.toml
+  -
+    id: one-well-err-data-loader
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+
+    kwargs:
+      data_loader: pd.read_csv
+
+    error:
+      type: ConfigError
+      message: main\.toml
+  -
+    id: one-well-unmerged
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,2
+
+    kwargs:
+      data_loader: pd.read_csv
+      path_guess: '{0.stem}.csv'
+
+    expected:
+      labels:
+        -
+          path: DIR/'main.csv'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+      data:
+        -
+          Well: 'A1'
+          path: DIR/'main.csv'
+          Data: 2
+  -
+    id: one-well-merged
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,2
+
+    kwargs:
+      data_loader: pd.read_csv
+      merge_cols: {'well': 'Well'}
+      path_guess: '{0.stem}.csv'
+
+    expected:
+      labels+data:
+        -
+          path: DIR/'main.csv'
+          Well: 'A1'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+          Data: 2
+  -
+    id: one-well-merged-infer
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,2
+
+    kwargs:
+      data_loader: lambda p: pd.read_csv(p).rename({'Well': 'well'})
+      merge_cols: True
+      path_guess: '{0.stem}.csv'
+
+    expected:
+      labels+data:
+        -
+          path: DIR/'main.csv'
+          Well: 'A1'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+          Data: 2
+  -
+    id: one-well-extras
+    files:
+      main.toml:
+        > a = 1
+        > [well.A1]
+        > x = 1
+
+    kwargs:
+      extras: True
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+
+      extras:
+        a: 1
+  -
+    id: one-well-extras-not-requested
+    files:
+      main.toml:
+        > a = 1
+        > [well.A1]
+        > x = 1
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+  -
+    id: one-well-extras-deps
+    files:
+      main.toml:
+        > a = 1
+        > [well.A1]
+        > x = 1
+
+    kwargs:
+      extras: True
+      report_dependencies: True
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+
+      extras:
+        a: 1
+
+      deps:
+        - DIR/'main.toml'
+  -
+    id: one-well-extras-unmerged
+    files:
+      main.toml:
+        > a = 1
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,2
+
+    kwargs:
+      data_loader: read_csv_check_extras
+      path_guess: '{0.stem}.csv'
+      extras: True
+
+    expected:
+      labels:
+        -
+          path: DIR/'main.csv'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+
+      data:
+        -
+          Well: 'A1'
+          path: DIR/'main.csv'
+          Data: 2
+
+      extras:
+        a: 1
+  -
+    id: one-well-extras-merged
+    files:
+      main.toml:
+        > a = 1
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,2
+
+    kwargs:
+      data_loader: read_csv_check_extras
+      merge_cols: {'well': 'Well'}
+      path_guess: '{0.stem}.csv'
+      extras: True
+
+    expected:
+      labels+data:
+        -
+          path: DIR/'main.csv'
+          well: 'A1'
+          Well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+          Data: 2
+
+      extras:
+        a: 1
+  -
+    id: one-plate
+    files:
+      main.toml:
+        > [meta.paths]
+        > a = 'data.csv'
+        >
+        > [plate.a.well.A1]
+        > x = 1
+      data.csv:
+        > Well,Data
+        > A1,0
+
+    expected:
+      labels:
+        -
+          path: DIR/'data.csv'
+          plate: 'a'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+  -
+    id: two-plates
+    files:
+      main.toml:
+        > [meta]
+        > paths = 'data_{}.csv'
+        >
+        > [plate.a.well.A1]
+        > x = 1
+        >
+        > [plate.b.well.A1]
+        > x = 2
+      data_a.csv:
+        > Well,Data
+        > A1,0
+      data_b.csv:
+        > Well,Data
+        > A1,1
+
+    kwargs:
+      data_loader: pd.read_csv
+      merge_cols: {'well': 'Well'}
+
+    expected:
+      labels:
+        -
+          path: DIR/'data_a.csv'
+          plate: 'a'
+          Well: 'A1'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+          Data: 0
+        -
+          path: DIR/'data_b.csv'
+          plate: 'b'
+          Well: 'A1'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 2
+          Data: 1
+  -
+    id: one-concat
+    files:
+      main.toml:
+        > [meta]
+        > concat = 'child.toml'
+        >
+        > [well.A1]
+        > x = 1
+      child.toml:
+        > [well.A2]
+        > x = 2
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+        -
+          well: 'A2'
+          well0: 'A02'
+          row: 'A'
+          col: '2'
+          row_i: 0
+          col_j: 1
+          x: 2
+  -
+    id: one-concat-err-path-required
+    files:
+      main.toml:
+        > [meta]
+        > concat = 'child.toml'
+        >
+        > [well.A1]
+        > x = 1
+      child.toml:
+        > [well.A2]
+        > x = 2
+
+    kwargs:
+      path_required: True
+
+    error:
+      type: ConfigError
+      message: Did you mean to set `meta.path`\?
+  -
+    id: two-concats
+    files:
+      main.toml:
+        > [meta]
+        > concat = [
+        >     'child_2.toml',
+        >     'child_3.toml',
+        > ]
+        >
+        > [well.A1]
+        > x = 1
+      child_2.toml:
+        > [well.A2]
+        > x = 2
+      child_3.toml:
+        > [well.A3]
+        > x = 3
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+        -
+          well: 'A2'
+          well0: 'A02'
+          row: 'A'
+          col: '2'
+          row_i: 0
+          col_j: 1
+          x: 2
+        -
+          well: 'A3'
+          well0: 'A03'
+          row: 'A'
+          col: '3'
+          row_i: 0
+          col_j: 2
+          x: 3
+  -
+    id: two-concats-err-path-required
+    files:
+      main.toml:
+        > [meta]
+        > concat = [
+        >     'child_2.toml',
+        >     'child_3.toml',
+        > ]
+        >
+        > [well.A1]
+        > x = 1
+      child_2.toml:
+        > [well.A2]
+        > x = 2
+      child_3.toml:
+        > [well.A3]
+        > x = 3
+
+    kwargs:
+      path_required: True
+
+    error:
+      type: ConfigError
+      message: Did you mean to set `meta.path`\?
+  -
+    id: concat-no-wells-path-required
+    files:
+      # It's ok that `main.csv` doesn't exist, because `main.toml` doesn't 
+      # specify any wells.
+      main.toml:
+        > [meta]
+        > concat = 'child.toml'
+      child.toml:
+        > [well.A1]
+        > x = 1
+      child.csv:
+        > Well,Data
+        > A1,-1
+
+    kwargs:
+      path_guess: '{0.stem}.csv'
+      path_required: True
+
+    expected:
+      labels:
+        -
+          path: DIR/'child.csv'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+  -
+    id: reasonably-complex
+    files:
+      main.toml:
+        > author = "Kale Kundert"
+        >
+        > [plate.'α']
+        > x = 1
+        > [plate.'α'.row.A]
+        > y = 5
+        >
+        > [plate.'β']
+        > x = 2
+        > [plate.'β'.col.1]
+        > z = 5
+        >
+        > [row]
+        > A.y = 1
+        > B.y = 2
+        > C.y = 3
+        > D.y = 4
+        >
+        > [col]
+        > 1.z = 1
+        > 2.z = 2
+        > 3.z = 3
+        > 4.z = 4
+
+    expected:
+      labels:
+        -
+          {plate: 'α', well: 'A1', well0: 'A01', row: 'A', col: '1', row_i: 0, col_j: 0, x: 1, y: 5, z: 1}
+        -
+          {plate: 'α', well: 'A2', well0: 'A02', row: 'A', col: '2', row_i: 0, col_j: 1, x: 1, y: 5, z: 2}
+        -
+          {plate: 'α', well: 'A3', well0: 'A03', row: 'A', col: '3', row_i: 0, col_j: 2, x: 1, y: 5, z: 3}
+        -
+          {plate: 'α', well: 'A4', well0: 'A04', row: 'A', col: '4', row_i: 0, col_j: 3, x: 1, y: 5, z: 4}
+
+        -
+          {plate: 'α', well: 'B1', well0: 'B01', row: 'B', col: '1', row_i: 1, col_j: 0, x: 1, y: 2, z: 1}
+        -
+          {plate: 'α', well: 'B2', well0: 'B02', row: 'B', col: '2', row_i: 1, col_j: 1, x: 1, y: 2, z: 2}
+        -
+          {plate: 'α', well: 'B3', well0: 'B03', row: 'B', col: '3', row_i: 1, col_j: 2, x: 1, y: 2, z: 3}
+        -
+          {plate: 'α', well: 'B4', well0: 'B04', row: 'B', col: '4', row_i: 1, col_j: 3, x: 1, y: 2, z: 4}
+
+        -
+          {plate: 'α', well: 'C1', well0: 'C01', row: 'C', col: '1', row_i: 2, col_j: 0, x: 1, y: 3, z: 1}
+        -
+          {plate: 'α', well: 'C2', well0: 'C02', row: 'C', col: '2', row_i: 2, col_j: 1, x: 1, y: 3, z: 2}
+        -
+          {plate: 'α', well: 'C3', well0: 'C03', row: 'C', col: '3', row_i: 2, col_j: 2, x: 1, y: 3, z: 3}
+        -
+          {plate: 'α', well: 'C4', well0: 'C04', row: 'C', col: '4', row_i: 2, col_j: 3, x: 1, y: 3, z: 4}
+
+        -
+          {plate: 'α', well: 'D1', well0: 'D01', row: 'D', col: '1', row_i: 3, col_j: 0, x: 1, y: 4, z: 1}
+        -
+          {plate: 'α', well: 'D2', well0: 'D02', row: 'D', col: '2', row_i: 3, col_j: 1, x: 1, y: 4, z: 2}
+        -
+          {plate: 'α', well: 'D3', well0: 'D03', row: 'D', col: '3', row_i: 3, col_j: 2, x: 1, y: 4, z: 3}
+        -
+          {plate: 'α', well: 'D4', well0: 'D04', row: 'D', col: '4', row_i: 3, col_j: 3, x: 1, y: 4, z: 4}
+
+        -
+          {plate: 'β', well: 'A1', well0: 'A01', row: 'A', col: '1', row_i: 0, col_j: 0, x: 2, y: 1, z: 5}
+        -
+          {plate: 'β', well: 'A2', well0: 'A02', row: 'A', col: '2', row_i: 0, col_j: 1, x: 2, y: 1, z: 2}
+        -
+          {plate: 'β', well: 'A3', well0: 'A03', row: 'A', col: '3', row_i: 0, col_j: 2, x: 2, y: 1, z: 3}
+        -
+          {plate: 'β', well: 'A4', well0: 'A04', row: 'A', col: '4', row_i: 0, col_j: 3, x: 2, y: 1, z: 4}
+
+        -
+          {plate: 'β', well: 'B1', well0: 'B01', row: 'B', col: '1', row_i: 1, col_j: 0, x: 2, y: 2, z: 5}
+        -
+          {plate: 'β', well: 'B2', well0: 'B02', row: 'B', col: '2', row_i: 1, col_j: 1, x: 2, y: 2, z: 2}
+        -
+          {plate: 'β', well: 'B3', well0: 'B03', row: 'B', col: '3', row_i: 1, col_j: 2, x: 2, y: 2, z: 3}
+        -
+          {plate: 'β', well: 'B4', well0: 'B04', row: 'B', col: '4', row_i: 1, col_j: 3, x: 2, y: 2, z: 4}
+
+        -
+          {plate: 'β', well: 'C1', well0: 'C01', row: 'C', col: '1', row_i: 2, col_j: 0, x: 2, y: 3, z: 5}
+        -
+          {plate: 'β', well: 'C2', well0: 'C02', row: 'C', col: '2', row_i: 2, col_j: 1, x: 2, y: 3, z: 2}
+        -
+          {plate: 'β', well: 'C3', well0: 'C03', row: 'C', col: '3', row_i: 2, col_j: 2, x: 2, y: 3, z: 3}
+        -
+          {plate: 'β', well: 'C4', well0: 'C04', row: 'C', col: '4', row_i: 2, col_j: 3, x: 2, y: 3, z: 4}
+
+        -
+          {plate: 'β', well: 'D1', well0: 'D01', row: 'D', col: '1', row_i: 3, col_j: 0, x: 2, y: 4, z: 5}
+        -
+          {plate: 'β', well: 'D2', well0: 'D02', row: 'D', col: '2', row_i: 3, col_j: 1, x: 2, y: 4, z: 2}
+        -
+          {plate: 'β', well: 'D3', well0: 'D03', row: 'D', col: '3', row_i: 3, col_j: 2, x: 2, y: 4, z: 3}
+        -
+          {plate: 'β', well: 'D4', well0: 'D04', row: 'D', col: '4', row_i: 3, col_j: 3, x: 2, y: 4, z: 4}
+  -
+    id: err-no-wells
+    files:
+      main.toml:
+    error:
+      type: ConfigError
+      message: No wells defined
+  -
+    id: err-no-wells-row-without-col
+    files:
+      main.toml:
+        > [row.A]
+        > x = 1
+    error:
+      type: ConfigError
+      message: No wells defined
+  -
+    id: err-no-wells-irow-without-col
+    files:
+      main.toml:
+        > [irow.A]
+        > x = 1
+    error:
+      type: ConfigError
+      message: No wells defined
+  -
+    id: err-no-wells-col-without-row
+    files:
+      main.toml:
+        > [col.1]
+        > x = 1
+    error:
+      type: ConfigError
+      message: No wells defined
+  -
+    id: err-no-wells-icol-without-row
+    files:
+      main.toml:
+        > [icol.1]
+        > x = 1
+    error:
+      type: ConfigError
+      message: No wells defined
+  -
+    id: err-merge-cols-without-data-loader
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,-1
+
+    kwargs:
+      merge_cols: True
+      path_guess: '{0.stem}.csv'
+
+    error: ValueError
+  -
+    id: err-nonexistent-merge-cols
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,-1
+
+    kwargs:
+      data_loader: pd.read_csv
+      merge_cols: {'xxx': 'Well'}
+      path_guess: '{0.stem}.csv'
+
+    error:
+      type: ValueError
+      message: xxx
+  -
+    id: err-nonexistent-merge-cols
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,-1
+
+    kwargs:
+      data_loader: pd.read_csv
+      merge_cols: {'well': 'xxx'}
+      path_guess: '{0.stem}.csv'
+
+    error:
+      type: ValueError
+      message: xxx

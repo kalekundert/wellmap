@@ -28,8 +28,11 @@ classifiers = [
 [tool.flit.metadata.requires-extra]
 tests = [
   'pytest',
-  'hypothesis',
   'pytest-cov',
+  'pytest-unordered',
+  'pytest-subtests',
+  'parametrize_from_file',
+  'hypothesis',
   'coveralls',
   'attrs',
 ]
