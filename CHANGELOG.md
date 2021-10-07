@@ -6,6 +6,13 @@ code, while major version upgrades (e.g. 1.1 to 2.0) might.
 
 <!--next-version-placeholder-->
 
+## v3.1.0 (2021-10-07)
+### Feature
+* Allow included layouts to be shifted ([`2ad8b59`](https://github.com/kalekundert/wellmap/commit/2ad8b59bc6cae04b9a83645959bee30fdf668aa2))
+
+### Documentation
+* Fix typo ([`5139943`](https://github.com/kalekundert/wellmap/commit/51399430fd378d0863caeb9052fdc0b20f87f71b))
+
 ## v3.0.1 (2021-10-01)
 ### Fix
 * Allow multiple patterns to define the same well ([`d0d852c`](https://github.com/kalekundert/wellmap/commit/d0d852c6fcffc47ec063ffaab163fe0dbcdff13b))
