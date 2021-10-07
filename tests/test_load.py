@@ -29,7 +29,6 @@ def test_load(files, kwargs, expected, error, subtests):
     expected = with_py.copy().use(DIR=files).eval(expected)
 
     def compare_df(actual, expected):
-        debug(actual.to_dict('records'), expected)
         assert actual.to_dict('records') == unordered(expected)
 
     def compare_set(actual, expected):
