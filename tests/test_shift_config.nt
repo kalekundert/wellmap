@@ -1,0 +1,358 @@
+test_shift_config:
+  -
+    id: well-down
+    config:
+      well:
+        {A1: {x: 1}}
+    shift: 1, 0
+
+    expected:
+      well:
+        {B1: {x: 1}}
+  -
+    id: well-right
+    config:
+      well:
+        {A1: {x: 1}}
+    shift: 0, 1
+
+    expected:
+      well:
+        {A2: {x: 1}}
+  -
+    id: row-down
+    config:
+      row:
+        {A: {x: 1}}
+    shift: 1, 0
+
+    expected:
+      row:
+        {B: {x: 1}}
+  -
+    id: row-right
+    config:
+      row:
+        {A: {x: 1}}
+    shift: 0, 1
+
+    expected:
+      row:
+        {A: {x: 1}}
+  -
+    id: irow-down
+    config:
+      irow:
+        {A: {x: 1}}
+    shift: 1, 0
+
+    error:
+      type: ConfigError
+      message: can't use 'meta.include.shift'
+  -
+    id: irow-right
+    config:
+      irow:
+        {A: {x: 1}}
+    shift: 0, 1
+
+    error:
+      type: ConfigError
+      message: can't use 'meta.include.shift'
+  -
+    id: col-down
+    config:
+      col:
+        {1: {x: 1}}
+    shift: 1, 0
+
+    expected:
+      col:
+        {1: {x: 1}}
+  -
+    id: col-right
+    config:
+      col:
+        {1: {x: 1}}
+    shift: 0, 1
+
+    expected:
+      col:
+        {2: {x: 1}}
+  -
+    id: icol-down
+    config:
+      icol:
+        {1: {x: 1}}
+    shift: 1, 0
+
+    error:
+      type: ConfigError
+      message: can't use 'meta.include.shift'
+  -
+    id: icol-right
+    config:
+      icol:
+        {1: {x: 1}}
+    shift: 0, 1
+
+    error:
+      type: ConfigError
+      message: can't use 'meta.include.shift'
+  -
+    id: block-down
+    config:
+      block:
+        {1x1: {A1: {x: 1}}}
+    shift: 1, 0
+
+    expected:
+      block:
+        {1x1: {B1: {x: 1}}}
+  -
+    id: block-right
+    config:
+      block:
+        {1x1: {A1: {x: 1}}}
+    shift: 0, 1
+
+    expected:
+      block:
+        {1x1: {A2: {x: 1}}}
+  -
+    id: extras-down
+    config:
+      A1: None
+      extra:
+        A1: None
+    shift: 1, 0
+
+    expected:
+      A1: None
+      extra:
+        A1: None
+  -
+    id: extras-right
+    config:
+      A1: None
+      extra:
+        A1: None
+    shift: 0, 1
+
+    expected:
+      A1: None
+      extra:
+        A1: None
+  -
+    id: plate-well-down
+    config:
+      plate:
+        X:
+          {well: {A1: {x: 1}}}
+    shift: 1, 0
+
+    expected:
+      plate:
+        X:
+          {well: {B1: {x: 1}}}
+  -
+    id: plate-well-right
+    config:
+      plate:
+        X:
+          {well: {A1: {x: 1}}}
+    shift: 0, 1
+
+    expected:
+      plate:
+        X:
+          {well: {A2: {x: 1}}}
+  -
+    id: plate-row-down
+    config:
+      plate:
+        X:
+          {row: {A: {x: 1}}}
+    shift: 1, 0
+
+    expected:
+      plate:
+        X:
+          {row: {B: {x: 1}}}
+  -
+    id: plate-row-right
+    config:
+      plate:
+        X:
+          {row: {A: {x: 1}}}
+    shift: 0, 1
+
+    expected:
+      plate:
+        X:
+          {row: {A: {x: 1}}}
+  -
+    id: plate-irow-down
+    config:
+      plate:
+        X:
+          {irow: {A: {x: 1}}}
+    shift: 1, 0
+
+    error:
+      type: ConfigError
+      message: can't use 'meta.include.shift'
+  -
+    id: plate-irow-right
+    config:
+      plate:
+        X:
+          {irow: {A: {x: 1}}}
+    shift: 0, 1
+
+    error:
+      type: ConfigError
+      message: can't use 'meta.include.shift'
+  -
+    id: plate-col-down
+    config:
+      plate:
+        X:
+          {col: {1: {x: 1}}}
+    shift: 1, 0
+
+    expected:
+      plate:
+        X:
+          {col: {1: {x: 1}}}
+  -
+    id: plate-col-right
+    config:
+      plate:
+        X:
+          {col: {1: {x: 1}}}
+    shift: 0, 1
+
+    expected:
+      plate:
+        X:
+          {col: {2: {x: 1}}}
+  -
+    id: plate-icol-down
+    config:
+      plate:
+        X:
+          {icol: {1: {x: 1}}}
+    shift: 1, 0
+
+    error:
+      type: ConfigError
+      message: can't use 'meta.include.shift'
+  -
+    id: plate-icol-right
+    config:
+      plate:
+        X:
+          {icol: {1: {x: 1}}}
+    shift: 0, 1
+
+    error:
+      type: ConfigError
+      message: can't use 'meta.include.shift'
+  -
+    id: plate-block-down
+    config:
+      plate:
+        X:
+          {block: {1x1: {A1: {x: 1}}}}
+    shift: 1, 0
+
+    expected:
+      plate:
+        X:
+          {block: {1x1: {B1: {x: 1}}}}
+  -
+    id: plate-block-right
+    config:
+      plate:
+        X:
+          {block: {1x1: {A1: {x: 1}}}}
+    shift: 0, 1
+
+    expected:
+      plate:
+        X:
+          {block: {1x1: {A2: {x: 1}}}}
+  -
+    id: pattern-down
+    config:
+      well:
+        A1,A2:
+          {x: 1}
+    shift: 1, 0
+
+    expected:
+      well:
+        B1,B2:
+          {x: 1}
+  -
+    id: pattern-right
+    config:
+      well:
+        A1,A2:
+          {x: 1}
+    shift: 0, 1
+
+    expected:
+      well:
+        A2,A3:
+          {x: 1}
+  -
+    id: pattern-ellipsis-down
+    config:
+      well:
+        A1,A2,...,A6:
+          {x: 1}
+    shift: 1, 0
+
+    expected:
+      well:
+        B1,B2,...,B6:
+          {x: 1}
+  -
+    id: pattern-ellipsis-right
+    config:
+      well:
+        A1,A2,...,A6:
+          {x: 1}
+    shift: 0, 1
+
+    expected:
+      well:
+        A2,A3,...,A7:
+          {x: 1}
+  -
+    id: multiple-keys-down
+    config:
+      well:
+        A1: None
+        A2: None
+    shift: 1, 0
+
+    expected:
+      well:
+        B1: None
+        B2: None
+  -
+    id: multiple-keys-right
+    config:
+      well:
+        A1: None
+        A2: None
+    shift: 0, 1
+
+    expected:
+      well:
+        A2: None
+        A3: None
+

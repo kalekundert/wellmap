@@ -60,6 +60,15 @@ def test_row_col_from_ij(i, j, row, col):
     assert row_col_from_ij(i, j) == (row, col)
 
 @pytest.mark.parametrize(
+        'i, j', [
+            (-1, 0),
+            (0, -1),
+])
+def test_row_col_from_ij_err(i, j):
+    with pytest.raises(ConfigError):
+        row_col_from_ij(i, j)
+
+@pytest.mark.parametrize(
         'well, row, col', [
             ('A1', 'A', '1'),
             ('A2', 'A', '2'),
@@ -354,6 +363,193 @@ def test_iter_well_indices_err(key, err):
     with raises(ConfigError, match=err):
         list(iter_well_indices(key))
         
+@pytest.mark.parametrize(
+        'given, expected', [
+            ('A1 to A1',  ( 0,  0)),
+            ('A1 to A01', ( 0,  0)),
+            
+            ('A1 to B1',  ( 1,  0)),
+            ('B1 to A1',  (-1,  0)),
+
+            ('A1 to A2',  ( 0,  1)),
+            ('A2 to A1',  ( 0, -1)),
+
+            ('A1 to B2',  ( 1,  1)),
+            ('B2 to A1',  (-1, -1)),
+
+            ('A2 to B1',  ( 1, -1)),
+            ('B1 to A2',  (-1,  1)),
+
+        ],
+)
+def test_parse_shift(given, expected):
+    assert parse_shift(given) == expected
+
+@pytest.mark.parametrize(
+        'given', [
+            'A1 A2',
+            'A to A2',
+            'A1 to A',
+            'A1 to 2A',
+        ],
+)
+def test_parse_shift_err(given):
+    with pytest.raises(ConfigError):
+        parse_shift(given)
+
+@pytest.mark.parametrize(
+        'row_col, shift, expected', [
+            ('A1', (0, 0), 'A1'),
+            ('A1', (0, 1), 'A2'),
+            ('A1', (1, 0), 'B1'),
+
+            ('A', (0, 0), 'A'),
+            ('A', (0, 1), 'A'),
+            ('A', (1, 0), 'B'),
+
+            ('1', (0, 0), '1'),
+            ('1', (0, 1), '2'),
+            ('1', (1, 0), '1'),
+        ],
+)
+def test_shift_row_col(row_col, shift, expected):
+    assert shift_row_col(row_col, shift) == expected
+
+@pytest.mark.parametrize(
+        'row_col, shift, ', [
+            ('A1', (-1,  0)),
+            ('A1', ( 0, -1)),
+            ('A',  (-1,  0)),
+            ('1',  ( 0, -1)),
+
+            ('', (0, 0)),
+            ('1A', (0, 0)),
+        ],
+)
+def test_shift_row_col_err(row_col, shift):
+    with pytest.raises(ConfigError):
+        shift_row_col(row_col, shift)
+
+@pytest.mark.parametrize(
+        'key, shift, expected', [
+            ('A1', (0, 0), 'A1'),
+            ('A1', (0, 1), 'A2'),
+            ('A1', (1, 0), 'B1'),
+
+            ('A1,A2', (0, 0), 'A1,A2'),
+            ('A1,A2', (0, 1), 'A2,A3'),
+            ('A1,A2', (1, 0), 'B1,B2'),
+
+            ('A1,A2,...,A4', (0, 0), 'A1,A2,...,A4'),
+            ('A1,A2,...,A4', (0, 1), 'A2,A3,...,A5'),
+            ('A1,A2,...,A4', (1, 0), 'B1,B2,...,B4'),
+
+            ('A', (0, 0), 'A'),
+            ('A', (0, 1), 'A'),
+            ('A', (1, 0), 'B'),
+
+            ('A,B', (0, 0), 'A,B'),
+            ('A,B', (0, 1), 'A,B'),
+            ('A,B', (1, 0), 'B,C'),
+
+            ('A,B,...,D', (0, 0), 'A,B,...,D'),
+            ('A,B,...,D', (0, 1), 'A,B,...,D'),
+            ('A,B,...,D', (1, 0), 'B,C,...,E'),
+
+            ('1', (0, 0), '1'),
+            ('1', (0, 1), '2'),
+            ('1', (1, 0), '1'),
+
+            ('1,2', (0, 0), '1,2'),
+            ('1,2', (0, 1), '2,3'),
+            ('1,2', (1, 0), '1,2'),
+
+            ('1,2,...,4', (0, 0), '1,2,...,4'),
+            ('1,2,...,4', (0, 1), '2,3,...,5'),
+            ('1,2,...,4', (1, 0), '1,2,...,4'),
+        ],
+)
+def test_shift_key(key, shift, expected):
+    assert shift_key(key, shift) == expected
+
+@pytest.mark.parametrize(
+        'a, b, expected', [
+            ((0, 0), (0, 0), (0, 0)),
+            ((0, 1), (0, 0), (0, 1)),
+            ((1, 0), (0, 0), (1, 0)),
+            ((0, 0), (0, 1), (0, 1)),
+            ((0, 0), (1, 0), (1, 0)),
+            ((1, 1), (1, 1), (2, 2)),
+        ],
+)
+def test_add_shifts(a, b, expected):
+    assert add_shifts(a, b) == expected
+
+@pytest.mark.parametrize(
+        'a, b, expected', [
+            ((0, 0), (0, 0), (0, 0)),
+            ((0, 1), (0, 0), (0, 1)),
+            ((1, 0), (0, 0), (1, 0)),
+            ((0, 0), (0, 1), (0, -1)),
+            ((0, 0), (1, 0), (-1, 0)),
+            ((1, 1), (1, 1), (0, 0)),
+        ],
+)
+def test_sub_shifts(a, b, expected):
+    assert sub_shifts(a, b) == expected
+
+@pytest.mark.parametrize(
+        'dict, func, level, expected', [
+            pytest.param(
+                {'a': 1},
+                lambda x: x.upper(),
+                0,
+                {'A': 1},
+                id='base case',
+            ),
+            pytest.param(
+                {'a': 1, 'b': 2},
+                lambda x: x.upper(),
+                0,
+                {'A': 1, 'B': 2},
+                id='preserve order',
+            ),
+            pytest.param(
+                {'b': 2, 'a': 1},
+                lambda x: x.upper(),
+                0,
+                {'B': 2, 'A': 1},
+                id='preserve order',
+            ),
+            pytest.param(
+                {'a': {'b': {'c': 1}}},
+                lambda x: x.upper(),
+                0,
+                {'A': {'b': {'c': 1}}},
+                id='nested-0',
+            ),
+            pytest.param(
+                {'a': {'b': {'c': 1}}},
+                lambda x: x.upper(),
+                1,
+                {'a': {'B': {'c': 1}}},
+                id='nested-1',
+            ),
+            pytest.param(
+                {'a': {'b': {'c': 1}}},
+                lambda x: x.upper(),
+                2,
+                {'a': {'b': {'C': 1}}},
+                id='nested-2',
+            ),
+        ]
+)
+def test_map_keys(dict, func, level, expected):
+    actual = map_keys(dict, func, level=level)
+
+    assert actual == expected
+    assert list(actual.keys()) == list(expected.keys())
+
 @pytest.mark.parametrize(
         'dict, key, expected', [
             ({'a': 1}, 'a', 1),

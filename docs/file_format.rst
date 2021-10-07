@@ -91,17 +91,37 @@ If the layout doesn't explicitly define any plates (i.e. if it has no
 
 meta.include
 ------------
-A path or a list of paths to TOML files that should provide the defaults 
-for this file.  If a list of paths is given, the later files will take 
-precedence over the earlier files.  This is useful if you want to share the 
-same basic plate layout between multiple experiments, but want to specify 
-different paths or tweak certain wells for each one.
+The paths to one or more files that should effectively be copied-and-pasted 
+into this layout.  This is useful for sharing common features between similar 
+layouts, e.g. reusing a standard curve layout between multiple experiments, or 
+even reusing entire layouts for replicates with different data paths.  This 
+setting can either be a string, a dictionary, or a list:
 
-.. rubric:: Example:
+- String: The path to a single layout file to include.
+
+- Dictionary: The path to a single layout file in include, with additional 
+  metadata.  The dictionary can have the following keys:
+  
+  - *path* (string, required): The path to include.
+  - *shift* (string, optional): Reposition all the wells in the included 
+    layout.  This setting has the following syntax: ``<well> to <well>``.  For 
+    example, ``A1 to B2`` would shift all wells down and to the right by one.  
+    Some caveats: the included file cannot use the `[irow.A]` or `[icol.1]` 
+    well groups (this restriction may be possible to remove, let me know if it 
+    causes you problems), wells cannot be shifted to negative row or column 
+    indices, and the shift will not apply to any files that are concatenated to 
+    the included file via `meta.concat`.
+    
+- List: The paths to multiple layout files to include.  Each item in the list 
+  can either be a string or a dictionary; both will be interpreted as described 
+  above.  If multiple files define the same well groups, the later files will 
+  take precedence over the earlier ones.
+
+.. rubric:: Examples:
 
 The first layout describes a generic 10-fold serial dilution.  The second 
 layout expands on the first by specifying which sample is in each row.  Note 
-that the first layout could not be used on its own, because it doesn't specify 
+that the first layout could not be used on its own because it doesn't specify 
 any rows:
 
 .. example:: file_format/serial_dilution.toml file_format/meta_include.toml
@@ -124,6 +144,24 @@ any rows:
 
   [row.'C,D']
   sample = 'β'
+
+The following layouts demonstrate the *shift* option.  Note that both layouts 
+specify the same 2x2 block, but the block from the included file is moved down 
+and to the right in the final layout:
+
+.. example:: file_format/shift_parent.toml file_format/meta_include_shift.toml
+
+  [block.2x2.A1]
+  x = 2
+  
+  --EOF--
+  
+  [meta.include]
+  path = 'shift_parent.toml'
+  shift = 'A1 to C3'
+  
+  [block.2x2.A1]
+  x = 1
 
 meta.concat
 -----------

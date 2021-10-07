@@ -139,6 +139,82 @@ test_config_from_toml:
           x: 1
           y: 1
   -
+    id: include-shift
+    files:
+      main.toml:
+        > [meta.include]
+        > path = 'shift.toml'
+        > shift = 'A1 to B2'
+        >
+        > [well.A1]
+        > x = 1
+      shift.toml:
+        > [well.A1]
+        > x = 2
+
+    config:
+      well:
+        A1:
+          x: 1
+        B2:
+          x: 2
+  -
+    id: include-shift-list
+    files:
+      main.toml:
+        > [meta]
+        > include = [
+        >   {path = 'shift_2.toml', shift = 'A1 to A2'},
+        >   {path = 'shift_3.toml', shift = 'A1 to B1'},
+        > ]
+        >
+        > [well.A1]
+        > x = 1
+      shift_2.toml:
+        > [well.A1]
+        > x = 2
+      shift_3.toml:
+        > [well.A1]
+        > x = 3
+
+    config:
+      well:
+        A1:
+          x: 1
+        A2:
+          x: 2
+        B1:
+          x: 3
+  -
+    id: include-shift-nested
+    files:
+      main.toml:
+        > [meta.include]
+        > path = 'shift_2.toml'
+        > shift = 'A1 to A2'
+        >
+        > [well.A1]
+        > x = 1
+      shift_2.toml:
+        > [meta.include]
+        > path = 'shift_3.toml'
+        > shift = 'A1 to A2'
+        >
+        > [well.A1]
+        > x = 2
+      shift_3.toml:
+        > [well.A1]
+        > x = 3
+
+    config:
+      well:
+        A1:
+          x: 1
+        A2:
+          x: 2
+        A3:
+          x: 3
+  -
     id: include-extras
     files:
       main.toml:
@@ -218,7 +294,25 @@ test_config_from_toml:
         > include = 0
     error:
       type: wellmap.ConfigError
-      message: expected 'meta.include' to be string or list, not 0
+      message: expected 'meta.include' to be string, list, or dictionary, not: 0
+  -
+    id: include-err-wrong-type-nested
+    files:
+      main.toml:
+        > [meta]
+        > include = [[]]
+    error:
+      type: wellmap.ConfigError
+      message: expected 'meta.include\[0\]' to be string or dictionary, not: \[\]
+  -
+    id: include-err-no-path
+    files:
+      main.toml:
+        > [meta]
+        > include = {}
+    error:
+      type: wellmap.ConfigError
+      message: if 'meta.include' is a dictionary, it must have a 'path' key
   -
     id: concat
     files:
@@ -505,5 +599,5 @@ test_config_from_toml:
         > concat = 0
     error:
       type: wellmap.ConfigError
-      message: expected 'meta.concat' to be string, list, or dictionary, not 0
+      message: expected 'meta.concat' to be string, list, or dictionary, not: 0
 

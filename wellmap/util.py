@@ -37,6 +37,9 @@ def well0_from_row_col(row, col, digits=2):
 
 
 def row_from_i(i):
+    if i < 0:
+        raise ConfigError("Cannot reference negative rows")
+
     row = ''
     N = len(string.ascii_uppercase)
 
@@ -47,6 +50,9 @@ def row_from_i(i):
     return row
 
 def col_from_j(j):
+    if j < 0:
+        raise ConfigError("Cannot reference negative columns")
+
     return str(j + 1)
 
 def row_col_from_ij(i, j):
@@ -188,6 +194,89 @@ def indices_from_range(x0, x1, xn):
 
 def range_from_indices(*xs):
     return range(min(xs), max(xs) + 1) if xs else []
+
+
+def parse_shift(shift_str):
+    """
+    Return the (Δrow, Δcolumn) tuple corresponding to the given human-readable 
+    string (e.g. "A1 to B2").
+    """
+    src_dest = shift_str.split(' to ')
+    if len(src_dest) != 2:
+        raise ConfigError(f"expected 'meta.include.shift' to match the form '<well> to <well>', got: {shift_str}")
+
+    ij_src = ij_from_well(src_dest[0])
+    ij_dest = ij_from_well(src_dest[1])
+
+    return sub_shifts(ij_dest, ij_src)
+
+def shift_row_col(row_col, shift):
+    """
+    Shift the given row/column/well name by the given amount.
+
+    Note that this function does not handle patterns, e.g. 'A1,A2,...,A12'.  
+    The `shift_key` function does.
+    """
+    m = re.fullmatch('([A-Za-z]+)?([0-9]+)?', row_col)
+
+    if not m or not row_col:
+        raise ConfigError(f"Cannot parse '{row_col}' as a row, column, or well name.")
+
+    row, col = m.groups()
+    di, dj = shift
+
+    if row and col:
+        i, j = ij_from_row_col(row, col)
+        return well_from_ij(i + di, j + dj)
+
+    if row and not col:
+        i = i_from_row(row)
+        return row_from_i(i + di)
+
+    if col and not row:
+        j= j_from_col(col)
+        return col_from_j(j + dj)
+
+    assert False
+
+def shift_key(key, shift):
+    """
+    Shift the given row/column/well/pattern by the given amount.
+
+    This function is very similar to `shift_row_col`, except that it also 
+    handles patterns.
+    """
+
+    def shift_row_col_ellipsis(k, shift):
+        if k == '...':
+            return k
+        else:
+            return shift_row_col(k, shift)
+
+    return ','.join(
+            shift_row_col_ellipsis(k, shift)
+            for k in key.split(',')
+    )
+
+def add_shifts(a, b):
+    (a1, a2), (b1, b2) = a, b
+    return a1 + b1, a2 + b2
+
+def sub_shifts(a, b):
+    (a1, a2), (b1, b2) = a, b
+    return a1 - b1, a2 - b2
+
+def map_keys(dict, func, *, level=0):
+    if level:
+        return {
+                k: map_keys(v, func, level=level-1)
+                for k, v in dict.items()
+        }
+    else:
+        return {
+                func(k): v
+                for k, v in dict.items()
+        }
 
 
 def get_dotted_key(dict, key):

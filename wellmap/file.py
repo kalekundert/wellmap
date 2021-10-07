@@ -11,9 +11,9 @@ from .util import *
 # Data Structures
 # ===============
 # `config`
-#   A direct reflection of the TOML input file.  Arbitrary parameters can be 
-#   specified on a per-experiment, per-plate, per-row, per-column, or per-well 
-#   basis.  
+#   A direct reflection of the TOML input file, with all the [meta] fields 
+#   resolved.  Arbitrary parameters can be specified on a per-experiment, 
+#   per-plate, per-row, per-column, or per-well basis.  
 #
 # `wells`
 #   Dictionary where the keys are (row, col) well indices and the values are 
@@ -299,32 +299,63 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
         err.toml_path = toml_path
         raise
 
-def config_from_toml(toml_path, *, path_guess=None, extra_keys=None, on_alert=None):
+def config_from_toml(toml_path, *, shift=(0,0), path_guess=None, extra_keys=None, on_alert=None):
+    """
+    Create a config dictionary from the given TOML file.
+
+    This function is mostly responsible for interpreting the various [meta] 
+    settings.
+    """
     toml_path = Path(toml_path).resolve()
-    config = configdict(toml.load(str(toml_path)))
+    config = configdict(
+            shift_config(
+                toml.load(str(toml_path)),
+                shift,
+            ),
+    )
     concats = []
     deps = {toml_path}
 
     def iter_include_paths():
-        try:
-            paths = config.meta['include']
-        except KeyError:
-            yield from []
-            return
 
-        if isinstance(paths, str):
-            paths = [paths]
-        elif isinstance(paths, list):
-            pass
-        else:
-            raise ConfigError(f"expected 'meta.include' to be string or list, not {paths!r}")
+        def _iter_include_paths(meta, top_level=True, list_index=0):
+            if isinstance(meta, str):
+                yield meta, (0, 0)
 
-        # Yield the paths in reverse order so that later paths take precedence 
-        # over earlier paths.  This is needed because `recursive_merge()` by 
-        # default does not overwrite values, so the values that are merged 
-        # first take precedence.
-        for path in reversed(paths):
-            yield resolve_path(toml_path, path)
+            elif isinstance(meta, dict):
+                try:
+                    path = meta['path']
+                except KeyError:
+                    raise ConfigError(f"if 'meta.include' is a dictionary, it must have a 'path' key")
+
+                try:
+                    shift_str = meta['shift']
+                except KeyError:
+                    shift = (0, 0)
+                else:
+                    shift = parse_shift(shift_str)
+
+                yield path, shift
+
+            elif top_level and isinstance(meta, list):
+                # Yield the paths in reverse order so that later paths take 
+                # precedence over earlier paths.  This is needed because 
+                # `recursive_merge()` by default does not overwrite values, so 
+                # the values that are merged first take precedence.
+                for i, m in enumerate(reversed(meta)):
+                    yield from _iter_include_paths(m, top_level=False, list_index=i)
+
+            else:
+                if top_level:
+                    raise ConfigError(f"expected 'meta.include' to be string, list, or dictionary, not: {meta!r}")
+                else:
+                    raise ConfigError(f"expected 'meta.include[{list_index}]' to be string or dictionary, not: {meta!r}")
+
+        meta = config.meta.get('include', [])
+        for rel_path, rel_shift in _iter_include_paths(meta):
+            abs_path = resolve_path(toml_path, rel_path)
+            abs_shift = add_shifts(shift, rel_shift)
+            yield abs_path, abs_shift
 
     def iter_concat_paths():
         try:
@@ -340,7 +371,7 @@ def config_from_toml(toml_path, *, path_guess=None, extra_keys=None, on_alert=No
         elif isinstance(paths, dict):
             paths = paths.items()
         else:
-            raise ConfigError(f"expected 'meta.concat' to be string, list, or dictionary, not {paths!r}")
+            raise ConfigError(f"expected 'meta.concat' to be string, list, or dictionary, not: {paths!r}")
 
         for plate_name, path in paths:
             yield plate_name, resolve_path(toml_path, path)
@@ -357,16 +388,17 @@ def config_from_toml(toml_path, *, path_guess=None, extra_keys=None, on_alert=No
     )
 
     # Include one or more remote files if any are specified.  
-    for path in iter_include_paths():
+    for subpath, subshift in iter_include_paths():
         subconfig, _, subconcats, subextras, subdeps = config_from_toml(
-                path,
+                subpath,
+                shift=subshift,
                 extra_keys=extra_keys,
                 on_alert=on_alert,
         )
         recursive_merge(config, subconfig)
         recursive_merge(extras, subextras)
         concats += subconcats
-        deps |= {path, *subdeps}
+        deps |= {subpath, *subdeps}
 
     # Load any files to be concatenated.
     for plate_name, path in iter_concat_paths():
@@ -391,6 +423,34 @@ def config_from_toml(toml_path, *, path_guess=None, extra_keys=None, on_alert=No
 
     config.pop('meta', None)
     return config, paths, concats, extras, deps
+
+def shift_config(config, shift):
+    if shift == (0, 0):
+        return config
+
+    shifted_config = {}
+
+    f = lambda d: shift_key(d, shift)
+    def cant_shift_irow_icol():
+        raise ConfigError("can't use 'meta.include.shift' on layouts that use [irow] and/or [icol]")
+
+    shifters = {
+            'plate':    lambda d: {
+                k: shift_config(v, shift)
+                for k, v in d.items()
+            },
+            'row':      lambda d: map_keys(d, f),
+            'irow':     lambda d: cant_shift_irow_icol(),
+            'col':      lambda d: map_keys(d, f),
+            'icol':     lambda d: cant_shift_irow_icol(),
+            'block':    lambda d: map_keys(d, f, level=1),
+            'well':     lambda d: map_keys(d, f),
+    }
+    for k, v in config.items():
+        shifter = shifters.get(k, lambda d: d)
+        shifted_config[k] = shifter(v)
+
+    return shifted_config
 
 def table_from_config(config, paths):
     config = configdict(config)
@@ -731,6 +791,4 @@ class configdict(dict):
                 for k, v in self.items()
                 if k not in self.special.values()
         }
-
-
 
