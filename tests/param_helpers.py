@@ -4,7 +4,7 @@ import pytest, math
 import parametrize_from_file
 
 from wellmap import *
-from voluptuous import Schema, Optional
+from voluptuous import Schema, Optional, And, Or
 from parametrize_from_file.voluptuous import Namespace
 
 class ExpectNaN:
@@ -15,7 +15,7 @@ class ExpectNaN:
 
 with_py = Namespace()
 with_nan = Namespace(nan=ExpectNaN())
-with_wellmap = Namespace('import wellmap; from wellmap import *')
+with_wellmap = Namespace('import wellmap; from wellmap import *; import pandas as pd')
 
 @pytest.fixture
 def files(request, tmp_path):

@@ -8,7 +8,7 @@ from .param_helpers import *
 @parametrize_from_file(
         schema=Schema({
             'files': dict,
-            Optional('kwargs', default={}): dict,
+            Optional('kwargs', default={}): Or(dict, list),
             **with_wellmap.error_or({
                 'expected': dict,
             }),
@@ -17,16 +17,35 @@ from .param_helpers import *
 )
 def test_load(files, kwargs, expected, error, subtests):
 
-    def read_csv_check_extras(path, extras):
+    def read_csv_check_extras_positional(path, extras):
         assert extras == expected['extras']
+        return pd.read_csv(path)
+
+    def read_csv_check_extras_keyword(path, *, extras):
+        assert extras == expected['extras']
+        return pd.read_csv(path)
+
+    def read_csv_ignore_extras_variable(path, *extras):
+        assert not extras
+        return pd.read_csv(path)
+
+    def read_csv_ignore_extras_variable_keyword(path, **extras):
+        assert not extras
         return pd.read_csv(path)
 
     with_loaders = Namespace(
             'import pandas as pd',
-            read_csv_check_extras=read_csv_check_extras,
+            read_csv_check_extras=read_csv_check_extras_positional,
+            read_csv_check_extras_positional=read_csv_check_extras_positional,
+            read_csv_check_extras_keyword=read_csv_check_extras_keyword,
+            read_csv_ignore_extras_variable=read_csv_ignore_extras_variable,
+            read_csv_ignore_extras_variable_keyword=read_csv_ignore_extras_variable_keyword,
     )
     kwargs = with_loaders.eval(kwargs)
     expected = with_py.copy().use(DIR=files).eval(expected)
+
+    if not isinstance(kwargs, list):
+        kwargs = [kwargs]
 
     def compare_df(actual, expected):
         assert actual.to_dict('records') == unordered(expected)
@@ -45,12 +64,13 @@ def test_load(files, kwargs, expected, error, subtests):
             'extras': compare_dict,
     }
 
-    with error:
-        out = wellmap.load(files/'main.toml', **kwargs)
-        if len(expected) == 1:
-            out = [out]
+    for kwargs_i in kwargs:
+        with subtests.test(kwargs=kwargs_i), error:
+            out = wellmap.load(files/'main.toml', **kwargs_i)
+            if len(expected) == 1:
+                out = [out]
 
-        for (key, expected_i), actual in zip_equal(expected.items(), out):
-            with subtests.test(retval=key):
-                comparisons[key](actual, expected_i)
+            for (key, expected_i), actual in zip_equal(expected.items(), out):
+                with subtests.test(retval=key):
+                    comparisons[key](actual, expected_i)
 

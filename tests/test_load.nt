@@ -1,6 +1,7 @@
+
 test_load:
   -
-    id: one-well
+    id: labels
     files:
       main.toml:
         > [well.A1]
@@ -17,14 +18,14 @@ test_load:
           col_j: 0
           x: 1
   -
-    id: one-well-guess
+    id: labels-path-guess
     files:
       main.toml:
         > [well.A1]
         > x = 1
       main.csv:
         > Well,Data
-        > A1,2
+        > A1,-1
 
     kwargs:
       path_guess: '{0.stem}.csv'
@@ -41,280 +42,7 @@ test_load:
           col_j: 0
           x: 1
   -
-    id: one-well-deps
-    files:
-      main.toml:
-        > [well.A1]
-        > x = 1
-
-    kwargs:
-      report_dependencies: True
-
-    expected:
-      labels:
-        -
-          well: 'A1'
-          well0: 'A01'
-          row: 'A'
-          col: '1'
-          row_i: 0
-          col_j: 0
-          x: 1
-      deps:
-        - DIR/'main.toml'
-  -
-    id: one-well-err-path-required
-    files:
-      main.toml:
-        > [well.A1]
-        > x = 1
-
-    kwargs:
-      path_required: True
-
-    error:
-      type: ConfigError
-      message: main\.toml
-  -
-    id: one-well-err-data-loader
-    files:
-      main.toml:
-        > [well.A1]
-        > x = 1
-
-    kwargs:
-      data_loader: pd.read_csv
-
-    error:
-      type: ConfigError
-      message: main\.toml
-  -
-    id: one-well-unmerged
-    files:
-      main.toml:
-        > [well.A1]
-        > x = 1
-      main.csv:
-        > Well,Data
-        > A1,2
-
-    kwargs:
-      data_loader: pd.read_csv
-      path_guess: '{0.stem}.csv'
-
-    expected:
-      labels:
-        -
-          path: DIR/'main.csv'
-          well: 'A1'
-          well0: 'A01'
-          row: 'A'
-          col: '1'
-          row_i: 0
-          col_j: 0
-          x: 1
-      data:
-        -
-          Well: 'A1'
-          path: DIR/'main.csv'
-          Data: 2
-  -
-    id: one-well-merged
-    files:
-      main.toml:
-        > [well.A1]
-        > x = 1
-      main.csv:
-        > Well,Data
-        > A1,2
-
-    kwargs:
-      data_loader: pd.read_csv
-      merge_cols: {'well': 'Well'}
-      path_guess: '{0.stem}.csv'
-
-    expected:
-      labels+data:
-        -
-          path: DIR/'main.csv'
-          Well: 'A1'
-          well: 'A1'
-          well0: 'A01'
-          row: 'A'
-          col: '1'
-          row_i: 0
-          col_j: 0
-          x: 1
-          Data: 2
-  -
-    id: one-well-merged-infer
-    files:
-      main.toml:
-        > [well.A1]
-        > x = 1
-      main.csv:
-        > Well,Data
-        > A1,2
-
-    kwargs:
-      data_loader: lambda p: pd.read_csv(p).rename({'Well': 'well'})
-      merge_cols: True
-      path_guess: '{0.stem}.csv'
-
-    expected:
-      labels+data:
-        -
-          path: DIR/'main.csv'
-          Well: 'A1'
-          well: 'A1'
-          well0: 'A01'
-          row: 'A'
-          col: '1'
-          row_i: 0
-          col_j: 0
-          x: 1
-          Data: 2
-  -
-    id: one-well-extras
-    files:
-      main.toml:
-        > a = 1
-        > [well.A1]
-        > x = 1
-
-    kwargs:
-      extras: True
-
-    expected:
-      labels:
-        -
-          well: 'A1'
-          well0: 'A01'
-          row: 'A'
-          col: '1'
-          row_i: 0
-          col_j: 0
-          x: 1
-
-      extras:
-        a: 1
-  -
-    id: one-well-extras-not-requested
-    files:
-      main.toml:
-        > a = 1
-        > [well.A1]
-        > x = 1
-
-    expected:
-      labels:
-        -
-          well: 'A1'
-          well0: 'A01'
-          row: 'A'
-          col: '1'
-          row_i: 0
-          col_j: 0
-          x: 1
-  -
-    id: one-well-extras-deps
-    files:
-      main.toml:
-        > a = 1
-        > [well.A1]
-        > x = 1
-
-    kwargs:
-      extras: True
-      report_dependencies: True
-
-    expected:
-      labels:
-        -
-          well: 'A1'
-          well0: 'A01'
-          row: 'A'
-          col: '1'
-          row_i: 0
-          col_j: 0
-          x: 1
-
-      extras:
-        a: 1
-
-      deps:
-        - DIR/'main.toml'
-  -
-    id: one-well-extras-unmerged
-    files:
-      main.toml:
-        > a = 1
-        > [well.A1]
-        > x = 1
-      main.csv:
-        > Well,Data
-        > A1,2
-
-    kwargs:
-      data_loader: read_csv_check_extras
-      path_guess: '{0.stem}.csv'
-      extras: True
-
-    expected:
-      labels:
-        -
-          path: DIR/'main.csv'
-          well: 'A1'
-          well0: 'A01'
-          row: 'A'
-          col: '1'
-          row_i: 0
-          col_j: 0
-          x: 1
-
-      data:
-        -
-          Well: 'A1'
-          path: DIR/'main.csv'
-          Data: 2
-
-      extras:
-        a: 1
-  -
-    id: one-well-extras-merged
-    files:
-      main.toml:
-        > a = 1
-        > [well.A1]
-        > x = 1
-      main.csv:
-        > Well,Data
-        > A1,2
-
-    kwargs:
-      data_loader: read_csv_check_extras
-      merge_cols: {'well': 'Well'}
-      path_guess: '{0.stem}.csv'
-      extras: True
-
-    expected:
-      labels+data:
-        -
-          path: DIR/'main.csv'
-          well: 'A1'
-          Well: 'A1'
-          well0: 'A01'
-          row: 'A'
-          col: '1'
-          row_i: 0
-          col_j: 0
-          x: 1
-          Data: 2
-
-      extras:
-        a: 1
-  -
-    id: one-plate
+    id: labels-plate
     files:
       main.toml:
         > [meta.paths]
@@ -339,64 +67,15 @@ test_load:
           col_j: 0
           x: 1
   -
-    id: two-plates
+    id: labels-concat-1x
     files:
       main.toml:
         > [meta]
-        > paths = 'data_{}.csv'
-        >
-        > [plate.a.well.A1]
-        > x = 1
-        >
-        > [plate.b.well.A1]
-        > x = 2
-      data_a.csv:
-        > Well,Data
-        > A1,0
-      data_b.csv:
-        > Well,Data
-        > A1,1
-
-    kwargs:
-      data_loader: pd.read_csv
-      merge_cols: {'well': 'Well'}
-
-    expected:
-      labels:
-        -
-          path: DIR/'data_a.csv'
-          plate: 'a'
-          Well: 'A1'
-          well: 'A1'
-          well0: 'A01'
-          row: 'A'
-          col: '1'
-          row_i: 0
-          col_j: 0
-          x: 1
-          Data: 0
-        -
-          path: DIR/'data_b.csv'
-          plate: 'b'
-          Well: 'A1'
-          well: 'A1'
-          well0: 'A01'
-          row: 'A'
-          col: '1'
-          row_i: 0
-          col_j: 0
-          x: 2
-          Data: 1
-  -
-    id: one-concat
-    files:
-      main.toml:
-        > [meta]
-        > concat = 'child.toml'
+        > concat = 'concat.toml'
         >
         > [well.A1]
         > x = 1
-      child.toml:
+      concat.toml:
         > [well.A2]
         > x = 2
 
@@ -419,40 +98,21 @@ test_load:
           col_j: 1
           x: 2
   -
-    id: one-concat-err-path-required
-    files:
-      main.toml:
-        > [meta]
-        > concat = 'child.toml'
-        >
-        > [well.A1]
-        > x = 1
-      child.toml:
-        > [well.A2]
-        > x = 2
-
-    kwargs:
-      path_required: True
-
-    error:
-      type: ConfigError
-      message: Did you mean to set `meta.path`\?
-  -
-    id: two-concats
+    id: labels-concat-2x
     files:
       main.toml:
         > [meta]
         > concat = [
-        >     'child_2.toml',
-        >     'child_3.toml',
+        >     'concat_2.toml',
+        >     'concat_3.toml',
         > ]
         >
         > [well.A1]
         > x = 1
-      child_2.toml:
+      concat_2.toml:
         > [well.A2]
         > x = 2
-      child_3.toml:
+      concat_3.toml:
         > [well.A3]
         > x = 3
 
@@ -482,33 +142,428 @@ test_load:
           row_i: 0
           col_j: 2
           x: 3
+
   -
-    id: two-concats-err-path-required
+    id: extras
     files:
       main.toml:
+        > a = 1
+        > [well.A1]
+        > x = 1
+
+    kwargs:
+      extras: True
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+
+      extras:
+        a: 1
+  -
+    id: extras-include
+    files:
+      main.toml:
+        > a = 1
         > [meta]
-        > concat = [
-        >     'child_2.toml',
-        >     'child_3.toml',
-        > ]
+        > include = 'include.toml'
+        > [well.A1]
+        > x = 1
+      include.toml:
+        > a = 2
+        > b = 2
+
+    kwargs:
+      extras: True
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+
+      extras:
+        a: 1
+        b: 2
+  -
+    id: extras-concat
+    files:
+      main.toml:
+        > a = 1
+        > [meta]
+        > concat = 'concat.toml'
+        > [well.A1]
+        > x = 1
+      concat.toml:
+        > b = 2
+        > [well.A2]
+        > x = 2
+
+    kwargs:
+      extras: True
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+        -
+          well: 'A2'
+          well0: 'A02'
+          row: 'A'
+          col: '2'
+          row_i: 0
+          col_j: 1
+          x: 2
+
+      extras:
+        a: 1
+  -
+    id: extras-not-requested
+    files:
+      main.toml:
+        > a = 1
+        > [well.A1]
+        > x = 1
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+  -
+    id: extras-data-loader
+    files:
+      main.toml:
+        > a = 1
+        >
+        > [meta]
+        > path = 'main.csv'
         >
         > [well.A1]
         > x = 1
-      child_2.toml:
+      main.csv:
+        > Well,Data
+        > A1,2
+
+    kwargs:
+      -
+        data_loader: pd.read_csv
+        extras: True
+      -
+        data_loader: read_csv_check_extras_positional
+        extras: True
+      -
+        data_loader: read_csv_check_extras_keyword
+        extras: True
+      -
+        data_loader: read_csv_ignore_extras_variable
+        extras: True
+      -
+        data_loader: read_csv_ignore_extras_variable_keyword
+        extras: True
+
+    expected:
+      labels:
+        -
+          path: DIR/'main.csv'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+
+      data:
+        -
+          Well: 'A1'
+          path: DIR/'main.csv'
+          Data: 2
+
+      extras:
+        a: 1
+  -
+    id: extras-merge-cols
+    files:
+      main.toml:
+        > a = 1
+        > [meta]
+        > path = 'main.csv'
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,2
+
+    kwargs:
+      data_loader: read_csv_check_extras
+      merge_cols: {'well': 'Well'}
+      extras: True
+
+    expected:
+      labels+data:
+        -
+          path: DIR/'main.csv'
+          well: 'A1'
+          Well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+          Data: 2
+
+      extras:
+        a: 1
+  -
+    id: extras-deps
+    files:
+      main.toml:
+        > a = 1
+        > [well.A1]
+        > x = 1
+
+    kwargs:
+      extras: True
+      report_dependencies: True
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+
+      extras:
+        a: 1
+
+      deps:
+        - DIR/'main.toml'
+
+  -
+    id: deps
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+
+    kwargs:
+      report_dependencies: True
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+      deps:
+        - DIR/'main.toml'
+  -
+    id: deps-include
+    files:
+      main.toml:
+        > [meta]
+        > include = 'include.toml'
+        >
+        > [well.A1]
+        > x = 1
+      include.toml:
         > [well.A2]
         > x = 2
-      child_3.toml:
-        > [well.A3]
-        > x = 3
+
+    kwargs:
+      report_dependencies: True
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+        -
+          well: 'A2'
+          well0: 'A02'
+          row: 'A'
+          col: '2'
+          row_i: 0
+          col_j: 1
+          x: 2
+      deps:
+        - DIR/'main.toml'
+        - DIR/'include.toml'
+  -
+    id: deps-concat
+    files:
+      main.toml:
+        > [meta]
+        > concat = 'concat.toml'
+        >
+        > [well.A1]
+        > x = 1
+      concat.toml:
+        > [well.A2]
+        > x = 2
+
+    kwargs:
+      report_dependencies: True
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+        -
+          well: 'A2'
+          well0: 'A02'
+          row: 'A'
+          col: '2'
+          row_i: 0
+          col_j: 1
+          x: 2
+      deps:
+        - DIR/'main.toml'
+        - DIR/'concat.toml'
+
+  -
+    id: path-required-ok-meta-path
+    files:
+      main.toml:
+        > [meta]
+        > path = 'main.csv'
+        >
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,-1
 
     kwargs:
       path_required: True
 
-    error:
-      type: ConfigError
-      message: Did you mean to set `meta.path`\?
+    expected:
+      labels:
+        -
+          path: DIR/'main.csv'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
   -
-    id: concat-no-wells-path-required
+    id: path-required-ok-meta-paths
+    files:
+      main.toml:
+        > [meta.paths]
+        > 1 = 'plate_1.csv'
+        > 2 = 'plate_2.csv'
+        >
+        > [plate.1.well.A1]
+        > x = 1
+        > [plate.2.well.A1]
+        > x = 2
+
+      plate_1.csv:
+        > Well,Data
+        > A1,-1
+      plate_2.csv:
+        > Well,Data
+        > A1,-2
+
+    kwargs:
+      path_required: True
+
+    expected:
+      labels:
+        -
+          path: DIR/'plate_1.csv'
+          plate: '1'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+        -
+          path: DIR/'plate_2.csv'
+          plate: '2'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 2
+  -
+    id: path-required-ok-path-guess
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,-1
+
+    kwargs:
+      path_required: True
+      path_guess: '{0.stem}.csv'
+
+    expected:
+      labels:
+        -
+          path: DIR/'main.csv'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+  -
+    id: path-required-ok-concat-only
     files:
       # It's ok that `main.csv` doesn't exist, because `main.toml` doesn't 
       # specify any wells.
@@ -537,6 +592,423 @@ test_load:
           row_i: 0
           col_j: 0
           x: 1
+  -
+    id: path-required-err
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+
+    kwargs:
+      path_required: True
+
+    error:
+      type: ConfigError
+      message:
+        - main\.toml
+        - Analysis requires a data file, but none was specified and none could be inferred\.
+        - Did you mean to set `meta.path`\?
+  -
+    id: path-required-err-plate
+    files:
+      main.toml:
+        > [plate.1.well.A1]
+        > x = 1
+        > [plate.2.well.A1]
+        > x = 2
+
+    kwargs:
+      path_required: True
+
+    error:
+      type: ConfigError
+      message:
+        - main\.toml
+        - Analysis requires a data file for each plate, but none were specified\.
+        - Did you mean to set `meta.paths`\?
+  -
+    id: path-required-err-concat
+    files:
+      main.toml:
+        > [meta]
+        > path = 'main.csv'
+        > concat = 'concat.toml'
+        >
+        > [well.A1]
+        > x = 1
+      concat.toml:
+        > [well.A2]
+        > x = 2
+      main.csv:
+        > Well,Data
+        > A1,-1
+
+    kwargs:
+      path_required: True
+
+    error:
+      type: ConfigError
+      message:
+        - concat\.toml
+        - Analysis requires a data file, but none was specified and none could be inferred\.
+        - Did you mean to set `meta.path`\?
+
+  -
+    id: data-loader
+    files:
+      main.toml:
+        > [meta]
+        > path = 'main.csv'
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,2
+
+    kwargs:
+      data_loader: pd.read_csv
+
+    expected:
+      labels:
+        -
+          path: DIR/'main.csv'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+      data:
+        -
+          Well: 'A1'
+          path: DIR/'main.csv'
+          Data: 2
+  -
+    id: data-loader-multiple-paths
+    files:
+      main.toml:
+        > [meta.paths]
+        > 1 = 'plate_1.csv'
+        > 2 = 'plate_2.csv'
+        >
+        > [plate.1.well.A1]
+        > x = 1
+        > [plate.2.well.A1]
+        > x = 2
+      plate_1.csv:
+        > Well,Data
+        > A1,-1
+      plate_2.csv:
+        > Well,Data
+        > A1,-2
+
+    kwargs:
+      data_loader: pd.read_csv
+
+    expected:
+      labels:
+        -
+          path: DIR/'plate_1.csv'
+          plate: '1'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+        -
+          path: DIR/'plate_2.csv'
+          plate: '2'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 2
+      data:
+        -
+          Well: 'A1'
+          path: DIR/'plate_1.csv'
+          Data: -1
+        -
+          Well: 'A1'
+          path: DIR/'plate_2.csv'
+          Data: -2
+  -
+    id: data-loader-err-no-path
+    # All the various ways that paths can be missing are rigorously tested by 
+    # the 'path-required' tests.  This just tests that the data loader argument 
+    # can trigger the same checks.
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+
+    kwargs:
+      data_loader: pd.read_csv
+
+    error:
+      type: ConfigError
+      message: main\.toml
+
+  -
+    id: merge-cols-true
+    files:
+      main.toml:
+        > [meta]
+        > path = 'main.csv'
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > well,Data
+        > A1,-1
+
+    kwargs:
+      data_loader: pd.read_csv
+      merge_cols: True
+
+    expected:
+      labels+data:
+        -
+          path: DIR/'main.csv'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+          Data: -1
+  -
+    id: merge-cols-dict
+    files:
+      main.toml:
+        > [meta]
+        > path = 'main.csv'
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,2
+
+    kwargs:
+      data_loader: pd.read_csv
+      merge_cols: {'well': 'Well'}
+
+    expected:
+      labels+data:
+        -
+          path: DIR/'main.csv'
+          Well: 'A1'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+          Data: 2
+  -
+    id: merge-cols-err-ignore-path
+    # Both data frames will have 'path' columns, but this alone should not be 
+    # enough to merge on.
+    files:
+      main.toml:
+        > [meta]
+        > path = 'main.csv'
+        >
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,-1
+
+    kwargs:
+      data_loader: pd.read_csv
+      merge_cols: True
+
+    error:
+      type: ValueError
+      message:
+        - No common columns \(expect 'path'\) to perform merge on
+        - layout cols: 'well'
+        - data cols: 'Well', 'Data', 'path'
+
+  -
+    id: merge-cols-err-empty-dict
+    files:
+      main.toml:
+        > [meta]
+        > path = 'main.csv'
+        >
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,-1
+
+    kwargs:
+      data_loader: pd.read_csv
+      merge_cols: {}
+
+    error:
+      type: ValueError
+      message: Must specify at least one column to merge on
+  -
+    id: merge-cols-err-no-data-loader
+    files:
+      main.toml:
+        > [meta]
+        > path = 'main.csv'
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,-1
+
+    kwargs:
+      merge_cols: True
+
+    error: ValueError
+  -
+    id: merge-cols-err-left-nonexistent
+    files:
+      main.toml:
+        > [meta]
+        > path = 'main.csv'
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,-1
+
+    kwargs:
+      data_loader: pd.read_csv
+      merge_cols: {'xxx': 'Well'}
+
+    error:
+      type: ValueError
+      message:
+        - Cannot merge on 'xxx'
+        - Allowed keys of the `merge_cols` dict: 'well', 'well0'
+  -
+    id: merge-cols-err-right-nonexistent
+    files:
+      main.toml:
+        > [meta]
+        > path = 'main.csv'
+        > [well.A1]
+        > x = 1
+      main.csv:
+        > Well,Data
+        > A1,-1
+
+    kwargs:
+      data_loader: pd.read_csv
+      merge_cols: {'well': 'xxx'}
+
+    error:
+      type: ValueError
+      message:
+        - Cannot merge on 'xxx'
+        - Allowed values of the `merge_cols` dict: 'Well', 'Data'
+  -
+    id: merge-cols-plate
+    files:
+      main.toml:
+        > [meta]
+        > paths = 'plate_{}.csv'
+        >
+        > [plate.1.well.A1]
+        > x = 1
+        >
+        > [plate.2.well.A1]
+        > x = 2
+      plate_1.csv:
+        > Well,Data
+        > A1,-1
+      plate_2.csv:
+        > Well,Data
+        > A1,-2
+
+    kwargs:
+      data_loader: pd.read_csv
+      merge_cols: {'well': 'Well'}
+
+    expected:
+      labels:
+        -
+          path: DIR/'plate_1.csv'
+          plate: '1'
+          Well: 'A1'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+          Data: -1
+        -
+          path: DIR/'plate_2.csv'
+          plate: '2'
+          Well: 'A1'
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 2
+          Data: -2
+
+  -
+    id: err-no-wells
+    files:
+      main.toml:
+    error:
+      type: ConfigError
+      message: No wells defined
+  -
+    id: err-no-wells-row-without-col
+    files:
+      main.toml:
+        > [row.A]
+        > x = 1
+    error:
+      type: ConfigError
+      message: No wells defined
+  -
+    id: err-no-wells-irow-without-col
+    files:
+      main.toml:
+        > [irow.A]
+        > x = 1
+    error:
+      type: ConfigError
+      message: No wells defined
+  -
+    id: err-no-wells-col-without-row
+    files:
+      main.toml:
+        > [col.1]
+        > x = 1
+    error:
+      type: ConfigError
+      message: No wells defined
+  -
+    id: err-no-wells-icol-without-row
+    files:
+      main.toml:
+        > [icol.1]
+        > x = 1
+    error:
+      type: ConfigError
+      message: No wells defined
+
   -
     id: reasonably-complex
     files:
@@ -638,97 +1110,3 @@ test_load:
           {plate: 'β', well: 'D3', well0: 'D03', row: 'D', col: '3', row_i: 3, col_j: 2, x: 2, y: 4, z: 3}
         -
           {plate: 'β', well: 'D4', well0: 'D04', row: 'D', col: '4', row_i: 3, col_j: 3, x: 2, y: 4, z: 4}
-  -
-    id: err-no-wells
-    files:
-      main.toml:
-    error:
-      type: ConfigError
-      message: No wells defined
-  -
-    id: err-no-wells-row-without-col
-    files:
-      main.toml:
-        > [row.A]
-        > x = 1
-    error:
-      type: ConfigError
-      message: No wells defined
-  -
-    id: err-no-wells-irow-without-col
-    files:
-      main.toml:
-        > [irow.A]
-        > x = 1
-    error:
-      type: ConfigError
-      message: No wells defined
-  -
-    id: err-no-wells-col-without-row
-    files:
-      main.toml:
-        > [col.1]
-        > x = 1
-    error:
-      type: ConfigError
-      message: No wells defined
-  -
-    id: err-no-wells-icol-without-row
-    files:
-      main.toml:
-        > [icol.1]
-        > x = 1
-    error:
-      type: ConfigError
-      message: No wells defined
-  -
-    id: err-merge-cols-without-data-loader
-    files:
-      main.toml:
-        > [well.A1]
-        > x = 1
-      main.csv:
-        > Well,Data
-        > A1,-1
-
-    kwargs:
-      merge_cols: True
-      path_guess: '{0.stem}.csv'
-
-    error: ValueError
-  -
-    id: err-nonexistent-merge-cols
-    files:
-      main.toml:
-        > [well.A1]
-        > x = 1
-      main.csv:
-        > Well,Data
-        > A1,-1
-
-    kwargs:
-      data_loader: pd.read_csv
-      merge_cols: {'xxx': 'Well'}
-      path_guess: '{0.stem}.csv'
-
-    error:
-      type: ValueError
-      message: xxx
-  -
-    id: err-nonexistent-merge-cols
-    files:
-      main.toml:
-        > [well.A1]
-        > x = 1
-      main.csv:
-        > Well,Data
-        > A1,-1
-
-    kwargs:
-      data_loader: pd.read_csv
-      merge_cols: {'well': 'xxx'}
-      path_guess: '{0.stem}.csv'
-
-    error:
-      type: ValueError
-      message: xxx

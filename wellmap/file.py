@@ -213,6 +213,7 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
                 toml_path,
                 path_guess=path_guess,
                 on_alert=on_alert,
+                path_required=path_required or data_loader,
         )
 
         def augment_return_value(*args):
@@ -242,7 +243,10 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
 
             if 'extras' not in sig.parameters:
                 return {}
-            if sig.parameters['extras'].kind != inspect.Parameter.POSITIONAL_OR_KEYWORD:
+            if sig.parameters['extras'].kind not in {
+                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                    inspect.Parameter.KEYWORD_ONLY,
+            }:
                 return {}
 
             return {'extras': extras}
@@ -251,8 +255,11 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
         layout = pd.concat([layout, *concats], sort=False)
 
         if path_required or data_loader:
-            if 'path' not in layout or layout['path'].isnull().any():
+            if 'path' not in layout:
                 raise paths.missing_path_error
+
+            # It shouldn't be possible for only some wells to have paths.
+            assert not layout['path'].isnull().any()
 
         if len(layout) == 0:
             raise ConfigError("No wells defined.")
@@ -271,13 +278,22 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
             data = data.append(df, sort=False)
 
         ## Merge the layout and the data into a single data frame:
-        if not merge_cols:
+        if merge_cols is None:
             return augment_return_value(layout, data)
 
         if merge_cols is True:
-            # Let pandas choose which columns to merge on.
-            kwargs = {}
+            # Merge on any columns with matching names.  Complain if the only 
+            # matching column is "path", because we made that column ourselves.
+
+            kwargs = {
+                'on': list(set(layout.columns) & set(data.columns))
+            }
+            if kwargs['on'] == ['path']:
+                raise ValueError(f"No common columns (expect 'path') to perform merge on:\nlayout cols: {quoted_join(layout.columns)}\ndata cols: {quoted_join(data.columns)}")
         else:
+            if not merge_cols:
+                raise ValueError("Must specify at least one column to merge on (i.e. cannot specify empty `merge_cols` dict).")
+
             def check_merge_cols(cols, known_cols, attrs):
                 unknown_cols = set(cols) - set(known_cols)
                 if unknown_cols:
@@ -296,10 +312,10 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
         return augment_return_value(merged)
 
     except ConfigError as err:
-        err.toml_path = toml_path
+        err.toml_path = err.toml_path or toml_path
         raise
 
-def config_from_toml(toml_path, *, shift=(0,0), path_guess=None, extra_keys=None, on_alert=None):
+def config_from_toml(toml_path, *, shift=(0,0), path_guess=None, path_required=False, extra_keys=None, on_alert=None):
     """
     Create a config dictionary from the given TOML file.
 
@@ -405,6 +421,7 @@ def config_from_toml(toml_path, *, shift=(0,0), path_guess=None, extra_keys=None
         df, subdeps = load(
                 path,
                 path_guess=path_guess,
+                path_required=path_required,
                 report_dependencies=True,
                 on_alert=on_alert,
         )
