@@ -448,10 +448,9 @@ class Colors:
     def __init__(self, cmap, df, attr):
         cols = ['plate', 'row_i', 'col_j']
         labels = df\
-                .groupby(attr, sort=False)[cols]\
-                .min()\
-                .reset_index()\
-                .sort_values(cols)
+                .sort_values(cols)\
+                .groupby(attr, sort=False)\
+                .head(1)
 
         self.map = {x: i for i, x in enumerate(labels[attr])}
 
