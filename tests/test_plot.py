@@ -85,6 +85,7 @@ def test_sort_values():
     run_cli(f'{DIR}/sort_numbers.toml')
     run_cli(f'{DIR}/sort_dates.toml')
     run_cli(f'{DIR}/sort_strings.toml')
+    run_cli(f'{DIR}/sort_plate.toml')
 
 def test_nan_first():
     run_cli(DIR/'nan_first.toml')

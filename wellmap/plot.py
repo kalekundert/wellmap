@@ -295,7 +295,7 @@ def pick_attrs(df, user_attrs):
 def pick_colors(ax, df, attr, cmap):
     from matplotlib.colorbar import ColorbarBase
 
-    colors = Colors(cmap, df[attr])
+    colors = Colors(cmap, df, attr)
 
     bar = ColorbarBase(
             ax,
@@ -445,33 +445,15 @@ class Dimensions:
 
 class Colors:
 
-    def __init__(self, cmap, values):
-        values = values.dropna().unique()
+    def __init__(self, cmap, df, attr):
+        cols = ['plate', 'row_i', 'col_j']
+        labels = df\
+                .groupby(attr, sort=False)[cols]\
+                .min()\
+                .reset_index()\
+                .sort_values(cols)
 
-        # If we don't sort, the values will be listing in the order they appear 
-        # in the TOML file.  This is a reasonable default, but it can break 
-        # down when there are included or concatenated files.
-        # 
-        # For numbers and dates, the natural ordering (least to greatest) is 
-        # likely to be useful, so explicitly sorting the values makes the 
-        # display more robust and is worth doing.  
-        #
-        # For strings, the natural ordering (alphabetical) is not likely to be 
-        # useful, so instead we keep the values in their order-of-appearance.  
-        # This might break down in the more-complicated cases mentioned above, 
-        # but in the common case its the most likely to be useful.
-        #
-        # (Note that the only scalar types in the TOML format are: string, int, 
-        # float, bool, and datetime.  Of these, string is the only one that 
-        # doesn't have a meaningful natural ordering.)
-
-        if not any(isinstance(x, str) for x in values):
-            # If sorting fails (e.g. due to mixed types), just fall back on the 
-            # original ordering.
-            try: values = sorted(values)
-            except ValueError: pass
-
-        self.map = {x: i for i, x in enumerate(values)}
+        self.map = {x: i for i, x in enumerate(labels[attr])}
 
         n = len(self.map)
         self.cmap = cmap
