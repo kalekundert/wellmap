@@ -6,6 +6,10 @@ code, while major version upgrades (e.g. 1.1 to 2.0) might.
 
 <!--next-version-placeholder-->
 
+## v3.1.1 (2021-10-11)
+### Fix
+* Better error checking ([`eea82a3`](https://github.com/kalekundert/wellmap/commit/eea82a394ae20789731d0068ce096f7cfb6a483d))
+
 ## v3.1.0 (2021-10-07)
 ### Feature
 * Allow included layouts to be shifted ([`2ad8b59`](https://github.com/kalekundert/wellmap/commit/2ad8b59bc6cae04b9a83645959bee30fdf668aa2))
