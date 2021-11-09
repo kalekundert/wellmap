@@ -6,6 +6,10 @@ code, while major version upgrades (e.g. 1.1 to 2.0) might.
 
 <!--next-version-placeholder-->
 
+## v3.2.0 (2021-11-09)
+### Feature
+* Pick colors based on well coordinates ([`90a25a1`](https://github.com/kalekundert/wellmap/commit/90a25a17455b2b53d973b7a3e867be9943b32bdd))
+
 ## v3.1.1 (2021-10-11)
 ### Fix
 * Better error checking ([`eea82a3`](https://github.com/kalekundert/wellmap/commit/eea82a394ae20789731d0068ce096f7cfb6a483d))
