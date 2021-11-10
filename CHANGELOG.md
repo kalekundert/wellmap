@@ -6,6 +6,10 @@ code, while major version upgrades (e.g. 1.1 to 2.0) might.
 
 <!--next-version-placeholder-->
 
+## v3.2.1 (2021-11-10)
+### Fix
+* Correct color concave well groups ([`04015bf`](https://github.com/kalekundert/wellmap/commit/04015bf5d76377ccb53eabd5f0a0393137f267de))
+
 ## v3.2.0 (2021-11-09)
 ### Feature
 * Pick colors based on well coordinates ([`90a25a1`](https://github.com/kalekundert/wellmap/commit/90a25a17455b2b53d973b7a3e867be9943b32bdd))
