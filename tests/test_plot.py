@@ -91,16 +91,25 @@ def test_show(layout, attrs, color, tol, expected, error):
         indirect=['layout'],
 )
 def test_cli(layout, attrs, color, expected, tol, error, tmp_path):
-    actual = layout.parent / expected
-    expected = REF_IMAGES / expected
-    stdout = error.messages if error else 'Layout written' 
+    cmd = ['wellmap', layout]
 
-    cmd = ['wellmap', layout, '-o', actual]
+    if error:
+        cmd += ['-f']
+        stdout = error.messages
+    else:
+        actual = layout.parent / expected
+        expected = REF_IMAGES / expected
+        cmd += ['-o', actual]
+        stdout = 'Layout written' 
+
     if attrs:
         cmd += ([attrs] if isinstance(attrs, str) else attrs)
     if color:
         cmd += ['-c', color]
 
     run_cli(cmd, stdout)
+    if not error:
+        compare_images(expected, actual, TEST_IMAGES, tol=tol)
+
     plt.close()
 
