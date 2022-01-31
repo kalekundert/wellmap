@@ -6,6 +6,10 @@ code, while major version upgrades (e.g. 1.1 to 2.0) might.
 
 <!--next-version-placeholder-->
 
+## v3.3.0 (2022-01-31)
+### Feature
+* Allow `show(attrs=...)` to be a string ([`0572a61`](https://github.com/kalekundert/wellmap/commit/0572a610de3e1559e4029e0bb7c505e2a07d7ae9))
+
 ## v3.2.1 (2021-11-10)
 ### Fix
 * Correct color concave well groups ([`04015bf`](https://github.com/kalekundert/wellmap/commit/04015bf5d76377ccb53eabd5f0a0393137f267de))
