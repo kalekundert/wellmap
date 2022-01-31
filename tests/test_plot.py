@@ -66,8 +66,9 @@ def test_pick_attrs(df, attrs, expected, error):
         indirect=['layout'],
 )
 def test_show(layout, attrs, color, tol, expected, error):
-    actual = layout.parent / expected
-    expected = REF_IMAGES / expected
+    if not error:
+        actual = layout.parent / expected
+        expected = REF_IMAGES / expected
 
     with error:
         fig = show(layout, attrs, color)
