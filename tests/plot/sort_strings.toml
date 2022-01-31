@@ -1,8 +1,0 @@
-# The wells should be sorted.
-[well]
-A1.x = 'f'
-A2.x = 'e'
-A3.x = 'd'
-A4.x = 'a'
-A5.x = 'b'
-A6.x = 'c'

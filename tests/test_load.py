@@ -42,7 +42,7 @@ def test_load(files, kwargs, expected, error, subtests):
             read_csv_ignore_extras_variable_keyword=read_csv_ignore_extras_variable_keyword,
     )
     kwargs = with_loaders.eval(kwargs)
-    expected = with_py.copy().use(DIR=files).eval(expected)
+    expected = Namespace(with_py, DIR=files).eval(expected)
 
     if not isinstance(kwargs, list):
         kwargs = [kwargs]

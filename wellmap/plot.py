@@ -72,7 +72,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys, os, shlex
 
-from wellmap import ConfigError
+from wellmap import LayoutError
 from inform import plural
 from matplotlib.colors import BoundaryNorm, Normalize
 from pathlib import Path
@@ -129,9 +129,9 @@ def main():
             fig.canvas.set_window_title(title)
             plt.show()
 
-    except CliError as err:
+    except UsageError as err:
         print(err)
-    except ConfigError as err:
+    except LayoutError as err:
         err.toml_path = toml_path
         print(err)
 
@@ -149,8 +149,8 @@ def show(toml_path, attrs=None, color='rainbow'):
         The path to a file describing the layout of one or more plates.  See 
         the :doc:`/file_format` page for details about this file.
 
-    :param list attrs:
-        A list of attributes from the above TOML file to visualize.  For 
+    :param str,list attrs:
+        One or more attributes from the above TOML file to visualize.  For 
         example, if the TOML file contains something equivalent to 
         ``well.A1.conc = 1``, then "conc" would be a valid attribute.  If no 
         attributes are specified, the default is to display any attributes that 
@@ -206,22 +206,27 @@ def plot_layout(df, user_attrs, cmap):
 
     fig, axes, dims = setup_axes(df, plates, attrs)
 
-    for i, attr in enumerate(attrs):
-        colors = pick_colors(axes[i,-1], df, attr, cmap)
+    try:
+        for i, attr in enumerate(attrs):
+            colors = pick_colors(axes[i,-1], df, attr, cmap)
 
+            for j, plate in enumerate(plates):
+                plot_plate(axes[i,j], df, plate, attr, dims, colors)
+
+        for i, attr in enumerate(attrs):
+            axes[i,0].set_ylabel(attr)
         for j, plate in enumerate(plates):
-            plot_plate(axes[i,j], df, plate, attr, dims, colors)
+            axes[0,j].set_xlabel(plate)
+            axes[0,j].xaxis.set_label_position('top')
 
-    for i, attr in enumerate(attrs):
-        axes[i,0].set_ylabel(attr)
-    for j, plate in enumerate(plates):
-        axes[0,j].set_xlabel(plate)
-        axes[0,j].xaxis.set_label_position('top')
+        for ax in axes[1:,:-1].flat:
+            ax.set_xticklabels([])
+        for ax in axes[:,1:-1].flat:
+            ax.set_yticklabels([])
 
-    for ax in axes[1:,:-1].flat:
-        ax.set_xticklabels([])
-    for ax in axes[:,1:-1].flat:
-        ax.set_yticklabels([])
+    except:
+        fig.close()
+        raise
 
     return fig
 
@@ -256,6 +261,9 @@ def plot_plate(ax, df, plate, attr, dims, colors):
     ax.xaxis.tick_top()
 
 def pick_attrs(df, user_attrs):
+    if isinstance(user_attrs, str):
+        user_attrs = [user_attrs]
+
     wellmap_cols = ['plate', 'well', 'well0', 'row', 'col', 'row_i', 'col_j', 'path']
     user_cols = [x for x in df.columns if x not in wellmap_cols]
 
@@ -269,7 +277,7 @@ def pick_attrs(df, user_attrs):
                 if x not in user_cols
         ]
         if unknown_attrs:
-            raise ConfigError(f"No such {plural(unknown_attrs):attribute/s}: {quoted_join(unknown_attrs)}.\nDid you mean: {quoted_join(user_cols)}")
+            raise UsageError(f"No such {plural(unknown_attrs):attribute/s}: {quoted_join(unknown_attrs)}\nDid you mean: {quoted_join(user_cols)}")
 
         return user_attrs
 
@@ -286,9 +294,9 @@ def pick_attrs(df, user_attrs):
         ]
         if not non_degenerate_cols:
             if degenerate_cols:
-                raise CliError(f"Found only degenerate attributes (i.e. with the same value in every well): {quoted_join(degenerate_cols)}")
+                raise UsageError(f"Found only degenerate attributes (i.e. with the same value in every well): {quoted_join(degenerate_cols)}")
             else:
-                raise ConfigError(f"No attributes defined.")
+                raise LayoutError(f"No attributes defined.")
 
         return non_degenerate_cols
 
@@ -448,6 +456,7 @@ class Colors:
     def __init__(self, cmap, df, attr):
         cols = ['plate', 'row_i', 'col_j']
         labels = df\
+                .dropna()\
                 .sort_values(cols)\
                 .groupby(attr, sort=False)\
                 .head(1)
@@ -468,5 +477,5 @@ class Colors:
     def isnan(x):
         return isinstance(x, float) and np.isnan(x)
 
-class CliError(Exception):
+class UsageError(Exception):
     pass

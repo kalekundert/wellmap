@@ -2,32 +2,32 @@
 
 import wellmap
 import pytest
+import matplotlib.pyplot as plt
+
 from pathlib import Path
+from .param_helpers import *
 
-# These tests are pretty minimal.  Mostly just testing either that it doesn't 
-# crash or that it crashes with the right error.  The resulting images are 
-# written out as *.pdf files, so you can look at those by hand if you want to 
-# be sure the plots are correct (which is *not* tested).
+TEST = Path(__file__).parent
+REF_IMAGES = TEST / 'images/ref'
+TEST_IMAGES = TEST / 'images/test'
 
-DIR = Path(__file__).parent / 'plot'
-
-def run_cli(args, out='Layout written'):
+def run_cli(cmd, out='Layout written'):
     import sys, re, shlex
     from io import StringIO
     from contextlib import contextmanager, redirect_stdout
 
     @contextmanager
-    def spoof_argv(*args):
+    def spoof_argv(argv):
         try:
             orig_argv = sys.argv
-            sys.argv = args
+            sys.argv = [str(x) for x in argv]
             yield
         finally:
             sys.argv = orig_argv
 
     stdout = StringIO()
     with redirect_stdout(stdout):
-        with spoof_argv('wellmap', '-o', f'{DIR}/$.pdf', *shlex.split(str(args))):
+        with spoof_argv(cmd):
             wellmap.plot.main()
 
     if out is None:
@@ -35,74 +35,70 @@ def run_cli(args, out='Layout written'):
     if isinstance(out, str):
         out = [out]
     for expected in out:
-        assert re.search(expected, stdout.getvalue())
+        assert expected in stdout.getvalue()
 
 
-def test_no_wells():
-    run_cli(DIR/'no_wells.toml', [
-        "no_wells.toml",
-        "No wells defined",
-    ])
+@parametrize_from_file(
+        schema=Schema({
+            'df': [{str: with_py.eval}],
+            'attrs': with_py.eval,
+            **with_wellmap.error_or({
+                'expected': [str],
+            }),
+        })
+)
+def test_pick_attrs(df, attrs, expected, error):
+    df = pd.DataFrame(df)
+    with error:
+        assert wellmap.plot.pick_attrs(df, attrs) == expected
 
-def test_no_attr():
-    run_cli(DIR/'no_attrs.toml', "No attributes defined.")
+@parametrize_from_file(
+        schema=Schema({
+            'layout': str,
+            Optional('attrs', default=[]): Or(str, [str]),
+            Optional('color', default='rainbow'): str,
+            **with_wellmap.error_or({
+                'expected': str,
+                Optional('tol', default=1): Coerce(float),
+            }),
+        }),
+        indirect=['layout'],
+)
+def test_show(layout, attrs, color, tol, expected, error):
+    actual = layout.parent / expected
+    expected = REF_IMAGES / expected
 
-def test_degenerate_attr():
-    run_cli(DIR/'degenerate_attr.toml', [
-        "degenerate attributes",
-        ": 'x'",
-    ])
+    with error:
+        fig = show(layout, attrs, color)
+        fig.savefig(actual)
+        compare_images(expected, actual, TEST_IMAGES, tol=tol)
 
-def test_unknown_attr():
-    run_cli(f'{DIR}/one_attr.toml XXX', [
-        "one_attr.toml",
-        "No such attribute: 'XXX'",
-        "Did you mean: 'x'",
-    ])
+    plt.close()
 
-    # Make sure the fancy plural logic works :-)
-    run_cli(f'{DIR}/one_attr.toml XXX YYY', [
-        "one_attr.toml",
-        "No such attributes: 'XXX', 'YYY'",
-        "Did you mean: 'x'",
-    ])
+@parametrize_from_file(
+        key='test_show',
+        schema=Schema({
+            'layout': str,
+            Optional('attrs', default=[]): Or(str, [str]),
+            Optional('color', default='rainbow'): str,
+            **with_wellmap.error_or({
+                'expected': str,
+                Optional('tol', default=1): Coerce(float),
+            }),
+        }),
+        indirect=['layout'],
+)
+def test_cli(layout, attrs, color, expected, tol, error, tmp_path):
+    actual = layout.parent / expected
+    expected = REF_IMAGES / expected
+    stdout = error.messages if error else 'Layout written' 
 
-def test_one_attr():
-    run_cli(DIR/'one_attr.toml')
+    cmd = ['wellmap', layout, '-o', actual]
+    if attrs:
+        cmd += ([attrs] if isinstance(attrs, str) else attrs)
+    if color:
+        cmd += ['-c', color]
 
-def test_two_attrs():
-    run_cli(DIR/'two_attrs.toml')
-
-def test_user_attr():
-    run_cli(f'{DIR}/two_attrs.toml x')
-    run_cli(f'{DIR}/two_attrs.toml y')
-    run_cli(f'{DIR}/two_attrs.toml x y')
-
-def test_one_value():
-    run_cli(f'{DIR}/one_value.toml x')
-
-def test_sort_values():
-    run_cli(f'{DIR}/sort_numbers.toml')
-    run_cli(f'{DIR}/sort_dates.toml')
-    run_cli(f'{DIR}/sort_strings.toml')
-    run_cli(f'{DIR}/sort_plate.toml')
-    run_cli(f'{DIR}/sort_concave.toml')
-
-def test_nan_first():
-    run_cli(DIR/'nan_first.toml')
-
-def test_skip_wells():
-    run_cli(DIR/'skip_wells.toml')
-
-def test_long_labels():
-    run_cli(DIR/'long_labels.toml')
-
-def test_reasonably_complex():
-    run_cli(DIR/'reasonably_complex_2.toml')
-    run_cli(DIR/'reasonably_complex_1.toml')
-
-def test_colorscheme():
-    run_cli(f'{DIR}/colors_viridis.toml -c viridis')
-    run_cli(f'{DIR}/colors_plasma.toml -c plasma')
-    run_cli(f'{DIR}/colors_coolwarm.toml -c coolwarm')
+    run_cli(cmd, stdout)
+    plt.close()
 

@@ -1,0 +1,497 @@
+test_show:
+  -
+    id: no-wells
+    layout:
+    error:
+      type: LayoutError
+      message: No wells defined
+  -
+    id: no-attr
+    layout:
+      > [well.A1]
+      >
+      > [well.A2]
+    error:
+      type: LayoutError
+      message: No attributes defined
+  -
+    id: degenerate-attr
+    layout:
+      > [well.A1]
+      > x = 1
+    error:
+      type: UsageError
+      message:
+        - Found only degenerate attributes
+        - 'x'
+  -
+    id: unknown-attr
+    layout:
+      > [well]
+      > A1.x = 1
+      > A2.x = 2
+    attrs: XXX
+    error:
+      type: UsageError
+      message:
+        - No such attribute: 'XXX'
+        - Did you mean: 'x'
+  -
+    id: one-attr
+    layout:
+      > [well]
+      > A1.x = 1
+      > A2.x = 2
+    expected: one_attr.png
+  -
+    id: two-attrs
+    layout:
+      > [well.A1]
+      > x = 1
+      > y = 'a'
+      >
+      > [well.A2]
+      > x = 2
+      > y = 'b'
+    expected: two_attrs.png
+  -
+    id: user-attrs-x-1
+    layout:
+      > [well.A1]
+      > x = 1
+    attrs: x
+    expected: user_attrs_x_1.png
+  -
+    id: user-attrs-x-2
+    layout:
+      > [well.A1]
+      > x = 1
+      > y = 'a'
+      >
+      > [well.A2]
+      > x = 2
+      > y = 'b'
+    attrs: x
+    expected: user_attrs_x_2.png
+  -
+    id: user-attrs-y
+    layout:
+      > [well.A1]
+      > x = 1
+      > y = 'a'
+      >
+      > [well.A2]
+      > x = 2
+      > y = 'b'
+    attrs: y
+    expected: user_attrs_y.png
+  -
+    id: user-attrs-xy
+    layout:
+      > [well.A1]
+      > x = 1
+      > y = 'a'
+      >
+      > [well.A2]
+      > x = 2
+      > y = 'b'
+    attrs:
+      [x, y]
+    expected: user_attrs_xy.png
+  -
+    id: sort-numbers
+    layout:
+      > [well]
+      > A1.x = 6
+      > A2.x = 5
+      > A3.x = 4
+      > A4.x = 1
+      > A5.x = 2
+      > A6.x = 3
+    expected: sort_numbers.png
+  -
+    id: sort-dates
+    layout:
+      > [well]
+      > A1.x = 2018-07-06
+      > A2.x = 2018-07-05
+      > A3.x = 2018-07-04
+      > A4.x = 2018-07-01
+      > A5.x = 2018-07-02
+      > A6.x = 2018-07-03
+    expected: sort_dates.png
+  -
+    id: sort-strings
+    layout:
+      > [well]
+      > A1.x = 'f'
+      > A2.x = 'e'
+      > A3.x = 'd'
+      > A4.x = 'a'
+      > A5.x = 'b'
+      > A6.x = 'c'
+    expected: sort_strings.png
+  -
+    id: sort-plate
+    layout:
+      > [plate.A.well]
+      > A1.x = 1
+      > A2.x = 2
+      >
+      > [plate.B.well]
+      > A1.x = 3
+      > A2.x = 4
+    expected: sort_plate.png
+  -
+    id: sort-concave
+    layout:
+      > # Test for a bug where the rows and columns are sorted independently,
+      > # such that the `x=2` wells appear to occupy (0, 0).
+      > [well]
+      > A2.x = 1
+      > A3.x = 2
+      > B1.x = 2
+    expected: sort_concave.png
+  -
+    id: nan-first
+    layout:
+      > [well.A1]
+      > x = 'a'
+      >
+      > [well.A2]
+      > x = 'a'
+      > y = 'b'
+      >
+      > [well.A3]
+      > x = 'a'
+      > y = 'c'
+    expected: nan_first.png
+  -
+    id: skip-wells
+    layout:
+      > [well.B2]
+      > x = 'a'
+      >
+      > [well.D4]
+      > x = 'b'
+    expected: skip_wells.png
+  -
+    id: long-labels
+    layout:
+      > [well]
+      > A1.x = 'long string'
+      > A2.x = 'longer string'
+    expected: long_labels.png
+  -
+    id: reasonably-complex-1
+    layout:
+      > [row]
+      > A.strain = "E. coli"
+      > B.strain = "K. pneumoniae"
+      > C.strain = "L. monocytogenes"
+      > D.strain = "M. abscessus"
+      > E.strain = "M. tuberculosis"
+      > F.strain = "N. meningitidis"
+      > G.strain = "P. aeruginosa"
+      > H.strain = "S. aureus"
+      >
+      > [col]
+      > 1.conc_ng_mL  = 0
+      > 2.conc_ng_mL  = 1
+      > 3.conc_ng_mL  = 2
+      > 4.conc_ng_mL  = 4
+      > 5.conc_ng_mL  = 8
+      > 6.conc_ng_mL  = 16
+      > 7.conc_ng_mL  = 32
+      > 8.conc_ng_mL  = 64
+      > 9.conc_ng_mL  = 128
+      > 10.conc_ng_mL = 256
+      > 11.conc_ng_mL = 512
+      > 12.conc_ng_mL = 1024
+    expected: reasonably_complex_1.png
+  -
+    id: reasonably-complex-2
+    layout:
+      > [plate]
+      > rep1.replicate = 1
+      > rep2.replicate = 2
+      > rep3.replicate = 3
+      >
+      > [row]
+      > A.strain = "E. coli"
+      > B.strain = "K. pneumoniae"
+      > C.strain = "L. monocytogenes"
+      > D.strain = "M. abscessus"
+      > E.strain = "M. tuberculosis"
+      > F.strain = "N. meningitidis"
+      > G.strain = "P. aeruginosa"
+      > H.strain = "S. aureus"
+      >
+      > [col]
+      > 1.conc_ng_mL = 0
+      > 2.conc_ng_mL = 1
+      > 3.conc_ng_mL = 2
+      > 4.conc_ng_mL = 4
+      > 5.conc_ng_mL = 8
+      > 6.conc_ng_mL = 16
+      > 7.conc_ng_mL = 32
+      > 8.conc_ng_mL = 64
+      > 9.conc_ng_mL = 128
+      > 10.conc_ng_mL = 256
+      > 11.conc_ng_mL = 512
+      > 12.conc_ng_mL = 1024
+    expected: reasonably_complex_2.png
+  -
+    id: colors-viridis
+    layout:
+      > [plate]
+      > rep1.replicate = 1
+      > rep2.replicate = 2
+      > rep3.replicate = 3
+      >
+      > [row]
+      > A.strain = "E. coli"
+      > B.strain = "K. pneumoniae"
+      > C.strain = "L. monocytogenes"
+      > D.strain = "M. abscessus"
+      > E.strain = "M. tuberculosis"
+      > F.strain = "N. meningitidis"
+      > G.strain = "P. aeruginosa"
+      > H.strain = "S. aureus"
+      >
+      > [col]
+      > 1.conc_ng_mL = 0
+      > 2.conc_ng_mL = 1
+      > 3.conc_ng_mL = 2
+      > 4.conc_ng_mL = 4
+      > 5.conc_ng_mL = 8
+      > 6.conc_ng_mL = 16
+      > 7.conc_ng_mL = 32
+      > 8.conc_ng_mL = 64
+      > 9.conc_ng_mL = 128
+      > 10.conc_ng_mL = 256
+      > 11.conc_ng_mL = 512
+      > 12.conc_ng_mL = 1024
+    color: viridis
+    expected: colors_viridis.png
+  -
+    id: colors-plasma
+    layout:
+      > [plate]
+      > rep1.replicate = 1
+      > rep2.replicate = 2
+      > rep3.replicate = 3
+      >
+      > [row]
+      > A.strain = "E. coli"
+      > B.strain = "K. pneumoniae"
+      > C.strain = "L. monocytogenes"
+      > D.strain = "M. abscessus"
+      > E.strain = "M. tuberculosis"
+      > F.strain = "N. meningitidis"
+      > G.strain = "P. aeruginosa"
+      > H.strain = "S. aureus"
+      >
+      > [col]
+      > 1.conc_ng_mL = 0
+      > 2.conc_ng_mL = 1
+      > 3.conc_ng_mL = 2
+      > 4.conc_ng_mL = 4
+      > 5.conc_ng_mL = 8
+      > 6.conc_ng_mL = 16
+      > 7.conc_ng_mL = 32
+      > 8.conc_ng_mL = 64
+      > 9.conc_ng_mL = 128
+      > 10.conc_ng_mL = 256
+      > 11.conc_ng_mL = 512
+      > 12.conc_ng_mL = 1024
+    color: plasma
+    expected: colors_plasma.png
+  -
+    id: colors-coolwarm
+    layout:
+      > [plate]
+      > rep1.replicate = 1
+      > rep2.replicate = 2
+      > rep3.replicate = 3
+      >
+      > [row]
+      > A.strain = "E. coli"
+      > B.strain = "K. pneumoniae"
+      > C.strain = "L. monocytogenes"
+      > D.strain = "M. abscessus"
+      > E.strain = "M. tuberculosis"
+      > F.strain = "N. meningitidis"
+      > G.strain = "P. aeruginosa"
+      > H.strain = "S. aureus"
+      >
+      > [col]
+      > 1.conc_ng_mL = 0
+      > 2.conc_ng_mL = 1
+      > 3.conc_ng_mL = 2
+      > 4.conc_ng_mL = 4
+      > 5.conc_ng_mL = 8
+      > 6.conc_ng_mL = 16
+      > 7.conc_ng_mL = 32
+      > 8.conc_ng_mL = 64
+      > 9.conc_ng_mL = 128
+      > 10.conc_ng_mL = 256
+      > 11.conc_ng_mL = 512
+      > 12.conc_ng_mL = 1024
+    color: coolwarm
+    expected: colors_coolwarm.png
+  -
+    id: colors-dimgray
+    layout:
+      > [plate]
+      > rep1.replicate = 1
+      > rep2.replicate = 2
+      > rep3.replicate = 3
+      >
+      > [row]
+      > A.strain = "E. coli"
+      > B.strain = "K. pneumoniae"
+      > C.strain = "L. monocytogenes"
+      > D.strain = "M. abscessus"
+      > E.strain = "M. tuberculosis"
+      > F.strain = "N. meningitidis"
+      > G.strain = "P. aeruginosa"
+      > H.strain = "S. aureus"
+      >
+      > [col]
+      > 1.conc_ng_mL = 0
+      > 2.conc_ng_mL = 1
+      > 3.conc_ng_mL = 2
+      > 4.conc_ng_mL = 4
+      > 5.conc_ng_mL = 8
+      > 6.conc_ng_mL = 16
+      > 7.conc_ng_mL = 32
+      > 8.conc_ng_mL = 64
+      > 9.conc_ng_mL = 128
+      > 10.conc_ng_mL = 256
+      > 11.conc_ng_mL = 512
+      > 12.conc_ng_mL = 1024
+    color: dimgray
+    expected: colors_dimgray.png
+
+test_pick_attrs:
+  -
+    id: pick-ab
+    df:
+      -
+        a: 1
+        b: 2
+      -
+        a: 3
+        b: 4
+
+    attrs: []
+    expected:
+      [a,b]
+  -
+    id: pick-a
+    df:
+      -
+        a: 1
+        b: 2
+      -
+        a: 3
+        b: 2
+
+    attrs: []
+    expected:
+      [a]
+  -
+    id: err-empty
+    df:
+      []
+    attrs: []
+    error:
+      type: LayoutError
+      message: No attributes defined
+  -
+    id: err-degenerate
+    df:
+      -
+        a: 1
+        b: 2
+      -
+        a: 1
+        b: 2
+
+    attrs: []
+    error:
+      type: UsageError
+      message: Found only degenerate attributes (i.e. with the same value in every well): 'a', 'b'
+  -
+    id: choose-a-str
+    df:
+      -
+        a: 1
+        b: 2
+      -
+        a: 1
+        b: 2
+
+    attrs: 'a'
+    expected:
+      - a
+  -
+    id: choose-a-list
+    df:
+      -
+        a: 1
+        b: 2
+      -
+        a: 1
+        b: 2
+
+    attrs: ['a']
+    expected:
+      - a
+  -
+    id: choose-ab
+    df:
+      -
+        a: 1
+        b: 2
+      -
+        a: 1
+        b: 2
+
+    attrs: ['a', 'b']
+    expected:
+      [a, b]
+  -
+    id: err-not-found
+    df:
+      -
+        a: 1
+        b: 2
+      -
+        a: 1
+        b: 2
+
+    attrs: 'c'
+    error:
+      type: UsageError
+      message:
+        - No such attribute: 'c'
+        - Did you mean: 'a', 'b'
+  -
+    id: err-not-found-plural
+    df:
+      -
+        a: 1
+        b: 2
+      -
+        a: 1
+        b: 2
+
+    attrs: ['c', 'd']
+    error:
+      type: UsageError
+      message:
+        - No such attributes: 'c', 'd'
+        - Did you mean: 'a', 'b'
+

@@ -65,7 +65,7 @@ def test_row_col_from_ij(i, j, row, col):
             (0, -1),
 ])
 def test_row_col_from_ij_err(i, j):
-    with pytest.raises(ConfigError):
+    with pytest.raises(LayoutError):
         row_col_from_ij(i, j)
 
 @pytest.mark.parametrize(
@@ -97,7 +97,7 @@ def test_row_col_from_well(well, row, col):
         'well', ['XXX', '123', '1A']
 )
 def test_row_col_from_well_err(well):
-    with raises(ConfigError, match=well):
+    with raises(LayoutError, match=well):
         row_col_from_well(well)
 
 @pytest.mark.parametrize(
@@ -122,7 +122,7 @@ def test_i_from_row(i, row):
         'row', ['', '1', 'A1']
 )
 def test_i_from_row_err(row):
-    with raises(ConfigError):
+    with raises(LayoutError):
         i_from_row(row)
 
 @pytest.mark.parametrize(
@@ -139,7 +139,7 @@ def test_j_from_col(j, col):
         'col', ['', 'A', 'A1']
 )
 def test_j_from_col_err(col):
-    with raises(ConfigError):
+    with raises(LayoutError):
         j_from_col(col)
 
 @pytest.mark.parametrize(
@@ -216,7 +216,7 @@ def test_check_range(x0, x1, xn, single_step_ok):
             (0, 3, 5, False, r"Cannot get from \{0} to \{3} in steps of 3"),
 ])
 def test_check_range_err(x0, x1, xn, single_step_ok, err):
-    with raises(ConfigError, match=err):
+    with raises(LayoutError, match=err):
         check_range(x0, x1, xn, single_step_ok)
 
 @pytest.mark.parametrize(
@@ -275,7 +275,7 @@ def test_iter_row_indices(key, indices):
             ('A,C,...,D', "'A,C,...,D': Cannot get from A to D in steps of 2"),
 ])
 def test_iter_row_indices_err(key, err):
-    with raises(ConfigError, match=err):
+    with raises(LayoutError, match=err):
         list(iter_row_indices(key))
 
 @pytest.mark.parametrize(
@@ -307,7 +307,7 @@ def test_iter_col_indices(key, indices):
             ('1,3,...,4', "'1,3,...,4': Cannot get from 1 to 4 in steps of 2"),
 ])
 def test_iter_col_indices_err(key, err):
-    with raises(ConfigError, match=err):
+    with raises(LayoutError, match=err):
         list(iter_col_indices(key))
 
 @pytest.mark.parametrize(
@@ -360,7 +360,7 @@ def test_iter_well_indices(key, indices):
             ('A1,C3,...,E4', "'A1,C3,...,E4': Cannot get from A1 to E4 in steps of 2"),
 ])
 def test_iter_well_indices_err(key, err):
-    with raises(ConfigError, match=err):
+    with raises(LayoutError, match=err):
         list(iter_well_indices(key))
         
 @pytest.mark.parametrize(
@@ -394,7 +394,7 @@ def test_parse_shift(given, expected):
         ],
 )
 def test_parse_shift_err(given):
-    with pytest.raises(ConfigError):
+    with pytest.raises(LayoutError):
         parse_shift(given)
 
 @pytest.mark.parametrize(
@@ -427,7 +427,7 @@ def test_shift_row_col(row_col, shift, expected):
         ],
 )
 def test_shift_row_col_err(row_col, shift):
-    with pytest.raises(ConfigError):
+    with pytest.raises(LayoutError):
         shift_row_col(row_col, shift)
 
 @pytest.mark.parametrize(

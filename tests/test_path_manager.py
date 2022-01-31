@@ -9,9 +9,9 @@ from .param_helpers import *
 def test_check_overspecified(tmp_path):
     pm = PathManager('a.dat', {'a': 'a.dat'}, tmp_path/'z.toml')
 
-    with raises(ConfigError, match="ambiguous"):
+    with raises(LayoutError, match="ambiguous"):
         pm.get_index_for_only_plate()
-    with raises(ConfigError, match="ambiguous"):
+    with raises(LayoutError, match="ambiguous"):
         pm.check_named_plates(['a'])
 
 def test_check_named_plates(tmp_path):
@@ -25,26 +25,26 @@ def test_check_named_plates(tmp_path):
     pm2.check_named_plates(['a', 'b'])
 
     # These should raise:
-    with raises(ConfigError, match=r"\('a'\)"):
+    with raises(LayoutError, match=r"\('a'\)"):
         pm0.check_named_plates(['a'])
-    with raises(ConfigError, match=r"\(\)"):
+    with raises(LayoutError, match=r"\(\)"):
         pm1.check_named_plates([])
-    with raises(ConfigError, match=r"\('b'\)"):
+    with raises(LayoutError, match=r"\('b'\)"):
         pm1.check_named_plates(['b'])
-    with raises(ConfigError, match=r"\('a', 'b'\)"):
+    with raises(LayoutError, match=r"\('a', 'b'\)"):
         pm1.check_named_plates(['a', 'b'])
-    with raises(ConfigError, match=r"\(\)"):
+    with raises(LayoutError, match=r"\(\)"):
         pm2.check_named_plates([])
-    with raises(ConfigError, match=r"\('a'\)"):
+    with raises(LayoutError, match=r"\('a'\)"):
         pm2.check_named_plates(['a'])
-    with raises(ConfigError, match=r"\('b'\)"):
+    with raises(LayoutError, match=r"\('b'\)"):
         pm2.check_named_plates(['b'])
-    with raises(ConfigError, match=r"\('a', 'b', 'c'\)"):
+    with raises(LayoutError, match=r"\('a', 'b', 'c'\)"):
         pm2.check_named_plates(['a', 'b', 'c'])
 
     # Path instead of plates:
     pm = PathManager('a.dat', None, tmp_path/'z.toml')
-    with raises(ConfigError, match="()"):
+    with raises(LayoutError, match="()"):
         pm.check_named_plates([])
 
 def test_str(tmp_path):
@@ -64,7 +64,7 @@ def test_str(tmp_path):
         indirect=['files'],
 )
 def test_index_for_only_plate(files, manager, expected, error):
-    manager = with_wellmap.copy().use(DIR=files).eval(manager)
+    manager = Namespace(with_wellmap, DIR=files).eval(manager)
     expected = Namespace(DIR=files).eval(expected)
     with error:
         assert manager.get_index_for_only_plate() == expected
@@ -79,7 +79,7 @@ def test_index_for_only_plate(files, manager, expected, error):
         indirect=['files'],
 )
 def test_index_for_named_plate(files, manager, expected, errors, subtests):
-    manager = with_wellmap.copy().use(DIR=files).eval(manager)
+    manager = Namespace(with_wellmap, DIR=files).eval(manager)
     expected = Namespace(DIR=files).eval(expected)
 
     for key, value in expected.items():

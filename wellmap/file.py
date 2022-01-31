@@ -262,7 +262,7 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
             assert not layout['path'].isnull().any()
 
         if len(layout) == 0:
-            raise ConfigError("No wells defined.")
+            raise LayoutError("No wells defined.")
 
         ## Load the data associated with each well:
         if data_loader is None:
@@ -311,7 +311,7 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
         merged = pd.merge(layout, data, **kwargs)
         return augment_return_value(merged)
 
-    except ConfigError as err:
+    except LayoutError as err:
         err.toml_path = err.toml_path or toml_path
         raise
 
@@ -342,7 +342,7 @@ def config_from_toml(toml_path, *, shift=(0,0), path_guess=None, path_required=F
                 try:
                     path = meta['path']
                 except KeyError:
-                    raise ConfigError(f"if 'meta.include' is a dictionary, it must have a 'path' key")
+                    raise LayoutError(f"if 'meta.include' is a dictionary, it must have a 'path' key")
 
                 try:
                     shift_str = meta['shift']
@@ -363,9 +363,9 @@ def config_from_toml(toml_path, *, shift=(0,0), path_guess=None, path_required=F
 
             else:
                 if top_level:
-                    raise ConfigError(f"expected 'meta.include' to be string, list, or dictionary, not: {meta!r}")
+                    raise LayoutError(f"expected 'meta.include' to be string, list, or dictionary, not: {meta!r}")
                 else:
-                    raise ConfigError(f"expected 'meta.include[{list_index}]' to be string or dictionary, not: {meta!r}")
+                    raise LayoutError(f"expected 'meta.include[{list_index}]' to be string or dictionary, not: {meta!r}")
 
         meta = config.meta.get('include', [])
         for rel_path, rel_shift in _iter_include_paths(meta):
@@ -387,7 +387,7 @@ def config_from_toml(toml_path, *, shift=(0,0), path_guess=None, path_required=F
         elif isinstance(paths, dict):
             paths = paths.items()
         else:
-            raise ConfigError(f"expected 'meta.concat' to be string, list, or dictionary, not: {paths!r}")
+            raise LayoutError(f"expected 'meta.concat' to be string, list, or dictionary, not: {paths!r}")
 
         for plate_name, path in paths:
             yield plate_name, resolve_path(toml_path, path)
@@ -449,7 +449,7 @@ def shift_config(config, shift):
 
     f = lambda d: shift_key(d, shift)
     def cant_shift_irow_icol():
-        raise ConfigError("can't use 'meta.include.shift' on layouts that use [irow] and/or [icol]")
+        raise LayoutError("can't use 'meta.include.shift' on layouts that use [irow] and/or [icol]")
 
     shifters = {
             'plate':    lambda d: {
@@ -487,9 +487,9 @@ def table_from_config(config, paths):
 
         for key, plate_config in config.plates.items():
             if not isinstance(plate_config, dict):
-                raise ConfigError(f"Illegal attribute '{key}' within [plate] block but outside of any plates.")
+                raise LayoutError(f"Illegal attribute '{key}' within [plate] block but outside of any plates.")
             if 'expt' in plate_config:
-                raise ConfigError("Cannot use [expt] in [plate] blocks.")
+                raise LayoutError("Cannot use [expt] in [plate] blocks.")
 
             # Mold the plate dictionary into the same format as the top-level 
             # dictionary, i.e. the format expected by wells_from_config(), by 
@@ -540,13 +540,13 @@ def wells_from_config(config):
     for size in config.blocks:
         match = pattern.match(size)
         if not match:
-            raise ConfigError(f"Unknown [block] size '{size}', expected 'WxH' (where W and H are both positive integers).")
+            raise LayoutError(f"Unknown [block] size '{size}', expected 'WxH' (where W and H are both positive integers).")
 
         width, height = map(int, match.groups())
         if width == 0:
-            raise ConfigError(f"[block.{size}] has no width.  No wells defined.")
+            raise LayoutError(f"[block.{size}] has no width.  No wells defined.")
         if height == 0:
-            raise ConfigError(f"[block.{size}] has no height.  No wells defined.")
+            raise LayoutError(f"[block.{size}] has no height.  No wells defined.")
 
         for top_left, subconfig in iter_wells(config.blocks[size]):
             for ij in iter_ij_in_block(top_left, width, height):
@@ -577,7 +577,7 @@ def wells_from_config(config):
 
     def sanity_check(dim1, dim2, span):
         if config.get(dim1) and not span:
-            raise ConfigError(f"Found {plural(config[dim1]):# [{dim1}] spec/s}, but no {dim2}.  No wells defined.")
+            raise LayoutError(f"Found {plural(config[dim1]):# [{dim1}] spec/s}, but no {dim2}.  No wells defined.")
 
     rows = simplify_keys('row')
     cols = simplify_keys('col')
@@ -710,17 +710,17 @@ class PathManager:
 
     def check_overspecified(self):
         if self.path and self.paths:
-            raise ConfigError(f"Both `meta.path` and `meta.paths` specified; ambiguous.")
+            raise LayoutError(f"Both `meta.path` and `meta.paths` specified; ambiguous.")
 
     def check_named_plates(self, names):
         self.check_overspecified()
 
         if self.path is not None:
-            raise ConfigError(f"`meta.path` specified with one or more [plate] blocks ({quoted_join(names)}).  Did you mean to use `meta.paths`?")
+            raise LayoutError(f"`meta.path` specified with one or more [plate] blocks ({quoted_join(names)}).  Did you mean to use `meta.paths`?")
 
         if isinstance(self.paths, dict):
             if set(names) != set(self.paths):
-                raise ConfigError(f"The keys in `meta.paths` ({quoted_join(sorted(self.paths))}) don't match the [plate] blocks ({quoted_join(sorted(names))})")
+                raise LayoutError(f"The keys in `meta.paths` ({quoted_join(sorted(self.paths))}) don't match the [plate] blocks ({quoted_join(sorted(names))})")
         
     def get_index_for_only_plate(self):
         # If there is only one plate:
@@ -732,13 +732,13 @@ class PathManager:
         def make_index(path):
             path = resolve_path(self.toml_path, path)
             if not path.exists():
-                raise ConfigError(f"'{path}' does not exist")
+                raise LayoutError(f"'{path}' does not exist")
             return {'path': path}
 
         self.check_overspecified()
 
         if self.paths is not None:
-            raise ConfigError(f"`meta.paths` ({self.paths if isinstance(self.paths, str) else quoted_join(self.paths)}) specified without any [plate] blocks.  Did you mean to use `meta.path`?")
+            raise LayoutError(f"`meta.paths` ({self.paths if isinstance(self.paths, str) else quoted_join(self.paths)}) specified without any [plate] blocks.  Did you mean to use `meta.path`?")
 
         if self.path is not None:
             return make_index(self.path)
@@ -746,7 +746,7 @@ class PathManager:
         if self.path_guess:
             return make_index(self.path_guess.format(self.toml_path))
 
-        self.missing_path_error = ConfigError(f"Analysis requires a data file, but none was specified and none could be inferred.  Did you mean to set `meta.path`?")
+        self.missing_path_error = LayoutError(f"Analysis requires a data file, but none was specified and none could be inferred.  Did you mean to set `meta.path`?")
         return {}
 
     def get_index_for_named_plate(self, name):
@@ -761,11 +761,11 @@ class PathManager:
         def make_index(name, path):
             path = resolve_path(self.toml_path, path)
             if not path.exists():
-                raise ConfigError(f"'{path}' for plate '{name}' does not exist")
+                raise LayoutError(f"'{path}' for plate '{name}' does not exist")
             return {'plate': name, 'path': path}
 
         if self.paths is None:
-            self.missing_path_error = ConfigError(f"Analysis requires a data file for each plate, but none were specified.  Did you mean to set `meta.paths`?")
+            self.missing_path_error = LayoutError(f"Analysis requires a data file for each plate, but none were specified.  Did you mean to set `meta.paths`?")
             return {'plate': name}
 
         if isinstance(self.paths, str):
@@ -773,10 +773,10 @@ class PathManager:
 
         if isinstance(self.paths, dict):
             if name not in self.paths:
-                raise ConfigError(f"No data file path specified for plate '{name}'")
+                raise LayoutError(f"No data file path specified for plate '{name}'")
             return make_index(name, self.paths[name])
 
-        raise ConfigError(f"Expected `meta.paths` to be dict or str, got {type(self.paths)}: {self.paths}")
+        raise LayoutError(f"Expected `meta.paths` to be dict or str, got {type(self.paths)}: {self.paths}")
 
 class configdict(dict):
     special = {

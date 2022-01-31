@@ -9,7 +9,7 @@ def test_one_well():
                 'XXX': {'x': 1},
             },
     }
-    with raises(ConfigError, match='XXX'):
+    with raises(LayoutError, match='XXX'):
         wells_from_config(config)
 
     config = {
@@ -92,7 +92,7 @@ def test_one_block():
                 'err': {}
             },
     }
-    with raises(ConfigError, match="err"):
+    with raises(LayoutError, match="err"):
         wells_from_config(config_err)
 
     config_0x0 = {
@@ -102,7 +102,7 @@ def test_one_block():
                 },
             },
     }
-    with raises(ConfigError, match="0x0"):
+    with raises(LayoutError, match="0x0"):
         wells_from_config(config_0x0)
 
     config_0x1 = {
@@ -112,7 +112,7 @@ def test_one_block():
                 },
             },
     }
-    with raises(ConfigError, match="0x1"):
+    with raises(LayoutError, match="0x1"):
         wells_from_config(config_0x1)
 
     config_1x0 = {
@@ -122,7 +122,7 @@ def test_one_block():
                 },
             },
     }
-    with raises(ConfigError, match="1x0"):
+    with raises(LayoutError, match="1x0"):
         wells_from_config(config_1x0)
 
     config_1x1 = {
@@ -244,7 +244,7 @@ def test_one_row_col():
                 '1': {'y': 1},
             },
     }
-    with raises(ConfigError, match='1'):
+    with raises(LayoutError, match='1'):
         wells_from_config(config)
 
     config = {
@@ -255,7 +255,7 @@ def test_one_row_col():
                 'A': {'y': 1},
             },
     }
-    with raises(ConfigError, match='A'):
+    with raises(LayoutError, match='A'):
         wells_from_config(config)
 
     config = {
@@ -394,7 +394,7 @@ def test_row_without_col():
                 'A': {'x': 1},
             },
     }
-    with raises(ConfigError, match="row"):
+    with raises(LayoutError, match="row"):
         wells_from_config(config)
 
     config = {
@@ -432,7 +432,7 @@ def test_col_without_row():
                 '1': {'y': 1},
             },
     }
-    with raises(ConfigError, match="col"):
+    with raises(LayoutError, match="col"):
         wells_from_config(config)
 
     config = {
@@ -560,7 +560,7 @@ def test_irow_without_col():
                 'A': {'x': 1},
             },
     }
-    with raises(ConfigError, match="irow"):
+    with raises(LayoutError, match="irow"):
         wells_from_config(config)
 
     config = {
@@ -643,7 +643,7 @@ def test_icol_without_row():
                 '1': {'y': 1},
             },
     }
-    with raises(ConfigError, match="icol"):
+    with raises(LayoutError, match="icol"):
         wells_from_config(config)
 
     config = {

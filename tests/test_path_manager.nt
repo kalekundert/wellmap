@@ -10,21 +10,21 @@ test_index_for_only_plate:
     id: base-not-found
     manager: PathManager('a.dat', None, DIR/'z.toml')
     error:
-      type: ConfigError
-      message: a\.dat
+      type: LayoutError
+      message: a.dat
   -
     id: ambiguous
     manager: PathManager(None, {'a': 'a.dat'}, DIR/'z.toml')
     error:
-      type: ConfigError
-      message: \('a'\)
+      type: LayoutError
+      message: ('a')
   -
     id: ambiguous-empty
     # Don't need `paths` to be non-empty; it's ambiguous to even be specified.
     manager: PathManager(None, {}, DIR/'z.toml')
     error:
-      type: ConfigError
-      message: \(\)
+      type: LayoutError
+      message: ()
   -
     id: guess
     files:
@@ -36,8 +36,8 @@ test_index_for_only_plate:
     id: guess-not-found
     manager: PathManager(None, None, DIR/'a.toml', '{0.stem}.dat')
     error:
-      type: ConfigError
-      message: a\.dat
+      type: LayoutError
+      message: a.dat
   -
     id: no-path
     manager: PathManager(None, None, DIR/'z.toml')
@@ -60,7 +60,7 @@ test_index_for_named_plate:
         path: DIR/'b.dat'
     errors:
       c:
-        type: ConfigError
+        type: LayoutError
         message: 'c'
   -
     id: str
@@ -77,7 +77,7 @@ test_index_for_named_plate:
         path: DIR/'b.dat'
     errors:
       c:
-        type: ConfigError
+        type: LayoutError
         message: 'c'
   -
     id: no-paths
@@ -94,5 +94,5 @@ test_index_for_named_plate:
     manager: PathManager(None, ['a'], DIR/'z.toml')
     errors:
       a:
-        type: ConfigError
+        type: LayoutError
         message: list

@@ -48,7 +48,7 @@ useful in interactive sessions such as Jupyter notebooks:
 
    >>> import wellmap
    >>> wellmap.show("std_curve.toml")
-   <Figure size 320.75x255 with 4 Axes>
+   <Figure size 321.203x255 with 4 Axes>
 
 4. Prepare the data
 ===================

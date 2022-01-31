@@ -8,5 +8,5 @@ __version__ = '3.2.1'
 
 from .util import *
 from .file import *
-from .plot import show
+from .plot import show, UsageError
 from . import plot

@@ -47,7 +47,7 @@ test_shift_config:
     shift: 1, 0
 
     error:
-      type: ConfigError
+      type: LayoutError
       message: can't use 'meta.include.shift'
   -
     id: irow-right
@@ -57,7 +57,7 @@ test_shift_config:
     shift: 0, 1
 
     error:
-      type: ConfigError
+      type: LayoutError
       message: can't use 'meta.include.shift'
   -
     id: col-down
@@ -87,7 +87,7 @@ test_shift_config:
     shift: 1, 0
 
     error:
-      type: ConfigError
+      type: LayoutError
       message: can't use 'meta.include.shift'
   -
     id: icol-right
@@ -97,7 +97,7 @@ test_shift_config:
     shift: 0, 1
 
     error:
-      type: ConfigError
+      type: LayoutError
       message: can't use 'meta.include.shift'
   -
     id: block-down
@@ -200,7 +200,7 @@ test_shift_config:
     shift: 1, 0
 
     error:
-      type: ConfigError
+      type: LayoutError
       message: can't use 'meta.include.shift'
   -
     id: plate-irow-right
@@ -211,7 +211,7 @@ test_shift_config:
     shift: 0, 1
 
     error:
-      type: ConfigError
+      type: LayoutError
       message: can't use 'meta.include.shift'
   -
     id: plate-col-down
@@ -246,7 +246,7 @@ test_shift_config:
     shift: 1, 0
 
     error:
-      type: ConfigError
+      type: LayoutError
       message: can't use 'meta.include.shift'
   -
     id: plate-icol-right
@@ -257,7 +257,7 @@ test_shift_config:
     shift: 0, 1
 
     error:
-      type: ConfigError
+      type: LayoutError
       message: can't use 'meta.include.shift'
   -
     id: plate-block-down

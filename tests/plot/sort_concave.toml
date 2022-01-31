@@ -1,6 +1,0 @@
-# Test for a bug where the rows and columns are sorted independently, such that 
-# the `x=2` wells appear to occupy (0, 0).
-[well]
-A2.x = 1
-A3.x = 2
-B1.x = 2

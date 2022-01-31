@@ -6,7 +6,7 @@ from .param_helpers import *
 
 @parametrize_from_file(
         schema=Schema({
-            'wells': lambda x: with_py.eval(x, eval_keys=True),
+            'wells': with_py.eval(keys=True),
             Optional('index', default={}): with_py.eval,
             'expected': with_nan.eval,
         }),

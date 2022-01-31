@@ -133,7 +133,7 @@ test_table_from_config:
       plate:
         x: 1
     error:
-      type: ConfigError
+      type: LayoutError
       message: Illegal attribute 'x'
   -
     id: err-expt-in-plate
@@ -142,5 +142,5 @@ test_table_from_config:
         Q:
           expt: 1
     error:
-      type: ConfigError
-      message: \[expt\] in \[plate\]
+      type: LayoutError
+      message: [expt] in [plate]

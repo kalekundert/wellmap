@@ -262,11 +262,11 @@ load <- function(toml_path, data_loader=NULL, merge_cols=NULL,
 #' for details about this file.
 #' 
 #' @param attrs
-#' A list of attributes from the above TOML file to visualize.  For example, if 
-#' the TOML file contains something equivalent to `well.A1.conc = 1`, then 
-#' `conc` would be a valid attribute.  If no attributes are specified, the 
-#' default is to display any attributes that have at least two different 
-#' values. 
+#' An attribute or list of attributes from the above TOML file to visualize.  
+#' For example, if the TOML file contains something equivalent to `well.A1.conc 
+#' = 1`, then `"conc"` would be a valid attribute.  If no attributes are 
+#' specified, the default is to display any attributes that have at least two 
+#' different values. 
 #' 
 #' @param color
 #' The name of the color scheme to use.  Each different value for each 

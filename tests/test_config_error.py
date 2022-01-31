@@ -3,7 +3,7 @@
 from wellmap import *
 
 def test_str():
-    err = ConfigError("x")
+    err = LayoutError("x")
     assert str(err) == "x"
 
     err.toml_path = "y"

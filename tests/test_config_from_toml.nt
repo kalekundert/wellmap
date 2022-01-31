@@ -293,7 +293,7 @@ test_config_from_toml:
         > [meta]
         > include = 0
     error:
-      type: wellmap.ConfigError
+      type: wellmap.LayoutError
       message: expected 'meta.include' to be string, list, or dictionary, not: 0
   -
     id: include-err-wrong-type-nested
@@ -302,8 +302,8 @@ test_config_from_toml:
         > [meta]
         > include = [[]]
     error:
-      type: wellmap.ConfigError
-      message: expected 'meta.include\[0\]' to be string or dictionary, not: \[\]
+      type: wellmap.LayoutError
+      message: expected 'meta.include[0]' to be string or dictionary, not: []
   -
     id: include-err-no-path
     files:
@@ -311,7 +311,7 @@ test_config_from_toml:
         > [meta]
         > include = {}
     error:
-      type: wellmap.ConfigError
+      type: wellmap.LayoutError
       message: if 'meta.include' is a dictionary, it must have a 'path' key
   -
     id: concat
@@ -598,6 +598,6 @@ test_config_from_toml:
         > [meta]
         > concat = 0
     error:
-      type: wellmap.ConfigError
+      type: wellmap.LayoutError
       message: expected 'meta.concat' to be string, list, or dictionary, not: 0
 

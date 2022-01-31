@@ -603,11 +603,11 @@ test_load:
       path_required: True
 
     error:
-      type: ConfigError
+      type: LayoutError
       message:
-        - main\.toml
-        - Analysis requires a data file, but none was specified and none could be inferred\.
-        - Did you mean to set `meta.path`\?
+        - main.toml
+        - Analysis requires a data file, but none was specified and none could be inferred.
+        - Did you mean to set `meta.path`?
   -
     id: path-required-err-plate
     files:
@@ -621,11 +621,11 @@ test_load:
       path_required: True
 
     error:
-      type: ConfigError
+      type: LayoutError
       message:
-        - main\.toml
-        - Analysis requires a data file for each plate, but none were specified\.
-        - Did you mean to set `meta.paths`\?
+        - main.toml
+        - Analysis requires a data file for each plate, but none were specified.
+        - Did you mean to set `meta.paths`?
   -
     id: path-required-err-concat
     files:
@@ -647,11 +647,11 @@ test_load:
       path_required: True
 
     error:
-      type: ConfigError
+      type: LayoutError
       message:
-        - concat\.toml
-        - Analysis requires a data file, but none was specified and none could be inferred\.
-        - Did you mean to set `meta.path`\?
+        - concat.toml
+        - Analysis requires a data file, but none was specified and none could be inferred.
+        - Did you mean to set `meta.path`?
 
   -
     id: data-loader
@@ -751,8 +751,8 @@ test_load:
       data_loader: pd.read_csv
 
     error:
-      type: ConfigError
-      message: main\.toml
+      type: LayoutError
+      message: main.toml
 
   -
     id: merge-cols-true
@@ -833,7 +833,7 @@ test_load:
     error:
       type: ValueError
       message:
-        - No common columns \(expect 'path'\) to perform merge on
+        - No common columns (expect 'path') to perform merge on
         - layout cols: 'well'
         - data cols: 'Well', 'Data', 'path'
 
@@ -970,7 +970,7 @@ test_load:
     files:
       main.toml:
     error:
-      type: ConfigError
+      type: LayoutError
       message: No wells defined
   -
     id: err-no-wells-row-without-col
@@ -979,7 +979,7 @@ test_load:
         > [row.A]
         > x = 1
     error:
-      type: ConfigError
+      type: LayoutError
       message: No wells defined
   -
     id: err-no-wells-irow-without-col
@@ -988,7 +988,7 @@ test_load:
         > [irow.A]
         > x = 1
     error:
-      type: ConfigError
+      type: LayoutError
       message: No wells defined
   -
     id: err-no-wells-col-without-row
@@ -997,7 +997,7 @@ test_load:
         > [col.1]
         > x = 1
     error:
-      type: ConfigError
+      type: LayoutError
       message: No wells defined
   -
     id: err-no-wells-icol-without-row
@@ -1006,7 +1006,7 @@ test_load:
         > [icol.1]
         > x = 1
     error:
-      type: ConfigError
+      type: LayoutError
       message: No wells defined
 
   -
