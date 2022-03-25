@@ -275,7 +275,7 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
         for path in layout['path'].unique():
             df = data_loader(path, **get_extras_kwarg())
             df['path'] = path
-            data = data.append(df, sort=False)
+            data = pd.concat([data, df], sort=False)
 
         ## Merge the layout and the data into a single data frame:
         if merge_cols is None:

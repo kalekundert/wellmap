@@ -46,6 +46,13 @@ wellmap = "wellmap.plot:main"
 'Continuous Integration' = 'https://travis-ci.org/kalekundert/wellmap'
 'Test Coverage' = 'https://coveralls.io/github/kalekundert/wellmap'
 
+[tool.pytest.ini_options]
+filterwarnings = [
+    'ignore::DeprecationWarning',
+    'ignore:A private pytest class or function was used.:pytest.PytestDeprecationWarning',
+]
+addopts = "--doctest-glob='*.rst'"
+
 [tool.semantic_release]
 build_command = 'python -m pip install flit && flit build'
 version_variable = 'wellmap/__init__.py:__version__'

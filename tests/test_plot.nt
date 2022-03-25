@@ -167,6 +167,15 @@ test_show:
       > y = 'c'
     expected: nan_first.png
   -
+    id: nan-in-other-attr
+    layout:
+      > [well]
+      > A1.x = 1
+      > A2.y = 2
+      > A3.x = 3
+      > A3.y = 4
+    expected: nan_in_other_attr.png
+  -
     id: skip-wells
     layout:
       > [well.B2]

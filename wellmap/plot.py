@@ -455,8 +455,8 @@ class Colors:
 
     def __init__(self, cmap, df, attr):
         cols = ['plate', 'row_i', 'col_j']
-        labels = df\
-                .dropna()\
+        rows = df[attr].notna()
+        labels = df[rows]\
                 .sort_values(cols)\
                 .groupby(attr, sort=False)\
                 .head(1)
