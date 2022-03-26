@@ -6,6 +6,10 @@ code, while major version upgrades (e.g. 1.1 to 2.0) might.
 
 <!--next-version-placeholder-->
 
+## v3.3.1 (2022-03-26)
+### Fix
+* Don't drop nans too aggressively ([`a001c8f`](https://github.com/kalekundert/wellmap/commit/a001c8f297d85b5ca5986d8569c29197f9d4bc34))
+
 ## v3.3.0 (2022-01-31)
 ### Feature
 * Allow `show(attrs=...)` to be a string ([`0572a61`](https://github.com/kalekundert/wellmap/commit/0572a610de3e1559e4029e0bb7c505e2a07d7ae9))
