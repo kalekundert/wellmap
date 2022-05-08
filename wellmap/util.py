@@ -2,6 +2,8 @@
 
 import re
 import string
+import functools
+import contextlib
 
 # Indices
 # =======
@@ -119,10 +121,15 @@ def iter_ij_in_block(top_left, width, height):
 def iter_indices(key, index_from_subkey, indices_from_range):
     subkeys = key.split(',')
 
-    if '...' not in subkeys:
-        yield from map(index_from_subkey, subkeys)
+    @contextlib.contextmanager
+    def format_layout_err(**kwargs):
+        try:
+            yield
+        except LayoutError as err:
+            err.message = f"'{key}': {err.message.format_map(kwargs)}"
+            raise err
 
-    else:
+    if '...' in subkeys:
         if len(subkeys) != 4 or subkeys.index('...') != 2:
             raise LayoutError(f"Expected '<first>,<second>,...,<last>', not '{key}'")
 
@@ -130,14 +137,34 @@ def iter_indices(key, index_from_subkey, indices_from_range):
         x1 = index_from_subkey(subkeys[1])
         xn = index_from_subkey(subkeys[3])
 
-        try:
-            # Delegate this to another function, because it has to be done 
-            # differently for wells than for rows/cols.
+        # Delegate this to another function, because it has to be done 
+        # differently for wells than for rows/cols.
+        with format_layout_err(
+                first=subkeys[0],
+                second=subkeys[1],
+                last=subkeys[3],
+        ):
             yield from indices_from_range(x0, x1, xn)
 
-        except LayoutError as err:
-            err.message = f"'{key}': {err.message.format(*subkeys)}"
-            raise err
+    else:
+        for subkey in subkeys:
+            if '-' not in subkey:
+                yield index_from_subkey(subkey)
+
+            else:
+                endpoints = subkey.split('-')
+
+                if len(endpoints) != 2:
+                    raise LayoutError(f"Expected '<first>-<last>', not '{subkey}'")
+
+                x0 = index_from_subkey(endpoints[0])
+                xn = index_from_subkey(endpoints[1])
+
+                with format_layout_err(
+                        first=endpoints[0],
+                        last=endpoints[1],
+                ):
+                    yield from indices_from_range(x0, xn)
 
 def iter_row_indices(key):
     yield from iter_indices(key, i_from_row, indices_from_range)
@@ -147,9 +174,10 @@ def iter_col_indices(key):
 
 def iter_well_indices(key):
 
+    @x1_optional
     def ijs_from_range(x0, x1, xn):
         i0, j0 = x0
-        i1, j1 = x1
+        i1, j1 = x1 if x1 is not None else (None, None)
         iz, jz = xn
 
         # Handle the cases where all the indices are in the same row or column 
@@ -157,10 +185,10 @@ def iter_well_indices(key):
         # conditions in check_range() and inclusive_range() that I don't want 
         # to allow generally.
 
-        if i0 == i1 == iz:
+        if (i0 == iz) and (i1 == i0 or i1 is None):
             yield from ((i0, j) for j in indices_from_range(j0, j1, jz))
 
-        elif j0 == j1 == jz:
+        elif (j0 == jz) and (j1 == j0 or j1 is None):
             yield from ((i, j0) for i in indices_from_range(i0, i1, iz))
 
         else:
@@ -174,20 +202,40 @@ def iter_well_indices(key):
 
     yield from iter_indices(key, ij_from_well, ijs_from_range)
 
+
 def check_range(x0, x1, xn, single_step_ok=False):
     """
     Raise a `LayoutError` if you can't get from the first element to the last 
     in steps of the given size.
     """
     # row/col indices are filled into the error messages by `iter_indices()`.
-    if not x0 < x1 < (xn + single_step_ok):
-        raise LayoutError(f"Expected {{0}} < {{1}} {'≤' if single_step_ok else '<'} {{3}}.")
-    if (xn - x0) % (x1 - x0) != 0:
-        raise LayoutError(f"Cannot get from {{0}} to {{3}} in steps of {x1-x0}.")
+    if x1 is None:
+        if not x0 < (xn + single_step_ok):
+            raise LayoutError(f"Expected {{first}} {'≤' if single_step_ok else '<'} {{last}}")
+    else:
+        if not x0 < x1 < (xn + single_step_ok):
+            raise LayoutError(f"Expected {{first}} < {{second}} {'≤' if single_step_ok else '<'} {{last}}.")
+        if (xn - x0) % (x1 - x0) != 0:
+            raise LayoutError(f"Cannot get from {{first}} to {{last}} in steps of {x1-x0}.")
 
+def x1_optional(f):
+
+    @functools.wraps(f)
+    def wrapper(*args):
+        if len(args) == 2:
+            x0, xn = args
+            args = x0, None, xn
+
+        return f(*args)
+
+    return wrapper
+
+@x1_optional
 def inclusive_range(x0, x1, xn):
-    return range(x0, xn+1, x1-x0)  # xn+1 because range is exclusive.
+    dx = x1 - x0 if x1 is not None else 1
+    return range(x0, xn+1, dx)  # xn+1 because range is exclusive.
 
+@x1_optional
 def indices_from_range(x0, x1, xn):
     check_range(x0, x1, xn)
     yield from inclusive_range(x0, x1, xn)

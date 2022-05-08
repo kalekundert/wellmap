@@ -347,6 +347,20 @@ def test_row_range():
 
     config = {
             'row': {
+                'A-C': {'x': 1},
+            },
+            'col': {
+                '1': {'y': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (1,0): {'x': 1, 'y': 1},
+            (2,0): {'x': 1, 'y': 1},
+    }
+
+    config = {
+            'row': {
                 'A,B,...,C': {'x': 1},
             },
             'col': {
@@ -371,6 +385,20 @@ def test_col_range():
     assert wells_from_config(config) == {
             (0,0): {'x': 1, 'y': 1},
             (0,1): {'x': 1        },
+            (0,2): {'x': 1, 'y': 1},
+    }
+
+    config = {
+            'row': {
+                'A': {'x': 1},
+            },
+            'col': {
+                '1-3': {'y': 1},
+            },
+    }
+    assert wells_from_config(config) == {
+            (0,0): {'x': 1, 'y': 1},
+            (0,1): {'x': 1, 'y': 1},
             (0,2): {'x': 1, 'y': 1},
     }
 

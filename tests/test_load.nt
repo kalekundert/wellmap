@@ -18,6 +18,72 @@ test_load:
           col_j: 0
           x: 1
   -
+    id: labels-pattern-1
+    files:
+      main.toml:
+        > [well.A1-A3]
+        > x = 1
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+        -
+          well: 'A2'
+          well0: 'A02'
+          row: 'A'
+          col: '2'
+          row_i: 0
+          col_j: 1
+          x: 1
+        -
+          well: 'A3'
+          well0: 'A03'
+          row: 'A'
+          col: '3'
+          row_i: 0
+          col_j: 2
+          x: 1
+  -
+    id: labels-pattern-2
+    files:
+      main.toml:
+        > [well.'A1,A3,...,A5']
+        > x = 1
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+        -
+          well: 'A3'
+          well0: 'A03'
+          row: 'A'
+          col: '3'
+          row_i: 0
+          col_j: 2
+          x: 1
+        -
+          well: 'A5'
+          well0: 'A05'
+          row: 'A'
+          col: '5'
+          row_i: 0
+          col_j: 4
+          x: 1
+  -
     id: labels-path-guess
     files:
       main.toml:

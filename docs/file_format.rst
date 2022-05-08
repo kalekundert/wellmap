@@ -486,34 +486,39 @@ mistakes.  The following table shows some examples of this syntax:
 =================================  ==================================
 Syntax                             Meaning
 =================================  ==================================
-``[row.'A,B']``                    A, B
-``[row.'A,B,...,H']``              A, B, C, D, E, F, G, H
+``[row.A-D]``                      A, B, C, D
+``[row.'A,C']``                    A, C
+``[row.'A-C,F-H']``                A, B, C, F, G, H
 ``[row.'A,C,...,G']``              A, C, E, G
-``[col.'1,2']``                    1, 2
-``[col.'1,2,...,8']``              1, 2, 3, 4, 5, 6, 7, 8
+``[col.1-4]``                      1, 2, 3, 4
+``[col.'1,3']``                    1, 3
+``[col.'1-3,7-9']``                1, 2, 3, 7, 8, 9
 ``[col.'1,3,...,7']``              1, 3, 5, 7
-``[well.'A1,A2']``                 A1, A2
-``[well.'A1,A2,...,A6']``          A1, A2, A3, A4, A5, A6
+``[well.A1-B2]``                   A1, A2, B1, B2
+``[well.'A1,A3']``                 A1, A3
+``[well.'A1-B2,A5-B6']``           A1, A2, B1, B2, A5, A6, B5, B6
 ``[well.'A1,C3,...,E5']``          A1, A3, A5, C1, C3, C5, E1, E3, E5
 =================================  ==================================
 
-The most basic form of this syntax uses commas to specify multiple positions 
-for a single row, column, block, or well.  Note that the quotes are necessary 
-with this syntax because TOML doesn't allow unquoted keys to contain commas.
+There are three forms of this syntax.  The first uses a hyphen to specify a 
+range of positions for a single row, column, block, or well.  The second uses 
+commas to specify multiple arbitrary positions for the same.  These two forms 
+can be used together, if desired.  Note that the comma syntax needs to be 
+quoted, because TOML doesn't allow unquoted keys to contain commas.
 
-A more advanced form of this syntax uses ellipses to specify simple patterns.  
-This form requires exactly 4 comma-separated elements in exactly the following 
-order:  the first, second, and fourth must be valid indices, and the third must 
-be an ellipsis ("...").  The first and fourth indices define the start and end 
-of the pattern (inclusive).  The offset between the first and second indices 
-defines the step size.  It must be possible to get from the start to the end in 
-steps of the given size.
+The third form uses ellipses to specify simple patterns.  This requires exactly 
+4 comma-separated elements in exactly the following order:  the first, second, 
+and fourth must be valid indices, and the third must be an ellipsis ("...").  
+The first and fourth indices define the start and end of the pattern 
+(inclusive).  The offset between the first and second indices defines the step 
+size.  It must be possible to get from the start to the end in steps of the 
+given size.
 
-Note that for wells and blocks, the ellipsis pattern can propagate across both 
-rows and columns.  In this case, the second index specifies the step size in 
-both dimensions.  Consider the ``A1,C3,...,E5`` example from above: C3 is two 
-rows and two columns away from A1, so this pattern specifies every odd well 
-between A1 and E5.
+Note that for wells and blocks, the hyphen ranges and ellipsis patterns can 
+propagate across both rows and columns.  In the case of ellipsis patterns, the 
+second index specifies the step size in both dimensions.  Consider the 
+``A1,C3,...,E5`` example from above: C3 is two rows and two columns away from 
+A1, so this pattern specifies every odd well between A1 and E5.
 
 Precedence rules
 ================

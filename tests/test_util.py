@@ -188,11 +188,15 @@ def test_interleave_is_its_own_inverse(a, b):
 
 @pytest.mark.parametrize(
         'x0, x1, xn, single_step_ok', [
+            (0, None, 1, False),
+            (0, None, 2, False),
             (0, 1, 2, False),
             (0, 1, 3, False),
             (0, 2, 4, False),
             (0, 2, 6, False),
 
+            (0, None, 0, True),
+            (0, None, 1, True),
             (0, 1, 1, True),
             (0, 1, 2, True),
             (0, 1, 3, True),
@@ -204,16 +208,19 @@ def test_check_range(x0, x1, xn, single_step_ok):
 
 @pytest.mark.parametrize(
         'x0, x1, xn, single_step_ok, err', [
-            (0, 0, 0, False, r"Expected \{0} < \{1} < \{3}"),
-            (0, 0, 1, False, r"Expected \{0} < \{1} < \{3}"),
-            (0, 1, 0, False, r"Expected \{0} < \{1} < \{3}"),
-            (0, 1, 1, False, r"Expected \{0} < \{1} < \{3}"),
-            (1, 1, 1, False, r"Expected \{0} < \{1} < \{3}"),
-            (0, 2, 1, False, r"Expected \{0} < \{1} < \{3}"),
+            (0, None, 0, False, r"Expected {first} < {last}"),
+            (1, None, 0, False, r"Expected {first} < {last}"),
 
-            (0, 2, 3, False, r"Cannot get from \{0} to \{3} in steps of 2"),
-            (0, 2, 5, False, r"Cannot get from \{0} to \{3} in steps of 2"),
-            (0, 3, 5, False, r"Cannot get from \{0} to \{3} in steps of 3"),
+            (0, 0, 0, False, r"Expected {first} < {second} < {last}"),
+            (0, 0, 1, False, r"Expected {first} < {second} < {last}"),
+            (0, 1, 0, False, r"Expected {first} < {second} < {last}"),
+            (0, 1, 1, False, r"Expected {first} < {second} < {last}"),
+            (1, 1, 1, False, r"Expected {first} < {second} < {last}"),
+            (0, 2, 1, False, r"Expected {first} < {second} < {last}"),
+
+            (0, 2, 3, False, r"Cannot get from {first} to {last} in steps of 2"),
+            (0, 2, 5, False, r"Cannot get from {first} to {last} in steps of 2"),
+            (0, 3, 5, False, r"Cannot get from {first} to {last} in steps of 3"),
 ])
 def test_check_range_err(x0, x1, xn, single_step_ok, err):
     with raises(LayoutError, match=err):
@@ -254,6 +261,15 @@ def test_range_from_indices(xs, expected):
             ('A,B', [0, 1]),
             ('B,C', [1, 2]),
 
+            ('A-B', [0, 1]),
+            ('A-C', [0, 1, 2]),
+            ('B-C', [1, 2]),
+            ('B-D', [1, 2, 3]),
+
+            ('A,C-E', [0,2,3,4]),
+            ('A-C,E', [0,1,2,4]),
+            ('A-C,E-G', [0,1,2,4,5,6]),
+
             ('A,B,...,C', [0,1,2]),
             ('A,B,...,D', [0,1,2,3]),
             ('A,C,...,E', [0,2,4]),
@@ -269,7 +285,14 @@ def test_iter_row_indices(key, indices):
 
 @pytest.mark.parametrize(
         'key, err', [
-            ('1',         "Cannot parse row '1'"),
+            ('1', "Cannot parse row '1'"),
+
+            ('1-2', "Cannot parse row '1'"),
+            ('A-B-C', "Expected '<first>-<last>', not 'A-B-C'"),
+            ('A-A', "'A-A': Expected A < A"),
+            ('B-A', "'B-A': Expected B < A"),
+
+            ('1,2,...,3', "Cannot parse row '1'"),
             ('A,...,B,D', "Expected '<first>,<second>,...,<last>', not 'A,...,B,D'"),
             ('A,B,...,B', "'A,B,...,B': Expected A < B < B"),
             ('A,C,...,D', "'A,C,...,D': Cannot get from A to D in steps of 2"),
@@ -285,6 +308,15 @@ def test_iter_row_indices_err(key, err):
 
             ('1,2', [0, 1]),
             ('2,3', [1, 2]),
+
+            ('1-2', [0, 1]),
+            ('1-3', [0, 1, 2]),
+            ('2-3', [1, 2]),
+            ('2-4', [1, 2, 3]),
+
+            ('1,3-5', [0,2,3,4]),
+            ('1-3,5', [0,1,2,4]),
+            ('1-3,5-7', [0,1,2,4,5,6]),
 
             ('1,2,...,3', [0,1,2]),
             ('1,2,...,4', [0,1,2,3]),
@@ -302,6 +334,13 @@ def test_iter_col_indices(key, indices):
 @pytest.mark.parametrize(
         'key, err', [
             ('A', "Cannot parse column 'A'"),
+
+            ('A-B', "Cannot parse column 'A'"),
+            ('1-2-3', "Expected '<first>-<last>', not '1-2-3'"),
+            ('1-1', "'1-1': Expected 1 < 1"),
+            ('2-1', "'2-1': Expected 2 < 1"),
+
+            ('A,B,...,C', "Cannot parse column 'A'"),
             ('1,...,2,4', "Expected '<first>,<second>,...,<last>', not '1,...,2,4'"),
             ('1,2,...,2', "'1,2,...,2': Expected 1 < 2 < 2"),
             ('1,3,...,4', "'1,3,...,4': Cannot get from 1 to 4 in steps of 2"),
@@ -319,6 +358,11 @@ def test_iter_col_indices_err(key, err):
             ('B2,B3', {(1,1), (1,2)}),
 
             # Single row
+            ('A1-A2', {(0,0),(0,1)}),
+            ('A1-A3', {(0,0),(0,1),(0,2)}),
+            ('B2-B3', {(1,1),(1,2)}),
+            ('B2-B4', {(1,1),(1,2),(1,3)}),
+
             ('A1,A2,...,A3', {(0,0),(0,1),(0,2)}),
             ('A1,A2,...,A4', {(0,0),(0,1),(0,2),(0,3)}),
             ('A1,A3,...,A5', {(0,0),(0,2),(0,4)}),
@@ -330,6 +374,11 @@ def test_iter_col_indices_err(key, err):
             ('B2,B4,...,B8', {(1,1),(1,3),(1,5),(1,7)}),
 
             # Single column
+            ('A1-B1', {(0,0),(1,0)}),
+            ('A1-C1', {(0,0),(1,0),(2,0)}),
+            ('B2-C2', {(1,1),(2,1)}),
+            ('B2-D2', {(1,1),(2,1),(3,1)}),
+
             ('A1,B1,...,C1', {(0,0),(1,0),(2,0)}),
             ('A1,B1,...,D1', {(0,0),(1,0),(2,0),(3,0)}),
             ('A1,C1,...,E1', {(0,0),(2,0),(4,0)}),
@@ -341,6 +390,13 @@ def test_iter_col_indices_err(key, err):
             ('B2,D2,...,H2', {(1,1),(3,1),(5,1),(7,1)}),
 
             # Rows and columns
+            ('A1-B2', {(0,0),(0,1),(1,0),(1,1)}),
+            ('B2-C3', {(1,1),(1,2),(2,1),(2,2)}),
+
+            ('A1,B1-B3', {(0,0),(1,0),(1,1),(1,2)}),
+            ('A1-A3,B1', {(0,0),(0,1),(0,2),(1,0)}),
+            ('A1-B2,A5-B6', {(0,0),(0,1),(1,0),(1,1),(0,4),(0,5),(1,4),(1,5)}),
+
             ('A1,B2,...,B2', {(0,0),(0,1),(1,0),(1,1)}),
             ('B2,C3,...,C3', {(1,1),(1,2),(2,1),(2,2)}),
             ('A1,C3,...,C5', {(0,0),(0,2),(0,4),(2,0),(2,2),(2,4)}),
@@ -353,6 +409,16 @@ def test_iter_well_indices(key, indices):
         'key, err', [
             ('A', "Cannot parse well 'A'"),
             ('1', "Cannot parse well '1'"),
+
+            ('A-B', "Cannot parse well 'A'"),
+            ('1-2', "Cannot parse well '1'"),
+            ('A1-A2-A3', "Expected '<first>-<last>', not 'A1-A2-A3'"),
+            ('A1-A1', "'A1-A1': Expected A1 < A1"),
+            ('A2-A1', "'A2-A1': Expected A2 < A1"),
+            ('B1-A1', "'B1-A1': Expected B1 < A1"),
+
+            ('1,2,...,4', "Cannot parse well '1'"),
+            ('A,B,...,D', "Cannot parse well 'A'"),
             ('A1,...,B2,D4', "Expected '<first>,<second>,...,<last>', not 'A1,...,B2,D4'"),
             ('A1,B1,...,B1', "'A1,B1,...,B1': Expected A1 < B1 < B1"),
             ('A1,A2,...,A2', "'A1,A2,...,A2': Expected A1 < A2 < A2"),
