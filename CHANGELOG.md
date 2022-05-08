@@ -6,6 +6,10 @@ code, while major version upgrades (e.g. 1.1 to 2.0) might.
 
 <!--next-version-placeholder-->
 
+## v3.4.0 (2022-05-08)
+### Feature
+* Add hyphen range syntax ([`eaf2c73`](https://github.com/kalekundert/wellmap/commit/eaf2c73520881bda7b28ea495bcc044d8b7fad88))
+
 ## v3.3.1 (2022-03-26)
 ### Fix
 * Don't drop nans too aggressively ([`a001c8f`](https://github.com/kalekundert/wellmap/commit/a001c8f297d85b5ca5986d8569c29197f9d4bc34))
