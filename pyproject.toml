@@ -18,6 +18,9 @@ dependencies = [
   'matplotlib',  # gui
   'colorcet',    # gui
 ]
+classifiers = [
+  'Programming Language :: Python :: 3.6',
+]
 
 [project.optional-dependencies]
 tests = [
