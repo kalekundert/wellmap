@@ -7,20 +7,26 @@ from pytest_unordered import unordered
 from .param_helpers import *
 
 @parametrize_from_file(
-        schema=Schema({
-            'files': {str: str},
-            Optional('kwargs', default={}): with_py.eval,
-            **with_wellmap.error_or({
-                Optional('config', default={}): with_py.eval,
-                Optional('concats', default=[]): list,
-                Optional('extras', default={}): with_py.eval,
-                Optional('deps', default=[]): list,
-                Optional('alerts', default=[]): [{'path': str, 'message': str}],
-            }),
-        }),
+        schema=[
+            error_or(
+                'config', 'concats', 'extras', 'deps', 'alerts',
+                globals=with_wellmap,
+            ),
+            defaults(
+                kwargs={},
+                config={},
+                concats=[],
+                extras={},
+                deps=[],
+                alerts=[],
+            ),
+        ],
         indirect=['files'],
 )
 def test_config_from_toml(files, kwargs, config, concats, extras, deps, alerts, error, tmp_path, capsys):
+    kwargs = with_py.eval(kwargs)
+    config = with_py.eval(config)
+    extras = with_py.eval(extras)
     concats = [
             Namespace(DIR=tmp_path).eval(x)
             for x in concats

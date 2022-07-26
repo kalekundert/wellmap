@@ -5,11 +5,14 @@ from pytest_unordered import unordered
 from .param_helpers import *
 
 @parametrize_from_file(
-        schema=Schema({
-            'wells': with_py.eval(keys=True),
-            Optional('index', default={}): with_py.eval,
-            'expected': with_nan.eval,
-        }),
+        schema=[
+            cast(
+                wells=with_py.eval(keys=True),
+                index=with_py.eval,
+                expected=with_nan.eval,
+            ),
+            defaults(index={}),
+        ],
 )
 def test_table_from_wells(wells, index, expected):
     df = wellmap.table_from_wells(wells, index)

@@ -6,13 +6,10 @@ from more_itertools import zip_equal
 from .param_helpers import *
 
 @parametrize_from_file(
-        schema=Schema({
-            'files': dict,
-            Optional('kwargs', default={}): Or(dict, list),
-            **with_wellmap.error_or({
-                'expected': dict,
-            }),
-        }),
+        schema=[
+            defaults(kwargs={}),
+            with_wellmap.error_or('expected'),
+        ],
         indirect=['files'],
 )
 def test_load(files, kwargs, expected, error, subtests):

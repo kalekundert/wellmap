@@ -5,8 +5,7 @@ import parametrize_from_file
 import matplotlib.testing
 
 from wellmap import *
-from voluptuous import Schema, Optional, And, Or, Coerce
-from parametrize_from_file.voluptuous import Namespace
+from parametrize_from_file import Namespace, cast, defaults, error_or
 
 matplotlib.testing.setup()
 

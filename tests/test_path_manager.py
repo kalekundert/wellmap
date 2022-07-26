@@ -54,13 +54,10 @@ def test_str(tmp_path):
     str(PathManager(None, {'a': 'a.dat', 'b': 'b.dat'}, tmp_path/'z.toml'))
 
 @parametrize_from_file(
-        schema=Schema({
-            Optional('files', default={}): {str: str},
-            'manager': str,
-            **with_wellmap.error_or({
-                'expected': dict,
-            }),
-        }),
+        schema=[
+            defaults(files={}),
+            with_wellmap.error_or('expected'),
+        ],
         indirect=['files'],
 )
 def test_index_for_only_plate(files, manager, expected, error):
@@ -70,12 +67,7 @@ def test_index_for_only_plate(files, manager, expected, error):
         assert manager.get_index_for_only_plate() == expected
 
 @parametrize_from_file(
-        schema=Schema({
-            Optional('files', default={}): {str: str},
-            'manager': str,
-            Optional('expected', default={}): dict,
-            Optional('errors', default={}): dict,
-        }),
+        schema=defaults(files={}, expected={}, errors={}),
         indirect=['files'],
 )
 def test_index_for_named_plate(files, manager, expected, errors, subtests):

@@ -39,13 +39,10 @@ def run_cli(cmd, out='Layout written'):
 
 
 @parametrize_from_file(
-        schema=Schema({
-            'df': [{str: with_py.eval}],
-            'attrs': with_py.eval,
-            **with_wellmap.error_or({
-                'expected': [str],
-            }),
-        })
+        schema=[
+            cast(df=with_py.eval, attrs=with_py.eval),
+            with_wellmap.error_or('expected'),
+        ],
 )
 def test_pick_attrs(df, attrs, expected, error):
     df = pd.DataFrame(df)
@@ -53,16 +50,11 @@ def test_pick_attrs(df, attrs, expected, error):
         assert wellmap.plot.pick_attrs(df, attrs) == expected
 
 @parametrize_from_file(
-        schema=Schema({
-            'layout': str,
-            Optional('attrs', default=[]): Or(str, [str]),
-            Optional('color', default='rainbow'): str,
-            **with_wellmap.error_or({
-                'expected': str,
-                # When running on CI, I get RMS values of 2-8. 
-                Optional('tol', default=10): Coerce(float),
-            }),
-        }),
+        schema=[
+            cast(tol=float),
+            with_wellmap.error_or('expected', 'tol'),
+            defaults(attrs=[], color='rainbow', tol=10),
+        ],
         indirect=['layout'],
 )
 def test_show(layout, attrs, color, tol, expected, error):
@@ -79,16 +71,12 @@ def test_show(layout, attrs, color, tol, expected, error):
 
 @parametrize_from_file(
         key='test_show',
-        schema=Schema({
-            'layout': str,
-            Optional('attrs', default=[]): Or(str, [str]),
-            Optional('color', default='rainbow'): str,
-            **with_wellmap.error_or({
-                'expected': str,
-                # When running on CI, I get RMS values of 2-8. 
-                Optional('tol', default=10): Coerce(float),
-            }),
-        }),
+        schema=[
+            cast(tol=float),
+            with_wellmap.error_or('expected', 'tol'),
+            # When running on CI, I get RMS values of 2-8. 
+            defaults(attrs=[], color='rainbow', tol=10),
+        ],
         indirect=['layout'],
 )
 def test_cli(layout, attrs, color, expected, tol, error, tmp_path):

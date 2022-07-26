@@ -16,12 +16,10 @@ class MockPathManager:
         return {'plate': name, 'path': f'/path/to/{name.lower()}'}
 
 @parametrize_from_file(
-        schema=Schema({
-            'config': with_py.eval,
-            **with_wellmap.error_or({
-                'expected': with_nan.eval,
-            }),
-        }),
+        schema=[
+            cast(config=with_py.eval, expected=with_nan.eval),
+            with_wellmap.error_or('expected'),
+        ]
 )
 def test_table_from_config(config, expected, error):
     with error:
