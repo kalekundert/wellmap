@@ -39,9 +39,10 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
     (which is the most typical use-case), that data frame will also contain 
     columns for any data associated with each well.
 
-    :param str,pathlib.Path toml_path:
-        The path to a file describing the layout of one or more plates.  See 
-        the :doc:`/file_format` page for details about this file.
+    :param str,pathlib.Path,IO[str] toml_path:
+        The path to a file describing the layout of one or more plates,
+        or a handle to an open file.
+        See the :doc:`/file_format` page for details about this file.
 
     :param callable data_loader:
         Indicates that `load()` should attempt to load the actual data 
@@ -322,13 +323,23 @@ def config_from_toml(toml_path, *, shift=(0,0), path_guess=None, path_required=F
     This function is mostly responsible for interpreting the various [meta] 
     settings.
     """
-    toml_path = Path(toml_path).resolve()
-    config = configdict(
-            shift_config(
-                toml.load(str(toml_path)),
-                shift,
-            ),
-    )
+    if hasattr(toml_path, "read"):
+        config = configdict(
+                shift_config(
+                    toml.load(toml_path),
+                    shift,
+                ),
+        )        
+        toml_path = Path().resolve() / "fake.toml"
+    else:
+        toml_path = Path(toml_path).resolve()
+        config = configdict(
+                shift_config(
+                    toml.load(str(toml_path)),
+                    shift,
+                ),
+        )
+
     concats = []
     deps = {toml_path}
 

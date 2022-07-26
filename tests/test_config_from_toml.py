@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import io
+from textwrap import dedent
+
 import pytest
 
 from wellmap import *
@@ -61,4 +64,10 @@ def test_config_from_toml(files, kwargs, config, concats, extras, deps, alerts, 
             assert actual_alerts == alerts
 
 
-
+def test_config_from_toml_from_file():
+    f = io.StringIO(dedent("""\
+        [well.A1]
+        x = 2
+        """))
+    config, _paths, _concats, _extras, _deps = config_from_toml(f)
+    assert config["well"]["A1"]["x"] == 2
