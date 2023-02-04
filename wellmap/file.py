@@ -113,6 +113,7 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
         TOML file.  In code, that would be: 
         ``path_guess.format(Path(toml_path))``.  A typical value would be 
         something like ``'{0.stem}.csv'``.
+        Can also just contain an extension, e.g. '.csv'. In this case toml_path.stem+extension will be guessed.
 
     :param bool path_required:
         Indicates whether or not the given TOML file must reference one or more 
@@ -307,7 +308,6 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
                     'right_on': ['path'] + check_merge_cols(
                         merge_cols.values(), data.columns, 'values'),
             }
-
         merged = pd.merge(layout, data, **kwargs)
         return augment_return_value(merged)
 
@@ -697,7 +697,7 @@ class PathManager:
         self.path = path
         self.paths = paths
         self.toml_path = Path(toml_path)
-        self.path_guess = path_guess
+        self.path_guess = self.toml_path.stem+path_guess if path_guess is not None and path_guess[0]=='.' else path_guess  # extension or full name specified
         self.missing_path_error = None
 
     def __str__(self):
