@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 
-import toml
 import sys, re, itertools, inspect
 import pandas as pd
+
 from pathlib import Path
 from inform import plural
 from copy import deepcopy
 from .util import *
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib
 
 # Data Structures
 # ===============
@@ -321,12 +326,11 @@ def config_from_toml(toml_path, *, shift=(0,0), path_guess=None, path_required=F
     settings.
     """
     toml_path = Path(toml_path).resolve()
-    config = configdict(
-            shift_config(
-                toml.load(str(toml_path)),
-                shift,
-            ),
-    )
+
+    with open(toml_path, 'rb') as f:
+        toml_data = tomllib.load(f)
+
+    config = configdict(shift_config(toml_data, shift))
     concats = []
     deps = {toml_path}
 
