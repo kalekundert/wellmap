@@ -14,7 +14,7 @@
 .. image:: https://readthedocs.org/projects/wellmap/badge/?version=latest
    :target: http://wellmap.readthedocs.io/en/latest/
 
-.. image:: https://img.shields.io/github/actions/workflow/status/kalekundert/wellmap/test_and_release.yml?branch=master
+.. image:: https://img.shields.io/github/actions/workflow/status/kalekundert/wellmap/test.yml?branch=master
    :target: https://github.com/kalekundert/wellmap/actions
 
 .. image:: https://img.shields.io/coveralls/kalekundert/wellmap.svg
