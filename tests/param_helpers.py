@@ -23,7 +23,7 @@ with_wellmap = Namespace('import wellmap; from wellmap import *; import pandas a
 def files(request, tmp_path):
     for name, contents in request.param.items():
         p = tmp_path / name
-        p.write_text(contents)
+        p.write_text(contents, encoding='utf-8')
 
     return tmp_path
 
