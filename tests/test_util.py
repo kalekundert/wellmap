@@ -16,7 +16,10 @@ from .param_helpers import *
 def test_require_well_locations(df, expected, error):
     with error:
         df = require_well_locations(df)
-        pd.testing.assert_frame_equal(df, expected)
+
+        # The dtype check causes issues on Windows, for some reason:
+        # https://stackoverflow.com/questions/64901822/why-do-pandas-integer-dtypes-not-behave-the-same-on-unix-and-windows
+        pd.testing.assert_frame_equal(df, expected, check_dtype=False)
 
 @pytest.mark.parametrize(
         'row, col, well', [
