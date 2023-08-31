@@ -6,6 +6,9 @@
 \usage{
 ij_from_well(well)
 }
+\arguments{
+\item{well}{Well name}
+}
 \description{
 Convert the given well name into row and column indices.
 }

@@ -6,6 +6,11 @@
 \usage{
 well_from_ij(i, j)
 }
+\arguments{
+\item{i}{Row index}
+
+\item{j}{Column index}
+}
 \description{
 Create a well name from the given row and column indices.
 }

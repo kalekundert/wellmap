@@ -6,14 +6,17 @@
 \usage{
 iter_well_indices(pattern)
 }
+\arguments{
+\item{pattern}{A string identifying either a single well (e.g. "A1") or
+several, using the pattern syntax (e.g. "A1,B2", "A1-B2", "A1,A3,...,B11").}
+}
 \description{
-The given pattern can either specify a single well (e.g. "A1") or several,
-using the pattern syntax (e.g. "A1,B2", "A1-B2", "A1,A3,...,B11").
+Yield the indices for the given well(s).
 }
 \examples{
-iter_well_indices('A1'))
-iter_well_indices('A1,B2'))
-iter_well_indices('A1-B2'))
+iter_well_indices('A1')  # returns list(list(0L, 0L))
+iter_well_indices('A1,B2')  # returns list(list(0L, 0L), list(1L, 1L))
+iter_well_indices('A1-B2')  # returns list(list(0L, 0L), list(0L, 1L), list(1L, 0L), list(1L, 1L))
 
 }
 \seealso{

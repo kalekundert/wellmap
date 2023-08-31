@@ -6,6 +6,9 @@
 \usage{
 row_from_i(i)
 }
+\arguments{
+\item{i}{Row index}
+}
 \description{
 Convert the given index into a row name.
 }

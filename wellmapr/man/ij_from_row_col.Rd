@@ -6,6 +6,11 @@
 \usage{
 ij_from_row_col(row, col)
 }
+\arguments{
+\item{row}{Row name}
+
+\item{col}{Column name}
+}
 \description{
 Convert the given row and column names into indices.
 }

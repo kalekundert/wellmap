@@ -6,6 +6,9 @@
 \usage{
 j_from_col(col)
 }
+\arguments{
+\item{col}{Column name}
+}
 \description{
 Convert the given column name into an index number.
 }

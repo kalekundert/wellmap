@@ -6,6 +6,13 @@
 \usage{
 well0_from_row_col(row, col, digits = 2L)
 }
+\arguments{
+\item{row}{Row name}
+
+\item{col}{Column name}
+
+\item{digits}{Minimum number of digits for column names.}
+}
 \description{
 Create a zero-padded well name from the given row and column names.
 }

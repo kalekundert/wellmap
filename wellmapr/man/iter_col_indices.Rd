@@ -6,14 +6,17 @@
 \usage{
 iter_col_indices(pattern)
 }
+\arguments{
+\item{pattern}{A string identifying either a single column (e.g. "1") or
+several, using the pattern syntax (e.g. "1,2", "1-3", "1,3,...,11").}
+}
 \description{
-The given pattern can either specify a single column (e.g. "1") or several,
-using the pattern syntax (e.g. "1,2", "1-3", "1,3,...,11").
+Yield all of the well indices in the given column(s).
 }
 \examples{
 iter_col_indices('1')  # returns c(0L)
-wellmap.iter_col_indices('1,2')  # returns c(0L, 1L)
-wellmap.iter_col_indices('1-3')  # returns c(0L, 1L, 2L)
+iter_col_indices('1,2')  # returns c(0L, 1L)
+iter_col_indices('1-3')  # returns c(0L, 1L, 2L)
 
 }
 \seealso{

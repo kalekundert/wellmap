@@ -6,6 +6,9 @@
 \usage{
 i_from_row(row)
 }
+\arguments{
+\item{row}{Row name}
+}
 \description{
 Convert the given row name into an index number.
 }

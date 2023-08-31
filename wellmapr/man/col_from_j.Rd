@@ -6,6 +6,9 @@
 \usage{
 col_from_j(j)
 }
+\arguments{
+\item{j}{Column index}
+}
 \description{
 Convert the given index into a column name.
 }

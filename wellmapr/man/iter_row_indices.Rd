@@ -6,17 +6,17 @@
 \usage{
 iter_row_indices(pattern)
 }
+\arguments{
+\item{pattern}{A string identifying either a single row (e.g. "A") or
+several, using the pattern syntax (e.g. "A,B", "A-C", "A,C,...,G").}
+}
 \description{
 Yield all of the well indices in the given row(s).
 }
-\details{
-The given pattern can either specify a single row (e.g. "A") or several,
-using the pattern syntax (e.g. "A,B", "A-C", "A,C,...,G").
-}
 \examples{
 iter_row_indices('A')  # returns c(0L)
-wellmap.iter_row_indices('A,B')  # returns c(0, 1)
-wellmap.iter_row_indices('A-C')  # returns c(0, 1, 2)
+iter_row_indices('A,B')  # returns c(0, 1)
+iter_row_indices('A-C')  # returns c(0, 1, 2)
 
 }
 \seealso{

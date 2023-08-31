@@ -203,9 +203,10 @@ load <- function(toml_path, data_loader=NULL, merge_cols=NULL,
   } else {
     have_extras <- "extras" %in% names(formals(data_loader))
     if (have_extras) {
-      wrapped_data_loader <- function(path, extras=NULL) {
+      wrapped_data_loader_with_extras <- function(path, extras=NULL) {
         data_loader(reticulate::py_str(path), extras=extras)
       }
+      wrapped_data_loader <- wrapped_data_loader_with_extras
     } else {
       wrapped_data_loader <- function(path) {
         data_loader(reticulate::py_str(path))
@@ -423,6 +424,9 @@ Style <- function(.kw_only=NULL, cell_size=0.25, pad_width=0.20, pad_height=0.20
 
 #' Create a well name from the given row and column names.
 #'
+#' @param row Row name
+#' @param col Column name
+#'
 #' @examples
 #' well_from_row_col('A', '2')  # returns 'A2'
 #' 
@@ -436,6 +440,12 @@ well_from_row_col <- function(row, col) {
 
 
 #' Create a well name from the given row and column indices.
+#' 
+#' @param i
+#' Row index
+#'
+#' @param j
+#' Column index
 #'
 #' @details
 #' The given indices must be integers, i.e. `0L` instead of `0`.
@@ -454,6 +464,9 @@ well_from_ij <- function(i, j) {
 
 #' Create a zero-padded well name from the given well name.
 #' 
+#' @param well Well name
+#' @param digits Minimum number of digits for column names.
+#'
 #' @details
 #' - It doesn't matter if the input name is zero-padded or not.
 #' - If specified, the number of column digits must be an integer, i.e. `2L` 
@@ -473,6 +486,10 @@ well0_from_well <- function(well, digits=2L) {
 
 #' Create a zero-padded well name from the given row and column names.
 #'
+#' @param row Row name
+#' @param col Column name
+#' @param digits Minimum number of digits for column names.
+#'
 #' @details
 #' If specified, the number of column digits must be an integer, i.e. `2L` 
 #' instead of `2`.
@@ -490,6 +507,8 @@ well0_from_row_col <- function(row, col, digits=2L) {
 
 
 #' Convert the given index into a row name.
+#'
+#' @param i Row index
 #'
 #' @details
 #' - The given row index must be an integer, i.e. `0L` instead of `0`.
@@ -509,6 +528,8 @@ row_from_i <- function(i) {
 
 #' Convert the given index into a column name.
 #'
+#' @param j Column index
+#'
 #' @details
 #' - The given column index must be an integer, i.e. `0L` instead of `0`.
 #' - Column names count from 1, and are strings.
@@ -527,11 +548,14 @@ col_from_j <- function(j) {
 
 #' Convert the given indices into row and column names.
 #'
+#' @param i Row index
+#' @param j Column index
+#'
 #' @details
 #' The given indices must be integers, i.e. `0L` instead of `0`.
 #'
 #' @examples
-#' row_col_from_ij(0, 1)  # returns list('A', '2')
+#' row_col_from_ij(0L, 1L)  # returns list('A', '2')
 #'
 #' @seealso
 #' [Well Formats](https://wellmap.readthedocs.io/en/latest/well_formats.html) 
@@ -543,6 +567,8 @@ row_col_from_ij <- function(i, j) {
 
 
 #' Split row and column names out of the given well name.
+#'
+#' @param well Well name
 #'
 #' @details
 #' The well name is allowed to be zero-padded.
@@ -561,6 +587,8 @@ row_col_from_well <- function(well) {
 
 #' Convert the given row name into an index number.
 #'
+#' @param row Row name
+#'
 #' @examples
 #' i_from_row('A')  # returns 0L
 #'
@@ -574,6 +602,8 @@ i_from_row <- function(row) {
 
 
 #' Convert the given column name into an index number.
+#'
+#' @param col Column name
 #'
 #' @details
 #' Note that column names count from 1.
@@ -592,6 +622,8 @@ j_from_col <- function(col) {
 
 #' Convert the given well name into row and column indices.
 #'
+#' @param well Well name
+#'
 #' @examples
 #' ij_from_well('A2')  # returns list(0L, 1L)
 #'
@@ -606,6 +638,9 @@ ij_from_well <- function(well) {
 
 #' Convert the given row and column names into indices.
 #'
+#' @param row Row name
+#' @param col Column name
+#'
 #' @examples
 #' ij_from_row_col('A', '2')  # returns list(0L, 1L)
 #'
@@ -619,6 +654,10 @@ ij_from_row_col <- function(row, col) {
 
 
 #' Find all of the well indices in the given block.
+#'
+#' @param top_left_ij Row/column indices for the top-left corner of the block.
+#' @param width The number of columns spanned by the block.
+#' @param height The number of rows spanned by the block.
 #'
 #' @details
 #' - The given indices and dimensions must be integers, i.e. `1L` instead of 
@@ -640,14 +679,13 @@ iter_ij_in_block <- function(top_left_ij, width, height) {
 
 #' Yield all of the well indices in the given row(s).
 #'
-#' @details
-#' The given pattern can either specify a single row (e.g. "A") or several, 
-#' using the pattern syntax (e.g. "A,B", "A-C", "A,C,...,G").
+#' @param pattern A string identifying either a single row (e.g. "A") or 
+#' several, using the pattern syntax (e.g. "A,B", "A-C", "A,C,...,G").
 #'
 #' @examples
 #' iter_row_indices('A')  # returns c(0L)
-#' wellmap.iter_row_indices('A,B')  # returns c(0, 1)
-#' wellmap.iter_row_indices('A-C')  # returns c(0, 1, 2)
+#' iter_row_indices('A,B')  # returns c(0, 1)
+#' iter_row_indices('A-C')  # returns c(0, 1, 2)
 #'
 #' @seealso
 #' [Well Formats](https://wellmap.readthedocs.io/en/latest/well_formats.html) 
@@ -662,13 +700,13 @@ iter_row_indices <- function(pattern) {
 
 #' Yield all of the well indices in the given column(s).
 #'
-#' The given pattern can either specify a single column (e.g. "1") or several, 
-#' using the pattern syntax (e.g. "1,2", "1-3", "1,3,...,11").
+#' @param pattern A string identifying either a single column (e.g. "1") or 
+#' several, using the pattern syntax (e.g. "1,2", "1-3", "1,3,...,11").
 #'
 #' @examples
 #' iter_col_indices('1')  # returns c(0L)
-#' wellmap.iter_col_indices('1,2')  # returns c(0L, 1L)
-#' wellmap.iter_col_indices('1-3')  # returns c(0L, 1L, 2L)
+#' iter_col_indices('1,2')  # returns c(0L, 1L)
+#' iter_col_indices('1-3')  # returns c(0L, 1L, 2L)
 #'
 #' @seealso
 #' [Well Formats](https://wellmap.readthedocs.io/en/latest/well_formats.html) 
@@ -683,13 +721,13 @@ iter_col_indices <- function(pattern) {
 
 #' Yield the indices for the given well(s).
 #' 
-#' The given pattern can either specify a single well (e.g. "A1") or several, 
-#' using the pattern syntax (e.g. "A1,B2", "A1-B2", "A1,A3,...,B11").
+#' @param pattern A string identifying either a single well (e.g. "A1") or 
+#' several, using the pattern syntax (e.g. "A1,B2", "A1-B2", "A1,A3,...,B11").
 #'
 #' @examples
-#' iter_well_indices('A1'))
-#' iter_well_indices('A1,B2'))
-#' iter_well_indices('A1-B2'))
+#' iter_well_indices('A1')  # returns list(list(0L, 0L))
+#' iter_well_indices('A1,B2')  # returns list(list(0L, 0L), list(1L, 1L))
+#' iter_well_indices('A1-B2')  # returns list(list(0L, 0L), list(0L, 1L), list(1L, 0L), list(1L, 1L))
 #'
 #' @seealso
 #' [Well Formats](https://wellmap.readthedocs.io/en/latest/well_formats.html) 

@@ -6,6 +6,9 @@
 \usage{
 row_col_from_well(well)
 }
+\arguments{
+\item{well}{Well name}
+}
 \description{
 Split row and column names out of the given well name.
 }

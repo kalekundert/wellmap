@@ -6,7 +6,7 @@ Authors@R: as.person(c(
   ))
 Description: Wrapper for the "wellmap" Python module.
 License: file LICENSE
-Depends:
+Imports:
   reticulate (>= 1.14)
 Config/reticulate:
   list(

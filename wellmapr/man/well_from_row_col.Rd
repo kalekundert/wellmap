@@ -6,6 +6,11 @@
 \usage{
 well_from_row_col(row, col)
 }
+\arguments{
+\item{row}{Row name}
+
+\item{col}{Column name}
+}
 \description{
 Create a well name from the given row and column names.
 }

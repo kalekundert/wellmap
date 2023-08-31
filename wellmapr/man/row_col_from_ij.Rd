@@ -6,6 +6,11 @@
 \usage{
 row_col_from_ij(i, j)
 }
+\arguments{
+\item{i}{Row index}
+
+\item{j}{Column index}
+}
 \description{
 Convert the given indices into row and column names.
 }
@@ -13,7 +18,7 @@ Convert the given indices into row and column names.
 The given indices must be integers, i.e. \code{0L} instead of \code{0}.
 }
 \examples{
-row_col_from_ij(0, 1)  # returns list('A', '2')
+row_col_from_ij(0L, 1L)  # returns list('A', '2')
 
 }
 \seealso{

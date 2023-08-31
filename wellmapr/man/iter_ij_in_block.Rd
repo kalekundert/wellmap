@@ -6,6 +6,13 @@
 \usage{
 iter_ij_in_block(top_left_ij, width, height)
 }
+\arguments{
+\item{top_left_ij}{Row/column indices for the top-left corner of the block.}
+
+\item{width}{The number of columns spanned by the block.}
+
+\item{height}{The number of rows spanned by the block.}
+}
 \description{
 Find all of the well indices in the given block.
 }
