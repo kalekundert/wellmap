@@ -63,3 +63,10 @@ version_pattern = [
     'wellmapr/DESCRIPTION:Version: {version}',
     'wellmapr/DESCRIPTION:list\(package = "wellmap", version = "{version}"'
 ]
+
+[tool.ruff]
+select = ["F"]
+ignore = ["F405", "F403"]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
