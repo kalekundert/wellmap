@@ -8,5 +8,5 @@ __version__ = '3.4.0'
 
 from .util import *
 from .file import *
-from .plot import show, UsageError
+from .plot import show, show_df, Style, UsageError
 from . import plot

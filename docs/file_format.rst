@@ -29,10 +29,9 @@ wells.  Note however that all of the following are equivalent:
   well.A1.conc = 100
   
 Most of this document focuses on describing the various ways to succinctly 
-specify different groups of wells, e.g. `[row.A]`, `[col.1]`, `[block.WxH.A1]`, 
-etc.  There is no need to specify the size of the plate.  The data frame 
-returned by `load()` will contain a row for each well implied by the layout 
-file.
+specify different groups of wells, e.g. `row`, `col`, `block`, etc.  There is 
+no need to specify the size of the plate.  The data frame returned by `load()` 
+will contain a row for each well implied by the layout file.
 
 Experimental parameters can be specified by setting any `key`_ associated with 
 a well group (e.g. ``conc`` in the above examples) to a scalar value (e.g.  
@@ -42,6 +41,8 @@ restrictions on what these parameters can be named, although complex names
 returned by `load()` will contain a column named for each parameter associated 
 with any well in the layout.  Not every well needs to have a value for every 
 parameter; missing values will be represented in the data frame by ``nan``.
+
+.. _meta:
 
 [meta]
 ======
@@ -54,13 +55,17 @@ only section that does not describe the organization of any wells.
     relative to the directory containing the TOML file itself, regardless of 
     what the current working directory is.
 
+.. _meta.path:
+
 meta.path
 ---------
 The path to the file containing the actual data for this layout.  The 
 **path_guess** argument of the `load()` function can be used to provide a 
 default path when this option is not specified.  If the layout includes 
-multiple plates (i.e. if it has one or more `[plate.NAME]` sections), use 
-`meta.paths` and not `meta.path`.  
+multiple plates (i.e. if it has one or more `plate` sections), use `meta.paths` 
+and not `meta.path`.  
+
+.. _meta.paths:
 
 meta.paths
 ----------
@@ -86,8 +91,10 @@ mapping:
     a = 'path/to/file_a.dat'
     b = 'path/to/file_b.dat'
 
-If the layout doesn't explicitly define any plates (i.e. if it has no 
-`[plate.NAME]` sections), use `meta.path` and not `meta.paths`.
+If the layout doesn't explicitly define any plates (i.e. if it has no `plate` 
+sections), use `meta.path` and not `meta.paths`.
+
+.. _meta.include:
 
 meta.include
 ------------
@@ -106,11 +113,11 @@ setting can either be a string, a dictionary, or a list:
   - *shift* (string, optional): Reposition all the wells in the included 
     layout.  This setting has the following syntax: ``<well> to <well>``.  For 
     example, ``A1 to B2`` would shift all wells down and to the right by one.  
-    Some caveats: the included file cannot use the `[irow.A]` or `[icol.1]` 
-    well groups (this restriction may be possible to remove, let me know if it 
-    causes you problems), wells cannot be shifted to negative row or column 
-    indices, and the shift will not apply to any files that are concatenated to 
-    the included file via `meta.concat`.
+    Some caveats: the included file cannot use the `irow` or `icol` well groups 
+    (this restriction may be possible to remove, let me know if it causes you 
+    problems), wells cannot be shifted to negative row or column indices, and 
+    the shift will not apply to any files that are concatenated to the included 
+    file via `meta.concat`.
     
 - List: The paths to multiple layout files to include.  Each item in the list 
   can either be a string or a dictionary; both will be interpreted as described 
@@ -163,6 +170,8 @@ and to the right in the final layout:
   [block.2x2.A1]
   x = 1
 
+.. _meta.concat:
+
 meta.concat
 -----------
 The paths of one or more TOML files that should be loaded independently of this 
@@ -202,12 +211,16 @@ third layout combines the first two for easier analysis.
   X = 'expt_1.toml'
   Y = 'expt_2.toml'
 
+.. _meta.alert:
+
 meta.alert
 ----------
 A message that should be printed to the terminal every time this file is 
 loaded.  For example, if something went wrong during the experiment that would 
 affect how the data is interpreted, put that here to be reminded of that every 
 time you look at the data.
+
+.. _expt:
 
 [expt]
 ======
@@ -231,18 +244,18 @@ for analysis.
 
 Note that the :prog:`wellmap` command by default only displays experimental 
 parameters that have at least two different values across the whole layout, 
-which normally excludes `[expt]` parameters.  To see such a parameter anyways, 
+which normally excludes `expt` parameters.  To see such a parameter anyways, 
 provide its name as one of the ``<attr>`` arguments.
 
 .. rubric:: Example:
 
-This layout demonstrates the difference between `[expt]` parameters and 
-metadata.  All of the wells on this plate have the same sample, but the sample 
-is relevant to the analysis and might vary in other layouts analyzed by the 
-same script.  In contrast, the name and date are just (useful) metadata.
+This layout demonstrates the difference between `expt` parameters and metadata.  
+All of the wells on this plate have the same sample, but the sample is relevant 
+to the analysis and might vary in other layouts analyzed by the same script.  
+In contrast, the name and date are just (useful) metadata.
 
 .. example:: file_format/expt.toml
-  :attrs: sample
+  :params: sample
 
   name = "Kale Kundert"
   date = 2020-05-26
@@ -252,6 +265,8 @@ same script.  In contrast, the name and date are just (useful) metadata.
 
   # Without this, the plate wouldn't have any wells.
   [block.4x4.A1]
+
+.. _plate:
 
 [plate.NAME]
 ============
@@ -267,7 +282,7 @@ key/value pairs specified at the top-level of a plate will apply to the whole
 plate.  Any well groups specified within a plate (e.g. ``[plate.NAME.row.A]``) 
 will only apply to that plate, and will take precedence over values specified 
 in the same well groups (e.g. ``[row.A]``) outside the plate.  Refer to the 
-`precedence rules` for more information.
+`precedence` for more information.
 
 .. rubric:: Example:
 
@@ -296,6 +311,8 @@ The following layout shows how to define parameters that apply to:
 
   # Without this, plate X wouldn't have any rows.
   [row.'A,B,C,D']
+
+.. _row:
 
 [row.A]
 =======
@@ -334,6 +351,8 @@ multiple rows:
   # Indicate how many columns there are.
   [col.'1,2,3,4']
 
+.. _col:
+
 [col.1]
 =======
 Specify parameters for all the wells in the given column (e.g. "1").  Columns 
@@ -370,9 +389,11 @@ multiple columns:
   # Indicate how many rows there are.
   [row.'A,B,C,D']
 
+.. _irow:
+
 [irow.A]
 ========
-Similar to `[row.A]`, but "interleaved" with the row above or below it.  This 
+Similar to `row`, but "interleaved" with the row above or below it.  This 
 layout is sometimes used for experiments that may be sensitive to neighbor 
 effects or slight gradients across the plate.
 
@@ -393,11 +414,13 @@ this fashion, A interleaves with B, C interleaves with D, etc.
   # Indicate how many columns there are.
   [col.'1,2,...,4']
 
+.. _icol:
+
 [icol.1]
 ========
-Similar to `[col.1]`, but "interleaved" with the column to the left or right of 
-it.  This layout is sometimes used for experiments that may be sensitive to 
-neighbor effects or slight gradients across the plate.
+Similar to `col`, but "interleaved" with the column to the left or right of it.  
+This layout is sometimes used for experiments that may be sensitive to neighbor 
+effects or slight gradients across the plate.
 
 .. rubric:: Example:
 
@@ -416,6 +439,8 @@ alternates "left".  In this fashion, 1 interleaves with 2, 3 interleaves with
 
   # Indicate how many rows there are.
   [row.'A,B,...,D']
+
+.. _block:
 
 [block.WxH.A1]
 ==============
@@ -450,6 +475,8 @@ multiple blocks:
   [block.2x2.'A3,C1']
   sample = 'β'
 
+.. _well:
+
 [well.A1]
 =========
 Specify parameters for the given well (e.g. "A1").  You can use the `pattern 
@@ -472,10 +499,12 @@ The following layout uses the `pattern syntax`_ to specify the same sample for
 multiple wells:
 
 .. example:: file_format/well_pattern.toml
-  :attrs: sample
+  :params: sample
 
   [well.'A1,D4,...,D4']
   sample = 'α'
+
+.. _pattern:
 
 Pattern syntax
 ==============
@@ -520,12 +549,13 @@ second index specifies the step size in both dimensions.  Consider the
 ``A1,C3,...,E5`` example from above: C3 is two rows and two columns away from 
 A1, so this pattern specifies every odd well between A1 and E5.
 
+.. _precedence:
+
 Precedence rules
 ================
 It is possible to specify multiple values for a single experimental parameter 
-in a single well.  The following layout, where `[expt]` and `[well.A1]` both 
-specify different samples for the same well, shows a typical way for this to 
-happen:
+in a single well.  The following layout, where `expt` and `well` both specify 
+different samples for the same well, shows a typical way for this to happen:
 
 .. code-block:: toml
 
@@ -555,8 +585,8 @@ higher precedence:
 
 |plate| groups do not have their own precedence.  Instead, well groups used 
 within |plate| groups have precedence a half-step higher than the same group 
-used outside a plate.  In other words, `[plate.NAME.row.A] <[plate.NAME]>` has 
-higher precedence than |row|, but lower precedence than |block|.
+used outside a plate.  In other words, `[plate.NAME.row.A] <plate>` has higher 
+precedence than |row|, but lower precedence than |block|.
 
 The following layout is contrived, but visually demonstrates most of the 
 precedence rules:

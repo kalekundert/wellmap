@@ -1,0 +1,163 @@
+test_require_well_locations:
+  -
+    id: plate
+    df:
+      -
+        plate: 'A'
+        row_i: 0
+        col_j: 0
+        value: 1
+      -
+        plate: 'B'
+        row_i: 0
+        col_j: 1
+        value: 2
+
+    expected:
+      -
+        plate: 'A'
+        row_i: 0
+        col_j: 0
+        value: 1
+      -
+        plate: 'B'
+        row_i: 0
+        col_j: 1
+        value: 2
+  -
+    id: well
+    df:
+      -
+        well: 'A1'
+        value: 1
+      -
+        well: 'A2'
+        value: 2
+
+    expected:
+      -
+        plate: ''
+        well: 'A1'
+        row_i: 0
+        col_j: 0
+        value: 1
+      -
+        plate: ''
+        well: 'A2'
+        row_i: 0
+        col_j: 1
+        value: 2
+  -
+    id: well0
+    df:
+      -
+        well0: 'A01'
+        value: 1
+      -
+        well0: 'A02'
+        value: 2
+
+    expected:
+      -
+        plate: ''
+        well0: 'A01'
+        row_i: 0
+        col_j: 0
+        value: 1
+      -
+        plate: ''
+        well0: 'A02'
+        row_i: 0
+        col_j: 1
+        value: 2
+  -
+    id: row-col
+    df:
+      -
+        row: 'A'
+        col: '1'
+        value: 1
+      -
+        row: 'A'
+        col: '2'
+        value: 2
+
+    expected:
+      -
+        plate: ''
+        row: 'A'
+        col: '1'
+        row_i: 0
+        col_j: 0
+        value: 1
+      -
+        plate: ''
+        row: 'A'
+        col: '2'
+        row_i: 0
+        col_j: 1
+        value: 2
+  -
+    id: row-i-col-j
+    df:
+      -
+        row_i: 0
+        col_j: 0
+        value: 1
+      -
+        row_i: 0
+        col_j: 1
+        value: 2
+
+    expected:
+      -
+        plate: ''
+        row_i: 0
+        col_j: 0
+        value: 1
+      -
+        plate: ''
+        row_i: 0
+        col_j: 1
+        value: 2
+  -
+    id: err-empty
+    df:
+      []
+    error:
+      type: LayoutError
+      message:
+        - Can't find well locations
+        - Data frame must have 1-2 of the following columns: 'well', 'well0', 'row', 'col', 'row_i', 'col_j'
+        - Columns found:
+  -
+    id: err-no-row
+    df:
+      -
+        col: '1'
+        value: 0
+      -
+        col: '2'
+        value: 0
+    error:
+      type: LayoutError
+      message:
+        - Can't find well locations
+        - Data frame must have 1-2 of the following columns: 'well', 'well0', 'row', 'col', 'row_i', 'col_j'
+        - Columns found: 'col', 'value'
+  -
+    id: err-no-col
+    df:
+      -
+        row: 'A'
+        value: 0
+      -
+        row: 'A'
+        value: 0
+    error:
+      type: LayoutError
+      message:
+        - Can't find well locations
+        - Data frame must have 1-2 of the following columns: 'well', 'well0', 'row', 'col', 'row_i', 'col_j'
+        - Columns found: 'row', 'value'
+

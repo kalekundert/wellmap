@@ -17,7 +17,7 @@ class Example(SphinxDirective):
     has_content = True
     final_argument_whitespace = True
     option_spec = {
-            'attrs': lambda x: x.split(','),
+            'params': lambda x: x.split(','),
             'colors': lambda x: x,
             'no-figure': lambda x: x,
     }
@@ -59,9 +59,11 @@ class Example(SphinxDirective):
 
             if any_deps_stale(svg_abs_path, deps):
                 logger.info(f"[example] rendering: {svg_path}")
-                attrs = self.options.get('attrs', [])
-                cmap = wellmap.plot.get_colormap(self.options.get('color', 'rainbow'))
-                fig = wellmap.plot.plot_layout(df, attrs, cmap)
+                params = self.options.get('params', [])
+                style = wellmap.Style(
+                        color_scheme=self.options.get('color', 'rainbow'),
+                )
+                fig = wellmap.show_df(df, params, style=style)
                 fig.savefig(svg_abs_path, bbox_inches='tight')
 
             example_rst += f'''\

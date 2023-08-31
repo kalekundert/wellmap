@@ -87,13 +87,10 @@ like \code{'{0.stem}.csv'}.}
 files.  It is an error if this condition is not met.  Data files found via
 \code{path_guess} are acceptable for this purpose.}
 
-\item{extras}{One or more keys to extract directly from the given TOML file.  Typically,
-this would be used to get information pertaining to the whole analysis and
-not any wells in particular (e.g. instruments used, preferred algorithms,
-plotting parameters, etc.).  Either one key (string) or multiple keys (list)
-can be specified.  \href{https://github.com/toml-lang/toml#keys}{Dotted keys} are
-supported.  Specifying this argument causes the value(s) corresponding to
-the given key(s) to be returned, see below.}
+\item{extras}{If \emph{TRUE}, return a named list containing any key/value pairs present in the
+TOML file but not part of the layout.  Typically, this would be used to get
+information pertaining to the whole analysis and not any wells in particular
+(e.g. instruments used, preferred algorithms, plotting parameters, etc.).}
 
 \item{report_dependencies}{If \emph{TRUE}, return a vector of all the TOML files that were read in the
 process of loading the layout from the given \code{toml_path}.  See the
@@ -155,17 +152,17 @@ loaded from the data files.
 
 If \code{extras} was provided:
 \itemize{
-\item \code{extras}: The value(s) corresponding to the specified "extra" key(s).  If
-only one extra key was specified, only that value will be returned.  If
-multiple extra keys were specified, a named list containing the value for
-each such key will be returned.  For example, consider the following TOML
-file:\preformatted{a = 1
-b = 2
-}
+\item \code{extras}: A named list containing any key/value pairs present in the TOML
+file but not part of the layout.  For example, consider the following TOML
+file:
 
-If we were to load this file with \code{extras='a'}, this return value would
-simply be \code{1}.  With \code{extras=list('a', 'b')}, the same return value would
-be \code{list(a=1, b=2)} instead.
+\if{html}{\out{<div class="sourceCode">}}\preformatted{a = 1
+b = 2
+well.A1.c = 3
+}\if{html}{\out{</div>}}
+
+If we were to load this file with \code{extras=True}, this return value would
+be \code{list(a=1, b=2)}.
 }
 
 If \code{report_dependencies} was provided:

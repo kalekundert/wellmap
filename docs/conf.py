@@ -8,7 +8,7 @@ project = u'wellmap'
 copyright = u'2015, Kale Kundert'
 version = wellmap.__version__
 release = wellmap.__version__
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', '.*', 'slides']
 templates_path = ['_templates']
 html_static_path = ['_static']
 
@@ -17,7 +17,6 @@ extensions = [
         '_ext.hidden_section',
         #'show_nodes',
         'sphinx.ext.autodoc',
-        'sphinx.ext.autosectionlabel',
         'sphinx.ext.autosummary',
         'sphinx.ext.intersphinx',
         'sphinx.ext.napoleon',
@@ -35,14 +34,16 @@ add_function_parentheses = True
 pygments_style = 'sphinx'
 autosummary_generate = True
 rst_epilog = """\
-.. |well| replace:: `[well] <[well.A1]>`
-.. |block| replace:: `[block] <[block.WxH.A1]>`
-.. |row| replace:: `[row] <[row.A]>`
-.. |col| replace:: `[col] <[col.1]>`
-.. |irow| replace:: `[irow] <[irow.A]>`
-.. |icol| replace:: `[icol] <[icol.1]>`
-.. |plate| replace:: `[plate] <[plate.NAME]>`
-.. |expt| replace:: `[expt]`
+.. |well| replace:: :ref:`well <well>`
+.. |block| replace:: :ref:`block <block>`
+.. |row| replace:: :ref:`row <row>`
+.. |col| replace:: :ref:`col <col>`
+.. |irow| replace:: :ref:`irow <irow>`
+.. |icol| replace:: :ref:`icol <icol>`
+.. |plate| replace:: :ref:`plate <plate>`
+.. |expt| replace:: :ref:`expt <expt>`
+
+.. _tidy: https://www.jstatsoft.org/article/view/v059i10
 """
 
 from sphinx_rtd_theme import get_html_theme_path

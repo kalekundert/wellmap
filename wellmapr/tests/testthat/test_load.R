@@ -1,5 +1,4 @@
 library(wellmapr)
-context("wellmapr")
 options("stringsAsFactors" = FALSE)
 
 test_that("`load()` works on a simple layout", {
@@ -13,7 +12,7 @@ test_that("`load()` works on a simple layout", {
                          x=1,
                          y=1)
 
-  expect_equivalent(!!layout, !!expected)
+  expect_equal(!!layout, !!expected, ignore_attr=TRUE)
 })
 
 test_that("`read.csv()` is a valid `data_loader()`", {
@@ -37,7 +36,7 @@ test_that("`read.csv()` is a valid `data_loader()`", {
                          y=1,
                          Data="xy")
 
-  expect_equivalent(!!layout, !!expected)
+  expect_equal(!!layout, !!expected, ignore_attr=TRUE)
 })
 
 test_that("`data_loader()` gets the `extras` argument", {
@@ -63,8 +62,8 @@ test_that("`data_loader()` gets the `extras` argument", {
                          y=1,
                          Data="xy")
 
-  expect_equivalent(!!layout[[1]], !!expected)
-  expect_equivalent(layout[[2]], list(extras=list(a=1, b=1)))
+  expect_equal(!!layout[[1]], !!expected, ignore_attr=TRUE)
+  expect_equal(layout[[2]], list(extras=list(a=1, b=1)))
 })
 
 test_that("`on_alert()` path converted into string", {

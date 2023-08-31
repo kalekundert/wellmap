@@ -4,7 +4,7 @@
 Visualize the plate layout described by a wellmap TOML file.
 
 Usage:
-    wellmap <toml> [<attr>...] [-o <path>] [-p] [-c <color>] [-f]
+    wellmap <toml> [<param>...] [-o <path>] [-p] [-c <color>] [-f]
 
 Arguments:
     <toml>
@@ -13,17 +13,16 @@ Arguments:
         
         https://wellmap.readthedocs.io/en/latest/file_format.html
 
-    <attr>
-        The name(s) of one or more attributes from the above TOML file to 
-        project onto the plate.  For example, if the TOML file contains 
+    <param>
+        The name(s) of one or more experimental parameters from the above TOML 
+        file to project onto the plate.  For example, if the TOML file contains 
         something equivalent to `well.A1.conc = 1`, then "conc" would be a 
-        valid attribute.
+        valid parameter name.
 
-        If no attributes are specified, the default is to display any 
-        attributes that have at least two different values.  For complex 
-        layouts, this may result in a figure too big to fit on the screen.
-        The best solution for this is just to specify a smaller number of 
-        attributes to focus on.
+        If no names are given, the default is to display any parameters that 
+        have at least two different values.  For complex layouts, this may 
+        result in a figure too big to fit on the screen.  The best solution for 
+        this (at the moment) is just to specify some parameters to focus on.
 
 Options:
     -o --output PATH
@@ -70,23 +69,14 @@ import wellmap
 import colorcet
 import numpy as np
 import matplotlib.pyplot as plt
-import sys, os, shlex
+import sys, os
 
 from wellmap import LayoutError
 from inform import plural
-from matplotlib.colors import BoundaryNorm, Normalize
+from matplotlib.colors import Normalize
 from pathlib import Path
+from dataclasses import dataclass
 from .util import *
-
-CELL_SIZE = 0.25
-PAD_WIDTH = 0.20
-PAD_HEIGHT = 0.20
-BAR_WIDTH = 0.15
-BAR_PAD_WIDTH = PAD_WIDTH
-TOP_MARGIN = 0.5
-LEFT_MARGIN = 0.5
-RIGHT_MARGIN = PAD_WIDTH
-BOTTOM_MARGIN = PAD_HEIGHT
 
 def main():
     import docopt
@@ -101,10 +91,11 @@ def main():
             if os.fork() != 0:
                 sys.exit()
 
+        style = Style()
         default_color = 'dimgray' if args['--print'] else 'rainbow'
-        color = args['--color'] or default_color
+        style.color_scheme = args['--color'] or default_color
 
-        fig = show(toml_path, args['<attr>'], color)
+        fig = show(toml_path, args['<param>'], style=style)
 
         if args['--output']:
             out_path = args['--output'].replace('$', toml_path.stem)
@@ -125,7 +116,7 @@ def main():
 
         if show_gui:
             title = str(toml_path)
-            if args['<attr>']: title += f' [{", ".join(args["<attr>"])}]'
+            if args['<param>']: title += f' [{", ".join(args["<param>"])}]'
             fig.canvas.set_window_title(title)
             plt.show()
 
@@ -135,7 +126,7 @@ def main():
         err.toml_path = toml_path
         print(err)
 
-def show(toml_path, attrs=None, color='rainbow'):
+def show(toml_path, params=None, *, style=None):
     """
     Visualize the given microplate layout.
 
@@ -149,33 +140,76 @@ def show(toml_path, attrs=None, color='rainbow'):
         The path to a file describing the layout of one or more plates.  See 
         the :doc:`/file_format` page for details about this file.
 
-    :param str,list attrs:
-        One or more attributes from the above TOML file to visualize.  For 
-        example, if the TOML file contains something equivalent to 
-        ``well.A1.conc = 1``, then "conc" would be a valid attribute.  If no 
-        attributes are specified, the default is to display any attributes that 
-        have at least two different values. 
+    :param str,list params:
+        The names of one or more experimental parameters from the above TOML 
+        file to visualize.  For example, if the TOML file contains something 
+        equivalent to ``well.A1.conc = 1``, then "conc" would be a valid 
+        parameter name.  If not specified, the default is to display any 
+        parameters that have at least two different values. 
 
-    :param str color:
-        The name of the color scheme to use.  Each different value for each 
-        different attribute will be assigned a color from this scheme.  Any 
-        name understood by either colorcet_ or matplotlib_ can be used.
+    :param Style style:
+        Settings that control miscellaneous aspects of the plot, e.g. colors, 
+        dimensions, etc.
 
     :rtype: matplotlib.figure.Figure
-
-    .. _matplotlib: https://matplotlib.org/examples/color/colormaps_reference.html
-    .. _colorcet: http://colorcet.pyviz.org/
     """
     df = wellmap.load(toml_path)
-    cmap = get_colormap(color)
-    return plot_layout(df, attrs, cmap=cmap)
+    return show_df(df, params, style=style)
 
+def show_df(df, cols=None, *, style=None):
+    """
+    Visualize the microplate layout described by the given data frame.
 
-def plot_layout(df, user_attrs, cmap):
-    import matplotlib.pyplot as plt
+    Unlike the `show()` function and the :prog:`wellmap` command-line program, 
+    this function is not limited to displaying layouts parsed directly from 
+    TOML files.  Any data frame that specifies a well for each row can be 
+    plotted.  This provides the means to:
 
-    # The whole architecture of this program is dictated by a small and obscure 
-    # bug in matplotlib.  (Well, I think it's a bug.)  That bug is: if you are 
+    - Project experimental data onto a layout.
+    - Visualize layouts that weren't generated by wellmap in the first place.
+
+    For example, you could load experimental data into a data frame and use 
+    this function to visualize it directly, without ever having to specify a 
+    layout.  This might be a useful way to get a quick sense for the data.
+
+    :param pandas.DataFrame df:
+        The data frame describing the layout to plot.  The data frame must be 
+        tidy_: each row must describe a single well, and each column must 
+        describe a single aspect of each well.  The location of each well must 
+        be specified using one or more of the same columns that wellmap uses 
+        for that purpose, namely:
+
+        - *plate*
+        - *well*
+        - *well0*
+        - *row*
+        - *col*
+        - *row_i*
+        - *col_j*
+
+        See `load()` for the exact meanings of these columns.  It's not 
+        necessary to specify all of these columns, there just needs to be 
+        enough information to locate each well.  If the *plate* column is 
+        missing, it is assumed that all of the wells are on the same plate.  It 
+        is also assumed that any redundant columns (e.g. *row* and *row_i*) 
+        will be consistent with each other.
+
+        Any scalar-valued columns other than these can be plotted.
+
+    :param str,list cols:
+        Which columns to plot onto the layout.  The columns used to locate the 
+        wells (listed above) cannot be plotted.  The default is to include any 
+        columns that have at least two different values.
+
+    :param Style style:
+        Settings than control miscellaneous aspects of the plot, e.g. colors, 
+        dimensions, etc.
+
+    :rtype: matplotlib.figure.Figure
+    """
+
+    # The whole architecture of this function is dictated by (what I consider 
+    # to be) a small and obscure bug in matplotlib.  That bug is: if you are 
     # displaying a figure in the GUI and you use `set_size_inches()`, the whole 
     # GUI will have the given height, but the figure itself will be too short 
     # by the height of the GUI control panel.  That control panel has different 
@@ -198,23 +232,24 @@ def plot_layout(df, user_attrs, cmap):
     # I also need to work out the dimensions of the plates twice, but that's a 
     # simpler calculation.
 
-    if 'plate' not in df:
-        df.insert(0, 'plate', '')
+    style = style or Style()
 
+    df = require_well_locations(df)
     plates = sorted(df['plate'].unique())
-    attrs = pick_attrs(df, user_attrs)
+    params = pick_params(df, cols)
 
-    fig, axes, dims = setup_axes(df, plates, attrs)
+    fig, axes, dims = setup_axes(df, plates, params, style)
 
     try:
-        for i, attr in enumerate(attrs):
-            colors = pick_colors(axes[i,-1], df, attr, cmap)
+        for i, param in enumerate(params):
+            cmap = get_colormap(style[param].color_scheme)
+            colors = setup_color_bar(axes[i,-1], df, param, cmap)
 
             for j, plate in enumerate(plates):
-                plot_plate(axes[i,j], df, plate, attr, dims, colors)
+                plot_plate(axes[i,j], df, plate, param, style, dims, colors)
 
-        for i, attr in enumerate(attrs):
-            axes[i,0].set_ylabel(attr)
+        for i, param in enumerate(params):
+            axes[i,0].set_ylabel(param)
         for j, plate in enumerate(plates):
             axes[0,j].set_xlabel(plate)
             axes[0,j].xaxis.set_label_position('top')
@@ -225,21 +260,21 @@ def plot_layout(df, user_attrs, cmap):
             ax.set_yticklabels([])
 
     except:
-        fig.close()
+        plt.close(fig)
         raise
 
     return fig
 
-def plot_plate(ax, df, plate, attr, dims, colors):
+def plot_plate(ax, df, plate, param, style, dims, colors):
     # Fill in a matrix with integers representing each value of the given 
-    # attribute.
+    # experimental parameter.
     matrix = np.full(dims.shape, np.nan)
     q = df.query('plate == @plate')
 
     for _, well in q.iterrows():
         i = well['row_i'] - dims.i0
         j = well['col_j'] - dims.j0
-        matrix[i, j] = colors.transform(well[attr])
+        matrix[i, j] = colors.transform(well[param])
 
     # Plot a heatmap.
     ax.imshow(
@@ -260,26 +295,26 @@ def plot_plate(ax, df, plate, attr, dims, colors):
     ax.tick_params(which='both', axis='both', length=0)
     ax.xaxis.tick_top()
 
-def pick_attrs(df, user_attrs):
-    if isinstance(user_attrs, str):
-        user_attrs = [user_attrs]
+def pick_params(df, user_params):
+    if isinstance(user_params, str):
+        user_params = [user_params]
 
     wellmap_cols = ['plate', 'well', 'well0', 'row', 'col', 'row_i', 'col_j', 'path']
     user_cols = [x for x in df.columns if x not in wellmap_cols]
 
-    if user_attrs:
+    if user_params:
         # Complain if the user specified any columns that don't exist.
 
         # Using lists (slower) instead of sets (faster) to maintain the order 
-        # of the attributes in case we want to print an error message.
-        unknown_attrs = [
-                x for x in user_attrs
+        # of the columns in case we want to print an error message.
+        unknown_params = [
+                x for x in user_params
                 if x not in user_cols
         ]
-        if unknown_attrs:
-            raise UsageError(f"No such {plural(unknown_attrs):attribute/s}: {quoted_join(unknown_attrs)}\nDid you mean: {quoted_join(user_cols)}")
+        if unknown_params:
+            raise UsageError(f"No such {plural(unknown_params):parameter/s}: {quoted_join(unknown_params)}\nDid you mean: {quoted_join(user_cols)}")
 
-        return user_attrs
+        return user_params
 
     # If the user didn't specify any columns, show any that have more than one 
     # unique value.
@@ -294,16 +329,85 @@ def pick_attrs(df, user_attrs):
         ]
         if not non_degenerate_cols:
             if degenerate_cols:
-                raise UsageError(f"Found only degenerate attributes (i.e. with the same value in every well): {quoted_join(degenerate_cols)}")
+                raise UsageError(f"Found only degenerate parameters (i.e. with the same value in every well): {quoted_join(degenerate_cols)}")
             else:
-                raise LayoutError(f"No attributes defined.")
+                raise LayoutError("No experimental parameters found.")
 
         return non_degenerate_cols
 
-def pick_colors(ax, df, attr, cmap):
+def setup_axes(df, plates, params, style):
+    from mpl_toolkits.axes_grid1 import Divider
+    from mpl_toolkits.axes_grid1.axes_size import Fixed
+
+    # These assumptions let us simplify some code, and should always be true.
+    assert len(plates) > 0
+    assert len(params) > 0
+
+    # Determine how much data will be shown in the figure:
+    num_plates = len(plates)
+    num_params = len(params)
+    dims = Dimensions(df)
+
+    bar_label_width = guess_param_label_width(df, params)
+
+    # Define the grid on which the axes will live:
+    h_divs  = [
+            style.left_margin,
+    ]
+    for _ in plates:
+        h_divs += [
+                style.cell_size * dims.num_cols,
+                style.pad_width,
+        ]
+    h_divs[-1:] = [
+            style.bar_pad_width,
+            style.bar_width,
+            style.right_margin + bar_label_width,
+    ]
+
+    v_divs = [
+            style.top_margin,
+    ]
+    for param in params:
+        v_divs += [
+                max(
+                    style.cell_size * dims.num_rows,
+                    style.bar_width * dims.num_values[param],
+                ),
+                style.pad_height,
+        ]
+    v_divs[-1:] = [
+            style.bottom_margin,
+    ]
+
+    # Add up all the divisions to get the width and height of the figure:
+    figsize = sum(h_divs), sum(v_divs)
+
+    # Make the figure:
+    fig, axes = plt.subplots(
+            num_params,
+            num_plates + 1,  # +1 for the colorbar axes.
+            figsize=figsize,
+            squeeze=False,
+    )
+
+    # Position the axes:
+    rect = 0.0, 0.0, 1, 1
+    h_divs = [Fixed(x) for x in h_divs]
+    v_divs = [Fixed(x) for x in reversed(v_divs)]
+    divider = Divider(fig, rect, h_divs, v_divs, aspect=False)
+
+    for i in range(num_params):
+        for j in range(num_plates + 1):
+            loc = divider.new_locator(nx=2*j+1, ny=2*(num_params - i) - 1)
+            axes[i,j].set_axes_locator(loc)
+
+    return fig, axes, dims
+
+def setup_color_bar(ax, df, param, cmap):
     from matplotlib.colorbar import ColorbarBase
 
-    colors = Colors(cmap, df, attr)
+    colors = Colors(cmap, df, param)
 
     bar = ColorbarBase(
             ax,
@@ -318,76 +422,7 @@ def pick_colors(ax, df, attr, cmap):
 
     return colors
 
-def setup_axes(df, plates, attrs):
-    from mpl_toolkits.axes_grid1 import Divider
-    from mpl_toolkits.axes_grid1.axes_size import Fixed
-
-    # These assumptions let us simplify some code, and should always be true.
-    assert len(plates) > 0
-    assert len(attrs) > 0
-
-    # Determine how much data will be shown in the figure:
-    num_plates = len(plates)
-    num_attrs = len(attrs)
-    dims = Dimensions(df)
-
-    bar_label_width = guess_attr_label_width(df, attrs)
-
-    # Define the grid on which the axes will live:
-    h_divs  = [
-            LEFT_MARGIN,
-    ]
-    for _ in plates:
-        h_divs += [
-                CELL_SIZE * dims.num_cols,
-                PAD_WIDTH,
-        ]
-    h_divs[-1:] = [
-            BAR_PAD_WIDTH,
-            BAR_WIDTH,
-            RIGHT_MARGIN + bar_label_width,
-    ]
-
-    v_divs = [
-            TOP_MARGIN,
-    ]
-    for attr in attrs:
-        v_divs += [
-                max(
-                    CELL_SIZE * dims.num_rows,
-                    BAR_WIDTH * dims.num_values[attr],
-                ),
-                PAD_HEIGHT,
-        ]
-    v_divs[-1:] = [
-            BOTTOM_MARGIN,
-    ]
-
-    # Add up all the divisions to get the width and height of the figure:
-    figsize = sum(h_divs), sum(v_divs)
-
-    # Make the figure:
-    fig, axes = plt.subplots(
-            num_attrs,
-            num_plates + 1,  # +1 for the colorbar axes.
-            figsize=figsize,
-            squeeze=False,
-    )
-
-    # Position the axes:
-    rect = 0.0, 0.0, 1, 1
-    h_divs = [Fixed(x) for x in h_divs]
-    v_divs = [Fixed(x) for x in reversed(v_divs)]
-    divider = Divider(fig, rect, h_divs, v_divs, aspect=False)
-
-    for i in range(num_attrs):
-        for j in range(num_plates + 1):
-            loc = divider.new_locator(nx=2*j+1, ny=2*(num_attrs - i) - 1)
-            axes[i,j].set_axes_locator(loc)
-
-    return fig, axes, dims
-
-def guess_attr_label_width(df, attrs):
+def guess_param_label_width(df, params):
     # I've seen some posts suggesting that this might not work on Macs.  I 
     # can't test that, but if this ends up being a problem, I probably need to 
     # wrap this is a try/except block and fall back to guessing a width based 
@@ -396,8 +431,8 @@ def guess_attr_label_width(df, attrs):
     width = 0
     fig, ax = plt.subplots()
 
-    for attr in attrs:
-        labels = df[attr].unique()
+    for param in params:
+        labels = df[param].unique()
         ax.set_yticks(range(len(labels)))
         ax.set_yticklabels(labels)
 
@@ -426,6 +461,107 @@ def get_yticklabel_width(fig, ax):
 
     return width / dpi
 
+_dataclass_kwargs = {}
+if sys.version_info >= (3, 10):
+    _dataclass_kwargs['kw_only'] = True
+
+@dataclass(**_dataclass_kwargs)
+class Style:
+    """
+    Describe how to plot well layouts.
+
+    Style objects exist to be passed to `show()` or `show_df()`, where they 
+    determine various aspects of the plots' appearances.
+
+    .. warning::
+
+        When constructing style objects, use keyword arguments instead of 
+        positional arguments.  The order of the arguments is not guaranteed and 
+        may change in any minor version of wellmap!  You'll get an immediate 
+        error if you try to use positional arguments in python≥3.10, but before 
+        then it's possible to shoot yourself in the foot.
+    """
+
+    cell_size: float = 0.25
+    """
+    The size of the boxes representing each well, in inches.
+    """
+
+    pad_width: float = 0.20
+    """
+    The vertical padding between layouts, in inches.
+    """
+
+    pad_height: float = 0.20
+    """
+    The horizontal padding between layouts, in inches.
+    """
+
+    bar_width: float = 0.15
+    """
+    The width of the color bar, in inches.
+    """
+
+    bar_pad_width: float = pad_width
+    """
+    The horizontal padding between the color bar and the nearest layout, in 
+    inches.
+    """
+
+    top_margin: float = 0.5
+    """
+    The space between the layouts and the top edge of the figure, in inches.
+    """
+
+    left_margin: float = 0.5
+    """
+    The space between the layouts and the left edge of the figure, in inches.
+    """
+
+    right_margin: float = pad_width
+    """
+    The space between the layouts and the right edge of the figure, in inches.
+    """
+
+    bottom_margin: float = pad_height
+    """
+    The space between the layouts and the bottom edge of the figure, in inches.
+    """
+
+    color_scheme: str = 'rainbow'
+    """
+    The name of the color scheme to use.  Each different value for each 
+    different parameter will be assigned a color from this scheme.  Any 
+    name understood by either colorcet_ or matplotlib_ can be used.
+
+    .. _matplotlib: https://matplotlib.org/examples/color/colormaps_reference.html
+    .. _colorcet: http://colorcet.pyviz.org/
+    """
+
+    def __post_init__(self):
+        self.params = {}
+
+    def __getitem__(self, param):
+        try:
+            return self.params[param]
+        except KeyError:
+            self.params[param] = ps = ParamStyle(self)
+            return ps
+
+
+class ParamStyle:
+    # It might be worth distinguishing between settings that can/can't be given 
+    # on a per-parameter basis.  That would involve this class raising an 
+    # exception when trying to set an invalid attribute.  Right now, anything 
+    # goes.
+
+    def __init__(self, style):
+        self.style = style
+
+    def __getattr__(self, name):
+        return getattr(self.style, name)
+
+
 class Dimensions:
 
     def __init__(self, df):
@@ -453,15 +589,15 @@ class Dimensions:
 
 class Colors:
 
-    def __init__(self, cmap, df, attr):
+    def __init__(self, cmap, df, param):
         cols = ['plate', 'row_i', 'col_j']
-        rows = df[attr].notna()
+        rows = df[param].notna()
         labels = df[rows]\
                 .sort_values(cols)\
-                .groupby(attr, sort=False)\
+                .groupby(param, sort=False)\
                 .head(1)
 
-        self.map = {x: i for i, x in enumerate(labels[attr])}
+        self.map = {x: i for i, x in enumerate(labels[param])}
 
         n = len(self.map)
         self.cmap = cmap
@@ -471,11 +607,10 @@ class Colors:
         self.ticklabels = list(self.map.keys())
 
     def transform(self, x):
-        return self.map[x] if not self.isnan(x) else np.nan
+        def is_nan(x):
+            return isinstance(x, float) and np.isnan(x)
+        return self.map[x] if not is_nan(x) else np.nan
 
-    @staticmethod
-    def isnan(x):
-        return isinstance(x, float) and np.isnan(x)
 
 class UsageError(Exception):
     pass

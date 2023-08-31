@@ -21,5 +21,6 @@
    api_python
    api_r
    command_line
+   well_formats
    versions
 

@@ -5,6 +5,18 @@ from pytest import raises
 from hypothesis import given
 from hypothesis.strategies import integers
 from wellmap import *
+from .param_helpers import *
+
+@parametrize_from_file(
+        schema=[
+            cast(df=dataframe, expected=dataframe),
+            with_wellmap.error_or('expected'),
+        ],
+)
+def test_require_well_locations(df, expected, error):
+    with error:
+        df = require_well_locations(df)
+        pd.testing.assert_frame_equal(df, expected)
 
 @pytest.mark.parametrize(
         'row, col, well', [
@@ -535,8 +547,8 @@ def test_shift_row_col_err(row_col, shift):
             ('1,2,...,4', (1, 0), '1,2,...,4'),
         ],
 )
-def test_shift_key(key, shift, expected):
-    assert shift_key(key, shift) == expected
+def test_shift_pattern(key, shift, expected):
+    assert shift_pattern(key, shift) == expected
 
 @pytest.mark.parametrize(
         'a, b, expected', [

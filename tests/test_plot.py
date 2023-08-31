@@ -5,6 +5,7 @@ import pytest
 import matplotlib.pyplot as plt
 
 from pathlib import Path
+from wellmap.util import quoted_join
 from .param_helpers import *
 
 TEST = Path(__file__).parent
@@ -40,30 +41,58 @@ def run_cli(cmd, out='Layout written'):
 
 @parametrize_from_file(
         schema=[
-            cast(df=with_py.eval, attrs=with_py.eval),
+            cast(df=with_py.eval, params=with_py.eval),
             with_wellmap.error_or('expected'),
         ],
 )
-def test_pick_attrs(df, attrs, expected, error):
+def test_pick_params(df, params, expected, error):
     df = pd.DataFrame(df)
     with error:
-        assert wellmap.plot.pick_attrs(df, attrs) == expected
+        assert wellmap.plot.pick_params(df, params) == expected
 
 @parametrize_from_file(
         schema=[
             cast(tol=float),
             with_wellmap.error_or('expected', 'tol'),
-            defaults(attrs=[], color='rainbow', tol=10),
+            defaults(params=[], style={}, tol=10),
         ],
         indirect=['layout'],
 )
-def test_show(layout, attrs, color, tol, expected, error):
+def test_show(layout, params, style, tol, expected, error):
+    style = wellmap.Style(**style)
+
+    with error:
+        fig = show(layout, params, style=style)
+
     if not error:
         actual = layout.parent / expected
         expected = REF_IMAGES / expected
 
+        fig.savefig(actual)
+        compare_images(expected, actual, TEST_IMAGES, tol=tol)
+
+    plt.close()
+
+@parametrize_from_file(
+        schema=[
+            cast(df=dataframe, tol=float),
+            with_wellmap.error_or('expected', 'tol'),
+            defaults(tol=10),
+        ],
+)
+def test_show_df(df, tol, expected, error, tmp_path):
+    # Most of the functionality of the `show_df()` function is tested via the 
+    # `show()` function.  The tests here just look at some data frames that 
+    # couldn't possibly be generated from a TOML layout (i.e. missing various 
+    # well-location columns).
+
     with error:
-        fig = show(layout, attrs, color)
+        fig = show_df(df)
+
+    if not error:
+        actual = tmp_path / expected
+        expected = REF_IMAGES / expected
+
         fig.savefig(actual)
         compare_images(expected, actual, TEST_IMAGES, tol=tol)
 
@@ -75,11 +104,11 @@ def test_show(layout, attrs, color, tol, expected, error):
             cast(tol=float),
             with_wellmap.error_or('expected', 'tol'),
             # When running on CI, I get RMS values of 2-8. 
-            defaults(attrs=[], color='rainbow', tol=10),
+            defaults(params=[], style={}, tol=10),
         ],
         indirect=['layout'],
 )
-def test_cli(layout, attrs, color, expected, tol, error, tmp_path):
+def test_cli(layout, params, style, expected, tol, error, tmp_path):
     cmd = ['wellmap', layout]
 
     if error:
@@ -91,10 +120,14 @@ def test_cli(layout, attrs, color, expected, tol, error, tmp_path):
         cmd += ['-o', actual]
         stdout = 'Layout written' 
 
-    if attrs:
-        cmd += ([attrs] if isinstance(attrs, str) else attrs)
-    if color:
-        cmd += ['-c', color]
+    if params:
+        cmd += ([params] if isinstance(params, str) else params)
+    if 'color_scheme' in style:
+        cmd += ['-c', style.pop('color_scheme')]
+
+    # Skip any tests involving style settings that can't be set via the CLI:
+    if style:
+        pytest.skip(f"can't set the following style options via the CLI: {quoted_join(style)}")
 
     run_cli(cmd, stdout)
     if not error:

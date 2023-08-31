@@ -277,6 +277,3 @@ The example below makes a linear regression of the data in log-space:
    or more specifically, how close the amount of DNA came to doubling (as would 
    be expected) on each cycle.  100% indicates perfect doubling; 94% is a 
    little on the low side.
-
-.. _tidy: https://www.jstatsoft.org/article/view/v059i10
-

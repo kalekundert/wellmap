@@ -280,7 +280,6 @@ The example below makes a linear regression of the data in log-space:
 
 .. figure:: basic_usage/std_curve_r.svg
 
-.. _tidy: https://www.jstatsoft.org/article/view/v059i10
 .. _reticulate: https://rstudio.github.io/reticulate/
 .. _tibble: https://tibble.tidyverse.org/
 .. _`reticulate::py_config()`: https://rstudio.github.io/reticulate/articles/versions.html

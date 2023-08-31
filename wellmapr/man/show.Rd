@@ -4,24 +4,21 @@
 \alias{show}
 \title{Visualize the given microplate layout.}
 \usage{
-show(toml_path, attrs = NULL, color = "rainbow")
+show(toml_path, params = NULL, style = NULL)
 }
 \arguments{
 \item{toml_path}{The path to a file describing the layout of one or more plates.  See the
 \href{https://wellmap.readthedocs.io/en/latest/file_format.html}{file format documentation}
 for details about this file.}
 
-\item{attrs}{A list of attributes from the above TOML file to visualize.  For example, if
-the TOML file contains something equivalent to \code{well.A1.conc = 1}, then
-\code{conc} would be a valid attribute.  If no attributes are specified, the
-default is to display any attributes that have at least two different
-values.}
+\item{params}{The names of one or more experimental parameters from the above TOML file to
+visualize.  For example, if the TOML file contains something equivalent to
+\code{well.A1.conc = 1}, then \code{"conc"} would be a valid parameter name.  If not
+specified, the default is to display any parameters that have at least two
+different values.}
 
-\item{color}{The name of the color scheme to use.  Each different value for each
-different attribute will be assigned a color from this scheme.  Any name
-understood by either \href{http://colorcet.pyviz.org/}{colorcet} or
-\href{https://matplotlib.org/examples/color/colormaps_reference.html}{matplotlib}
-can be used.}
+\item{style}{Settings that control miscellaneous aspects of the plot, e.g. colors,
+dimensions, etc.  See \link{Style} for more info.}
 }
 \description{
 It's wise to visualize TOML layouts before doing any analysis, to ensure

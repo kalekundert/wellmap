@@ -33,6 +33,11 @@ def layout(request, tmp_path):
     p.write_text(request.param)
     return p
 
+def dataframe(param_str):
+    import pandas as pd
+    param_obj = with_py.eval(param_str)
+    return pd.DataFrame(param_obj)
+
 
 def compare_images(expected, actual, staging_dir, *, tol):
     from matplotlib.testing.compare import compare_images

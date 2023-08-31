@@ -93,12 +93,10 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
           In some cases, though, it may be necessary for the **data_loader** 
           function to construct an appropriate merge column.
 
-        - The data frame returned by **data_loader()** must be `"tidy"`__.  
-          Briefly, a data frame is tidy if each of its columns represents a 
-          single variable (e.g.  time, fluorescence) and each of its rows 
-          represents a single observation.
-
-          __ http://vita.had.co.nz/papers/tidy-data.html
+        - The data frame returned by **data_loader()** must be tidy_.  Briefly, 
+          a data frame is tidy if each of its columns represents a single 
+          variable (e.g.  time, fluorescence) and each of its rows represents a 
+          single observation.
 
         - The *path* column of the layout is automatically included in the 
           merge and never has to be specified (although it is not an error to 
@@ -342,7 +340,7 @@ def config_from_toml(toml_path, *, shift=(0,0), path_guess=None, path_required=F
                 try:
                     path = meta['path']
                 except KeyError:
-                    raise LayoutError(f"if 'meta.include' is a dictionary, it must have a 'path' key")
+                    raise LayoutError("if 'meta.include' is a dictionary, it must have a 'path' key")
 
                 try:
                     shift_str = meta['shift']
@@ -447,7 +445,7 @@ def shift_config(config, shift):
 
     shifted_config = {}
 
-    f = lambda d: shift_key(d, shift)
+    f = lambda d: shift_pattern(d, shift)
     def cant_shift_irow_icol():
         raise LayoutError("can't use 'meta.include.shift' on layouts that use [irow] and/or [icol]")
 
@@ -556,8 +554,6 @@ def wells_from_config(config):
                 wells.setdefault(ij, {})
     
     ## Create new wells implied by any 'row' & 'col' blocks.
-
-    from itertools import product
 
     def simplify_keys(dim):
         before = config.get(dim, {})
@@ -710,7 +706,7 @@ class PathManager:
 
     def check_overspecified(self):
         if self.path and self.paths:
-            raise LayoutError(f"Both `meta.path` and `meta.paths` specified; ambiguous.")
+            raise LayoutError("Both `meta.path` and `meta.paths` specified; ambiguous.")
 
     def check_named_plates(self, names):
         self.check_overspecified()
@@ -746,7 +742,7 @@ class PathManager:
         if self.path_guess:
             return make_index(self.path_guess.format(self.toml_path))
 
-        self.missing_path_error = LayoutError(f"Analysis requires a data file, but none was specified and none could be inferred.  Did you mean to set `meta.path`?")
+        self.missing_path_error = LayoutError("Analysis requires a data file, but none was specified and none could be inferred.  Did you mean to set `meta.path`?")
         return {}
 
     def get_index_for_named_plate(self, name):
@@ -765,7 +761,7 @@ class PathManager:
             return {'plate': name, 'path': path}
 
         if self.paths is None:
-            self.missing_path_error = LayoutError(f"Analysis requires a data file for each plate, but none were specified.  Did you mean to set `meta.paths`?")
+            self.missing_path_error = LayoutError("Analysis requires a data file for each plate, but none were specified.  Did you mean to set `meta.paths`?")
             return {'plate': name}
 
         if isinstance(self.paths, str):

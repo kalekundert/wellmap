@@ -6,45 +6,45 @@ test_show:
       type: LayoutError
       message: No wells defined
   -
-    id: no-attr
+    id: no-params
     layout:
       > [well.A1]
       >
       > [well.A2]
     error:
       type: LayoutError
-      message: No attributes defined
+      message: No experimental parameters found
   -
-    id: degenerate-attr
+    id: degenerate-param
     layout:
       > [well.A1]
       > x = 1
     error:
       type: UsageError
       message:
-        - Found only degenerate attributes
+        - Found only degenerate parameters
         - 'x'
   -
-    id: unknown-attr
+    id: unknown-param
     layout:
       > [well]
       > A1.x = 1
       > A2.x = 2
-    attrs: XXX
+    params: XXX
     error:
       type: UsageError
       message:
-        - No such attribute: 'XXX'
+        - No such parameter: 'XXX'
         - Did you mean: 'x'
   -
-    id: one-attr
+    id: one-param
     layout:
       > [well]
       > A1.x = 1
       > A2.x = 2
-    expected: one_attr.png
+    expected: one_param.png
   -
-    id: two-attrs
+    id: two-params
     layout:
       > [well.A1]
       > x = 1
@@ -53,28 +53,16 @@ test_show:
       > [well.A2]
       > x = 2
       > y = 'b'
-    expected: two_attrs.png
+    expected: two_params.png
   -
-    id: user-attrs-x-1
+    id: user-params-x-1
     layout:
       > [well.A1]
       > x = 1
-    attrs: x
-    expected: user_attrs_x_1.png
+    params: x
+    expected: user_params_x_1.png
   -
-    id: user-attrs-x-2
-    layout:
-      > [well.A1]
-      > x = 1
-      > y = 'a'
-      >
-      > [well.A2]
-      > x = 2
-      > y = 'b'
-    attrs: x
-    expected: user_attrs_x_2.png
-  -
-    id: user-attrs-y
+    id: user-params-x-2
     layout:
       > [well.A1]
       > x = 1
@@ -83,10 +71,10 @@ test_show:
       > [well.A2]
       > x = 2
       > y = 'b'
-    attrs: y
-    expected: user_attrs_y.png
+    params: x
+    expected: user_params_x_2.png
   -
-    id: user-attrs-xy
+    id: user-params-y
     layout:
       > [well.A1]
       > x = 1
@@ -95,9 +83,21 @@ test_show:
       > [well.A2]
       > x = 2
       > y = 'b'
-    attrs:
+    params: y
+    expected: user_params_y.png
+  -
+    id: user-params-xy
+    layout:
+      > [well.A1]
+      > x = 1
+      > y = 'a'
+      >
+      > [well.A2]
+      > x = 2
+      > y = 'b'
+    params:
       [x, y]
-    expected: user_attrs_xy.png
+    expected: user_params_xy.png
   -
     id: sort-numbers
     layout:
@@ -167,14 +167,14 @@ test_show:
       > y = 'c'
     expected: nan_first.png
   -
-    id: nan-in-other-attr
+    id: nan-in-other-param
     layout:
       > [well]
       > A1.x = 1
       > A2.y = 2
       > A3.x = 3
       > A3.y = 4
-    expected: nan_in_other_attr.png
+    expected: nan_in_other_param.png
   -
     id: skip-wells
     layout:
@@ -281,7 +281,8 @@ test_show:
       > 10.conc_ng_mL = 256
       > 11.conc_ng_mL = 512
       > 12.conc_ng_mL = 1024
-    color: viridis
+    style:
+      color_scheme: viridis
     expected: colors_viridis.png
   -
     id: colors-plasma
@@ -314,7 +315,8 @@ test_show:
       > 10.conc_ng_mL = 256
       > 11.conc_ng_mL = 512
       > 12.conc_ng_mL = 1024
-    color: plasma
+    style:
+      color_scheme: plasma
     expected: colors_plasma.png
   -
     id: colors-coolwarm
@@ -347,7 +349,8 @@ test_show:
       > 10.conc_ng_mL = 256
       > 11.conc_ng_mL = 512
       > 12.conc_ng_mL = 1024
-    color: coolwarm
+    style:
+      color_scheme: coolwarm
     expected: colors_coolwarm.png
   -
     id: colors-dimgray
@@ -380,10 +383,71 @@ test_show:
       > 10.conc_ng_mL = 256
       > 11.conc_ng_mL = 512
       > 12.conc_ng_mL = 1024
-    color: dimgray
+    style:
+      color_scheme: dimgray
     expected: colors_dimgray.png
 
-test_pick_attrs:
+test_show_df:
+  -
+    id: well
+    df:
+      -
+        well: 'A1'
+        x: 1
+      -
+        well: 'A2'
+        x: 2
+    expected: one_param.png
+  -
+    id: well0
+    df:
+      -
+        well0: 'A01'
+        x: 1
+      -
+        well0: 'A02'
+        x: 2
+    expected: one_param.png
+  -
+    id: row-col
+    df:
+      -
+        row: 'A'
+        col: '1'
+        x: 1
+      -
+        row: 'A'
+        col: '2'
+        x: 2
+    expected: one_param.png
+  -
+    id: row-i-col-j
+    df:
+      -
+        row_i: 0
+        col_j: 0
+        x: 1
+      -
+        row_i: 0
+        col_j: 1
+        x: 2
+    expected: one_param.png
+  -
+    id: err-no-loc
+    df:
+      -
+        x: 1
+      -
+        x: 2
+    error:
+      type: LayoutError
+      message:
+        - Can't find well locations
+        - Data frame must have 1-2 of the following columns: 'well', 'well0', 'row', 'col', 'row_i', 'col_j'
+        - Columns found: 'x'
+
+
+test_pick_params:
   -
     id: pick-ab
     df:
@@ -394,7 +458,7 @@ test_pick_attrs:
         a: 3
         b: 4
 
-    attrs: []
+    params: []
     expected:
       [a,b]
   -
@@ -407,17 +471,17 @@ test_pick_attrs:
         a: 3
         b: 2
 
-    attrs: []
+    params: []
     expected:
       [a]
   -
     id: err-empty
     df:
       []
-    attrs: []
+    params: []
     error:
       type: LayoutError
-      message: No attributes defined
+      message: No experimental parameters found
   -
     id: err-degenerate
     df:
@@ -428,10 +492,10 @@ test_pick_attrs:
         a: 1
         b: 2
 
-    attrs: []
+    params: []
     error:
       type: UsageError
-      message: Found only degenerate attributes (i.e. with the same value in every well): 'a', 'b'
+      message: Found only degenerate parameters (i.e. with the same value in every well): 'a', 'b'
   -
     id: choose-a-str
     df:
@@ -442,7 +506,7 @@ test_pick_attrs:
         a: 1
         b: 2
 
-    attrs: 'a'
+    params: 'a'
     expected:
       - a
   -
@@ -455,7 +519,7 @@ test_pick_attrs:
         a: 1
         b: 2
 
-    attrs: ['a']
+    params: ['a']
     expected:
       - a
   -
@@ -468,7 +532,7 @@ test_pick_attrs:
         a: 1
         b: 2
 
-    attrs: ['a', 'b']
+    params: ['a', 'b']
     expected:
       [a, b]
   -
@@ -481,11 +545,11 @@ test_pick_attrs:
         a: 1
         b: 2
 
-    attrs: 'c'
+    params: 'c'
     error:
       type: UsageError
       message:
-        - No such attribute: 'c'
+        - No such parameter: 'c'
         - Did you mean: 'a', 'b'
   -
     id: err-not-found-plural
@@ -497,10 +561,9 @@ test_pick_attrs:
         a: 1
         b: 2
 
-    attrs: ['c', 'd']
+    params: ['c', 'd']
     error:
       type: UsageError
       message:
-        - No such attributes: 'c', 'd'
+        - No such parameters: 'c', 'd'
         - Did you mean: 'a', 'b'
-
