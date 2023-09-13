@@ -32,4 +32,4 @@ example:
     >>> meta.extras
     {'bradford': {'format': 'biotek', 'absorbance': '595/450'}}
 
-.. example:: bradford_standards.toml bradford_assay.toml
+.. example:: bradford_assay.toml bradford_standards.toml
