@@ -1,6 +1,6 @@
 Package: wellmapr
 Title: File format for 96-well plate layouts
-Version: 3.4.0
+Version: 3.5.0
 Authors@R: as.person(c(
   "Kale Kundert <kale@thekunderts.net> [aut, cre]"
   ))
@@ -11,7 +11,7 @@ Imports:
 Config/reticulate:
   list(
     packages = list(
-      list(package = "wellmap", version = "3.4.0", pip = TRUE)
+      list(package = "wellmap", version = "3.5.0", pip = TRUE)
     )
   )
 Config/testthat/edition: 3
