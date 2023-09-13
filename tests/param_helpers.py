@@ -33,6 +33,34 @@ def layout(request, tmp_path):
     p.write_text(request.param)
     return p
 
+def style(params):
+    style = with_py.eval(params.pop('style', {}))
+    param_styles = with_py.eval(params.pop('param_styles', {}))
+    params['style'] = Style(**style, by_param=param_styles)
+    return params
+
+def style_cli(params):
+    argv = params['style_argv'] = []
+    style = with_py.eval(params.pop('style', {}))
+    param_styles = params.pop('param_styles', {})
+
+    try:
+        argv += ['-c', style.pop('color_scheme')]
+    except KeyError:
+        pass
+
+    try:
+        if style.pop('superimpose_values', False):
+            argv += ['-s']
+    except KeyError:
+        pass
+
+    if style or param_styles:
+        marks = params.setdefault('marks', [])
+        marks.append(pytest.mark.skip(f"can't set the following style options via the CLI: {quoted_join(style)}"))
+
+    return params
+
 def dataframe(param_str):
     import pandas as pd
     param_obj = with_py.eval(param_str)

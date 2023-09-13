@@ -1,25 +1,29 @@
 #!/usr/bin/env python3
 
 import wellmap
+import pytest
+import re
+
 from pytest_unordered import unordered
 from more_itertools import zip_equal
+from contextlib import nullcontext
 from .param_helpers import *
 
 @parametrize_from_file(
         schema=[
-            defaults(kwargs={}),
+            defaults(kwargs={}, deprecated=None),
             with_wellmap.error_or('expected'),
         ],
         indirect=['files'],
 )
-def test_load(files, kwargs, expected, error, subtests):
+def test_load(files, kwargs, expected, deprecated, error, subtests):
 
     def read_csv_check_extras_positional(path, extras):
-        assert extras == expected['extras']
+        assert extras == expected.get('meta', expected)['extras']
         return pd.read_csv(path)
 
     def read_csv_check_extras_keyword(path, *, extras):
-        assert extras == expected['extras']
+        assert extras == expected.get('meta', expected)['extras']
         return pd.read_csv(path)
 
     def read_csv_ignore_extras_variable(path, *extras):
@@ -38,32 +42,55 @@ def test_load(files, kwargs, expected, error, subtests):
             read_csv_ignore_extras_variable=read_csv_ignore_extras_variable,
             read_csv_ignore_extras_variable_keyword=read_csv_ignore_extras_variable_keyword,
     )
-    kwargs = with_loaders.eval(kwargs)
-    expected = Namespace(with_py, DIR=files).eval(expected)
 
+    kwargs = with_loaders.eval(kwargs)
     if not isinstance(kwargs, list):
         kwargs = [kwargs]
+
+    expected = Namespace(with_py, DIR=files).eval(expected)
+    meta = expected.get('meta', {})
+    if 'style' in meta or 'param_styles' in meta:
+        meta['style'] = wellmap.Style(
+                **meta.pop('style', {}),
+                by_param=meta.pop('param_styles', {}),
+        )
+
+    if deprecated:
+        deprecated = pytest.deprecated_call(match=re.escape(deprecated))
+    else:
+        deprecated = nullcontext()
 
     def compare_df(actual, expected):
         assert actual.to_dict('records') == unordered(expected)
 
-    def compare_set(actual, expected):
+    def compare_deps(actual, expected):
         assert actual == set(expected)
 
-    def compare_dict(actual, expected):
+    def compare_extras(actual, expected):
         assert actual == expected
+
+    def compare_meta(actual, expected):
+        if 'extras' in expected:
+            compare_extras(actual.extras, expected['extras'])
+        if 'deps' in expected:
+            compare_deps(actual.dependencies, expected['deps'])
+        if 'style' in expected:
+            assert actual.style == expected['style']
 
     comparisons = {
             'labels': compare_df,
             'data': compare_df,
             'labels+data': compare_df,
-            'deps': compare_set,
-            'extras': compare_dict,
+            'meta': compare_meta,
+            'deps': compare_deps,
+            'extras': compare_extras,
     }
 
     for kwargs_i in kwargs:
         with subtests.test(kwargs=kwargs_i), error:
-            out = wellmap.load(files/'main.toml', **kwargs_i)
+            with deprecated:
+                out = wellmap.load(files/'main.toml', **kwargs_i)
+
             if len(expected) == 1:
                 out = [out]
 

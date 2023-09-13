@@ -55,6 +55,15 @@ test_show:
       > y = 'b'
     expected: two_params.png
   -
+    id: two-plates
+    layout:
+      > [plate]
+      > alpha.x = 1
+      > beta.x = 2
+      >
+      > [well.A1]
+    expected: two_plates.png
+  -
     id: user-params-x-1
     layout:
       > [well.A1]
@@ -251,141 +260,360 @@ test_show:
       > 12.conc_ng_mL = 1024
     expected: reasonably_complex_2.png
   -
-    id: colors-viridis
+    id: dimensions-api
     layout:
       > [plate]
-      > rep1.replicate = 1
-      > rep2.replicate = 2
-      > rep3.replicate = 3
+      > alpha.x = 1
+      > beta.x = 2
       >
       > [row]
-      > A.strain = "E. coli"
-      > B.strain = "K. pneumoniae"
-      > C.strain = "L. monocytogenes"
-      > D.strain = "M. abscessus"
-      > E.strain = "M. tuberculosis"
-      > F.strain = "N. meningitidis"
-      > G.strain = "P. aeruginosa"
-      > H.strain = "S. aureus"
+      > A.y = 3
+      > B.y = 4
+      >
+      > [col.1-2]
+    style:
+      cell_size: 0.5
+      pad_width: 0
+      pad_height: 0
+      bar_width: 0.5
+      bar_pad_width: 0
+      top_margin: 0.75
+      bottom_margin: 0.75
+      left_margin: 0.75
+      right_margin: 0.75
+    expected: dimensions.png
+  -
+    id: dimensions-toml
+    layout:
+      > [meta.style]
+      > cell_size = 0.5
+      > pad_width = 0
+      > pad_height = 0
+      > bar_width = 0.5
+      > bar_pad_width = 0
+      > top_margin = 0.75
+      > bottom_margin = 0.75
+      > left_margin = 0.75
+      > right_margin = 0.75
+      >
+      > [plate]
+      > alpha.x = 1
+      > beta.x = 2
+      >
+      > [row]
+      > A.y = 3
+      > B.y = 4
+      >
+      > [col.1-2]
+    expected: dimensions.png
+  -
+    id: colors-viridis-api
+    layout:
+      > [row.A]
       >
       > [col]
-      > 1.conc_ng_mL = 0
-      > 2.conc_ng_mL = 1
-      > 3.conc_ng_mL = 2
-      > 4.conc_ng_mL = 4
-      > 5.conc_ng_mL = 8
-      > 6.conc_ng_mL = 16
-      > 7.conc_ng_mL = 32
-      > 8.conc_ng_mL = 64
-      > 9.conc_ng_mL = 128
-      > 10.conc_ng_mL = 256
-      > 11.conc_ng_mL = 512
-      > 12.conc_ng_mL = 1024
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
     style:
-      color_scheme: viridis
+      color_scheme: 'viridis'
     expected: colors_viridis.png
   -
-    id: colors-plasma
+    id: colors-viridis-toml
     layout:
-      > [plate]
-      > rep1.replicate = 1
-      > rep2.replicate = 2
-      > rep3.replicate = 3
+      > [meta.style]
+      > color_scheme = 'viridis'
       >
-      > [row]
-      > A.strain = "E. coli"
-      > B.strain = "K. pneumoniae"
-      > C.strain = "L. monocytogenes"
-      > D.strain = "M. abscessus"
-      > E.strain = "M. tuberculosis"
-      > F.strain = "N. meningitidis"
-      > G.strain = "P. aeruginosa"
-      > H.strain = "S. aureus"
+      > [row.A]
       >
       > [col]
-      > 1.conc_ng_mL = 0
-      > 2.conc_ng_mL = 1
-      > 3.conc_ng_mL = 2
-      > 4.conc_ng_mL = 4
-      > 5.conc_ng_mL = 8
-      > 6.conc_ng_mL = 16
-      > 7.conc_ng_mL = 32
-      > 8.conc_ng_mL = 64
-      > 9.conc_ng_mL = 128
-      > 10.conc_ng_mL = 256
-      > 11.conc_ng_mL = 512
-      > 12.conc_ng_mL = 1024
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
+    expected: colors_viridis.png
+  -
+    id: colors-viridis-api-toml
+    layout:
+      > [meta.style]
+      > color_scheme = 'dimgray'
+      >
+      > [row.A]
+      >
+      > [col]
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
     style:
-      color_scheme: plasma
+      color_scheme: 'viridis'
+    expected: colors_viridis.png
+  -
+    id: colors-plasma-api
+    layout:
+      > [row.A]
+      >
+      > [col]
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
+    style:
+      color_scheme: 'plasma'
     expected: colors_plasma.png
   -
-    id: colors-coolwarm
+    id: colors-plasma-toml
     layout:
-      > [plate]
-      > rep1.replicate = 1
-      > rep2.replicate = 2
-      > rep3.replicate = 3
+      > [meta.style]
+      > color_scheme = 'plasma'
       >
-      > [row]
-      > A.strain = "E. coli"
-      > B.strain = "K. pneumoniae"
-      > C.strain = "L. monocytogenes"
-      > D.strain = "M. abscessus"
-      > E.strain = "M. tuberculosis"
-      > F.strain = "N. meningitidis"
-      > G.strain = "P. aeruginosa"
-      > H.strain = "S. aureus"
+      > [row.A]
       >
       > [col]
-      > 1.conc_ng_mL = 0
-      > 2.conc_ng_mL = 1
-      > 3.conc_ng_mL = 2
-      > 4.conc_ng_mL = 4
-      > 5.conc_ng_mL = 8
-      > 6.conc_ng_mL = 16
-      > 7.conc_ng_mL = 32
-      > 8.conc_ng_mL = 64
-      > 9.conc_ng_mL = 128
-      > 10.conc_ng_mL = 256
-      > 11.conc_ng_mL = 512
-      > 12.conc_ng_mL = 1024
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
+    expected: colors_plasma.png
+  -
+    id: colors-coolwarm-api
+    layout:
+      > [row.A]
+      >
+      > [col]
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
     style:
-      color_scheme: coolwarm
+      color_scheme: 'coolwarm'
     expected: colors_coolwarm.png
   -
-    id: colors-dimgray
+    id: colors-coolwarm-toml
     layout:
-      > [plate]
-      > rep1.replicate = 1
-      > rep2.replicate = 2
-      > rep3.replicate = 3
+      > [meta.style]
+      > color_scheme = 'coolwarm'
       >
-      > [row]
-      > A.strain = "E. coli"
-      > B.strain = "K. pneumoniae"
-      > C.strain = "L. monocytogenes"
-      > D.strain = "M. abscessus"
-      > E.strain = "M. tuberculosis"
-      > F.strain = "N. meningitidis"
-      > G.strain = "P. aeruginosa"
-      > H.strain = "S. aureus"
+      > [row.A]
       >
       > [col]
-      > 1.conc_ng_mL = 0
-      > 2.conc_ng_mL = 1
-      > 3.conc_ng_mL = 2
-      > 4.conc_ng_mL = 4
-      > 5.conc_ng_mL = 8
-      > 6.conc_ng_mL = 16
-      > 7.conc_ng_mL = 32
-      > 8.conc_ng_mL = 64
-      > 9.conc_ng_mL = 128
-      > 10.conc_ng_mL = 256
-      > 11.conc_ng_mL = 512
-      > 12.conc_ng_mL = 1024
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
+    expected: colors_coolwarm.png
+  -
+    id: colors-dimgray-api
+    layout:
+      > [row.A]
+      >
+      > [col]
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
     style:
-      color_scheme: dimgray
+      color_scheme: 'dimgray'
     expected: colors_dimgray.png
+  -
+    id: colors-dimgray-toml
+    layout:
+      > [meta.style]
+      > color_scheme = 'dimgray'
+      >
+      > [row.A]
+      >
+      > [col]
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
+    expected: colors_dimgray.png
+  -
+    id: colors-multiple
+    layout:
+      > [row.A]
+      >
+      > [col]
+      > 1.x = 1
+      > 1.y = 1
+      > 2.x = 2
+      > 2.y = 2
+      > 3.x = 3
+      > 3.y = 3
+      > 4.x = 4
+      > 4.y = 4
+      > 5.x = 5
+      > 5.y = 5
+      > 6.x = 6
+      > 6.y = 6
+    param_styles:
+      x: 
+        color_scheme: 'viridis'
+      y: 
+        color_scheme: 'dimgray'
+    expected: colors_viridis_dimgray.png
+  -
+    id: superimpose-api
+    layout:
+      > [row.A]
+      >
+      > [col]
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
+    style:
+      color_scheme: 'dimgray'
+      superimpose_values: True
+    expected: superimpose.png
+  -
+    id: superimpose-toml
+    layout:
+      > [meta.style]
+      > color_scheme = 'dimgray'
+      > superimpose_values = true
+      >
+      > [row.A]
+      >
+      > [col]
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
+    expected: superimpose.png
+  -
+    id: superimpose-format-api
+    layout:
+      > [row.A]
+      >
+      > [col]
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
+    style:
+      color_scheme: 'dimgray'
+      superimpose_values: True
+      superimpose_format: '.1f'
+    expected: superimpose_format.png
+  -
+    id: superimpose-format-toml
+    layout:
+      > [meta.style]
+      > color_scheme = 'dimgray'
+      > superimpose_values = true
+      > superimpose_format = '.1f'
+      >
+      > [row.A]
+      >
+      > [col]
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
+    expected: superimpose_format.png
+  -
+    id: superimpose-kwargs-color-api
+    # Color is an interesting test case, because the color specified by the 
+    # kwargs should override the color chosen based on the background.
+    layout:
+      > [row.A]
+      >
+      > [col]
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
+    style:
+      color_scheme: 'dimgray'
+      superimpose_values: True
+      superimpose_kwargs: 
+        color: 'red'
+    expected: superimpose_kwargs_color.png
+  -
+    id: superimpose-kwargs-color-toml
+    layout:
+      > [meta.style]
+      > color_scheme = 'dimgray'
+      > superimpose_values = true
+      > superimpose_kwargs.color = 'red'
+      >
+      > [row.A]
+      >
+      > [col]
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
+    expected: superimpose_kwargs_color.png
+  -
+    id: superimpose-kwargs-rotation-api
+    layout:
+      > [row.A]
+      >
+      > [col]
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
+    style:
+      color_scheme: 'dimgray'
+      superimpose_values: True
+      superimpose_kwargs: 
+        rotation: 'vertical'
+    expected: superimpose_kwargs_rotation.png
+  -
+    id: superimpose-kwargs-rotation-toml
+    layout:
+      > [meta.style]
+      > color_scheme = 'dimgray'
+      > superimpose_values = true
+      > superimpose_kwargs.rotation = 'vertical'
+      >
+      > [row.A]
+      >
+      > [col]
+      > 1.x = 1
+      > 2.x = 2
+      > 3.x = 3
+      > 4.x = 4
+      > 5.x = 5
+      > 6.x = 6
+    expected: superimpose_kwargs_rotation.png
 
 test_show_df:
   -
@@ -445,7 +673,6 @@ test_show_df:
         - Can't find well locations
         - Data frame must have 1-2 of the following columns: 'well', 'well0', 'row', 'col', 'row_i', 'col_j'
         - Columns found: 'x'
-
 
 test_pick_params:
   -
@@ -567,3 +794,260 @@ test_pick_params:
       message:
         - No such parameters: 'c', 'd'
         - Did you mean: 'a', 'b'
+
+test_choose_foreground_color:
+  # I didn't think there was any value in testing the exact equation that I'm 
+  # using, so I looked the top 48 XKCD colors (plus white) and manually decided 
+  # what I thought the appropriate foreground color would be for each.  I 
+  # removed any cases I thought were ambiguous (e.g. red, orange, etc).
+  - 
+    id: white
+    bg: #ffffff
+    fg: black
+  - 
+    id: black
+    bg: #000000
+    fg: white
+  -
+    id: purple
+    bg: #7e1e9c
+    fg: white
+  -
+    id: green
+    bg: #15b01a
+    fg: white
+  - 
+    id: blue
+    bg: #0343df
+    fg: white
+  - 
+    id: brown
+    bg: #653700
+    fg: white
+  -
+    id: light blue
+    bg: #95d0fc
+    fg: black
+  - 
+    id: teal
+    bg: #029386
+    fg: white
+  - 
+    id: light green
+    bg: #96f97b
+    fg: black
+  - 
+    id: magenta
+    bg: #c20078
+    fg: white
+  - 
+    id: yellow
+    bg: #ffff14
+    fg: black
+  - 
+    id: lime green
+    bg: #89fe05
+    fg: black
+  - 
+    id: violet
+    bg: #9a0eea
+    fg: white
+  - 
+    id: dark green
+    bg: #033500
+    fg: white
+  - 
+    id: lavender
+    bg: #c79fef
+    fg: black
+  - 
+    id: dark blue
+    bg: #00035b
+    fg: white
+  - 
+    id: cyan
+    bg: #00ffff
+    fg: black
+  - 
+    id: aqua
+    bg: #13eac9
+    fg: black
+  - 
+    id: forest green
+    bg: #06470c
+    fg: white
+  - 
+    id: mauve
+    bg: #ae7181
+    fg: white
+  - 
+    id: dark purple
+    bg: #35063e
+    fg: white
+  - 
+    id: bright green
+    bg: #01ff07
+    fg: black
+  - 
+    id: maroon
+    bg: #650021
+    fg: white
+  - 
+    id: olive
+    bg: #6e750e
+    fg: white
+  - 
+    id: beige
+    bg: #e6daa6
+    fg: black
+  - 
+    id: royal blue
+    bg: #0504aa
+    fg: white
+  - 
+    id: navy blue
+    bg: #001146
+    fg: white
+  - 
+    id: lilac
+    bg: #cea2fd
+    fg: black
+  - 
+    id: hot pink
+    bg: #ff028d
+    fg: white
+  - 
+    id: pale green
+    bg: #c7fdb5
+    fg: black
+  - 
+    id: peach
+    bg: #ffb07c
+    fg: black
+  - 
+    id: olive green
+    bg: #677a04
+    fg: white
+  - 
+    id: dark pink
+    bg: #cb416b
+    fg: white
+  - 
+    id: periwinkle
+    bg: #8e82fe
+    fg: white
+  - 
+    id: sea green
+    bg: #53fca1
+    fg: black
+  - 
+    id: lime
+    bg: #aaff32
+    fg: black
+  - 
+    id: indigo
+    bg: #380282
+    fg: white
+  - 
+    id: mustard
+    bg: #ceb301
+    fg: black
+  - 
+    id: light pink
+    bg: #ffd1df
+    fg: black
+
+test_style_attr:
+  -
+    attr: cell_size
+    value: 1
+  -
+    attr: pad_width
+    value: 2
+  -
+    attr: pad_height
+    value: 3
+  -
+    attr: bar_width
+    value: 4
+  -
+    attr: bar_pad_width
+    value: 5
+  -
+    attr: top_margin
+    value: 6
+  -
+    attr: left_margin
+    value: 7
+  -
+    attr: right_margin
+    value: 8
+  -
+    attr: bottom_margin
+    value: 9
+  -
+    attr: color_scheme
+    value: 'viridis'
+  -
+    attr: superimpose_values
+    value: True
+  -
+    attr: superimpose_format
+    value: '.1f'
+  -
+    attr: superimpose_kwargs
+    value: {'color': 'red'}
+  -
+    id: err-misspell
+    attr: padwidth
+    error:
+      type: AttributeError
+      message:
+        > 'padwidth' is not a valid style attribute
+        > Did you mean: 'pad_width'
+
+test_style_attr_by_param:
+  -
+    attr: color_scheme
+    value: 'viridis'
+  -
+    attr: superimpose_values
+    value: True
+  -
+    attr: superimpose_format
+    value: '.1f'
+  -
+    attr: superimpose_kwargs
+    value: {'color': 'red'}
+  -
+    id: err-misspell
+    attr: colorscheme
+    error:
+      type: AttributeError
+      message:
+        > 'colorscheme' is not a valid param-level style attribute
+        > Did you mean: 'color_scheme'
+  -
+    id: err-not-param-level
+    attr: cell_size
+    error:
+      type: AttributeError
+      message:
+        > 'cell_size' is not a valid param-level style attribute
+
+test_style_repr:
+  -
+    style: Style()
+  -
+    style: Style(cell_size=1)
+  -
+    style: Style(pad_width=1, pad_height=2)
+  -
+    style: Style(pad_height=2, pad_width=1)
+    expected: Style(pad_width=1, pad_height=2)
+  -
+    style: Style(color_scheme='viridis')
+  -
+    style: Style(by_param={'x': {'color_scheme': 'viridis'}})
+
+

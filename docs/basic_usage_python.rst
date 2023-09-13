@@ -48,7 +48,12 @@ useful in interactive sessions such as Jupyter notebooks:
 
    >>> import wellmap
    >>> wellmap.show("std_curve.toml")
-   <Figure size 321.203x255 with 4 Axes>
+   <Figure size ... with 4 Axes>
+
+.. note::
+
+   Jupyter will display the layout twice when you use the `show` function, 
+   unless you put a semicolon after it.  See :issue:`19` for more information.
 
 4. Prepare the data
 ===================

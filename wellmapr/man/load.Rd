@@ -10,6 +10,7 @@ load(
   merge_cols = NULL,
   path_guess = NULL,
   path_required = FALSE,
+  meta = NULL,
   extras = NULL,
   report_dependencies = FALSE,
   on_alert = NULL
@@ -28,51 +29,51 @@ function may also take an argument named "extras", in which case the
 \code{extras} return value (described below) will be provided.  Note that
 specifying a data loader implies that \code{path_required} is True.}
 
-\item{merge_cols}{Indicates that \code{load()} should attempt to merge the plate layout and the
-actual data associated with it into a single data frame.  This functionality
-requires several conditions to be met:
-\enumerate{
-\item The \code{data_loader} argument must be specified (otherwise there'd be no
-data to merge).
-\item The data frame returned by \code{data_loader()} must be
-\href{http://vita.had.co.nz/papers/tidy-data.html}{tidy}.
-Briefly, a data frame is tidy if each of its columns represents a single
-variable (e.g. time, fluorescence) and each of its rows represents a
-single observation.
-\item The data frame returned by \code{data_loader()} must have one (or more)
-columns/variables indicating which well each row/observation comes from.
-For example, a column called "Well" with values like "A1", "A2", "B1",
-"B2", etc. would satisfy this requirement.
-}
+\item{merge_cols}{Indicates whether or not---and if so, how---\code{load()} should merge the data
+frames representing the plate layout and the actual data (provided by
+\code{data_loader}).  The argument can either be \code{NULL}, \code{TRUE}, or a named list:
 
-The \code{merge_cols} argument specifies which columns to use when merging the
-data frames representing the layout and the actual data (i.e. the two data
-frames that would be returned if \code{data_loader} was specified but
-\code{merge_cols} was not) into one.  The argument can either be NULL, TRUE, or a
-named list:
-
-If \emph{NULL}, the data frames will be returned separately and not be merged.
+If \code{NULL}, the data frames will be returned separately and not be merged.
 This is the default behavior.
 
-If \emph{TRUE}, the data frames will be merged using any columns that share the
+If \code{TRUE}, the data frames will be merged using any columns that share the
 same name.  For example, the layout will always have a column named \emph{well},
 so if the actual data also has a column named \emph{well}, the merge would happen
 on those columns.
 
-If a named list, the keys and values identify the names of the columns that
-correspond with each other for the purpose of merging.  Each key should be
-one of the columns from the data frame representing the layout loaded from
-the TOML file.  This data frame has 8 columns which identify the wells:
-\emph{plate}, \emph{path}, \emph{well}, \emph{well0}, \emph{row}, \emph{col}, \emph{row_i}, \emph{row_j}.  See the
-"Returns" section below for more details on the differences between these
-columns.  Note that the \emph{path} column is included in the merge automatically
-and never has to be specified.  Each value should be one of the columns from
-the data frame representing the actual data.  This data frame will have
-whatever columns were created by \code{data_loader()}.
+If a named list, If a named list, the data frames will be merged using the
+columns identified in each key-value pair of the list.  The keys should be
+column names from the data frame representing the plate layout (described
+below; see the \code{layout} return value), and the values should be column names
+from the data frame returned by \code{data_loader}.  Below are some examples of
+this argument:
+\itemize{
+\item \code{list(well0 = 'Well')}: Indicates that the "Well" column in the data
+contains zero-padded well names, like "A01", "A02", etc.
+\item \code{list(row_i = 'Row', col_j = 'Col')}: Indicates that the 'Row' and 'Col'
+columns in the data contain 0-indexed coordinates (e.g. 0, 1, 2, ...)
+identifying each row and column, respectively.
+}
 
-Note that the columns named in each key-value pair must contain values that
-correspond exactly (i.e. not "A1" and "A01").  It is the responsibility of
-\code{data_loader()} to ensure that this is possible.}
+Some details and caveats:
+\itemize{
+\item In order to successfully merge two columns, the values in those columns
+must correspond exactly.  For example, a column that contains unpadded
+well names like "A1" cannot be merged with a column that contains padded
+well names like "A01".  This is why the \code{layout} data frame contains so
+many redundant columns: to increase the chance that one will correspond
+exactly with a column provided by the data.  In some cases, though, it may
+be necessary for the \code{data_loader} function to construct an appropriate
+merge column.
+\item The data frame returned by \code{data_loader()} must be
+\href{http://vita.had.co.nz/papers/tidy-data.html}{tidy}.  Briefly, a data
+frame is tidy if each of its columns represents a single variable (e.g.
+time, fluorescence) and each of its rows represents a single observation.
+\item The \emph{path} column of the layout is automatically included in the merge and
+never has to be specified (although it is not an error to do so).  The
+reason for this special-case is that \code{load()} itself knows what path each
+data frame was loaded from.
+}}
 
 \item{path_guess}{Where to look for a data file if none is specified in the given TOML file.
 In other words, this is the default value for
@@ -87,17 +88,18 @@ like \code{'{0.stem}.csv'}.}
 files.  It is an error if this condition is not met.  Data files found via
 \code{path_guess} are acceptable for this purpose.}
 
-\item{extras}{If \emph{TRUE}, return a named list containing any key/value pairs present in the
-TOML file but not part of the layout.  Typically, this would be used to get
-information pertaining to the whole analysis and not any wells in particular
-(e.g. instruments used, preferred algorithms, plotting parameters, etc.).}
+\item{meta}{If \code{TRUE}, return a
+\href{https://wellmap.readthedocs.io/en/latest/api/wellmap.Meta.html}{\code{Meta}}
+object containing miscellaneous information that was read from the TOML file
+but not part of the layout.  This includes (i) a dictionary with all the
+key/values pairs present in the TOML file but not part of the layout, (ii) a
+set of all the TOML files that were read in the process of loading the
+layout from the given \code{toml_path}, (iii) and a \link{Style} object describing how
+to plot the layout itself.}
 
-\item{report_dependencies}{If \emph{TRUE}, return a vector of all the TOML files that were read in the
-process of loading the layout from the given \code{toml_path}.  See the
-description of \code{dependencies} below for more details.  You can use this
-information in analysis scripts (e.g. in conjunction with
-\code{file.info()$mtime}) to avoid repeating expensive analyses if the underlying
-layout hasn't changed.}
+\item{extras}{\href{https://wellmap.readthedocs.io/en/latest/deprecations.html#the-extras-and-report-dependencies-arguments-to-wellmap-load}{Deprecated}.}
+
+\item{report_dependencies}{\href{https://wellmap.readthedocs.io/en/latest/deprecations.html#the-extras-and-report-dependencies-arguments-to-wellmap-load}{Deprecated}.}
 
 \item{on_alert}{A callback to invoke if the given TOML file contains a warning for the user.
 The default behavior is to print the warning to the terminal.  If a callback
@@ -150,38 +152,15 @@ condition described in the TOML file, and a column for each kind of data
 loaded from the data files.
 }
 
-If \code{extras} was provided:
+If \code{meta} was requested:
 \itemize{
-\item \code{extras}: A named list containing any key/value pairs present in the TOML
-file but not part of the layout.  For example, consider the following TOML
-file:
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{a = 1
-b = 2
-well.A1.c = 3
-}\if{html}{\out{</div>}}
-
-If we were to load this file with \code{extras=True}, this return value would
-be \code{list(a=1, b=2)}.
-}
-
-If \code{report_dependencies} was provided:
-\itemize{
-\item \code{dependencies}: A vector of absolute paths to every layout file that was
-referenced by \code{toml_path}.  This includes \code{toml_path} itself, and the
-paths to any
-\href{https://wellmap.readthedocs.io/en/latest/file_format.html#meta-include}{included}
-or
-\href{https://wellmap.readthedocs.io/en/latest/file_format.html#meta-concat}{concatenated}
-layout files.  It does not include paths to \href{https://wellmap.readthedocs.io/en/latest/file_format.html#meta-path}{data files},
-as these are included already in the \emph{path} column of the \code{layout} or
-\code{merged} data frames.
+\item \code{meta}: As described above.
 }
 }
 \description{
 Parse the given TOML file and return a data frame with a row for each well
 and a column for each experimental condition specified in that file.  If the
-'data_loader' and 'merge_cols' arguments are provided (which is the most
+\code{data_loader} and \code{merge_cols} arguments are provided (which is the most
 typical use-case), that data frame will also contain columns for any data
 associated with each well.
 }

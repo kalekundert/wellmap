@@ -17,16 +17,19 @@ example:
   |row| and |col|.  This makes it safe to include the standard curve in other 
   layouts, because the blocks won't grow as more wells are added to the layout.
   
-- The ``[bradford]`` block provides information on how to parse and interpret 
-  the data, e.g. what format the data is in and what wavelengths were measured.  
-  This information can be accessed in analysis scripts via the **extras** 
+- The ``[bradford]`` table provides information on how to parse the data.  In 
+  particular, my lab has two different brands of plate reader, and they produce 
+  output in different formats, so the analysis script needs to know which 
+  format to expect.  (The absorbance information is also needed to parse the 
+  data file, frustratingly, because the BioTek output format is ridiculous.)  
+  This information can be accessed in analysis scripts via the **meta** 
   argument to `load()`:
 
   .. code-block:: pycon
 
     >>> import wellmap
-    >>> df, ex = wellmap.load('bradford_assay.toml', extras=True)
-    >>> ex
+    >>> df, meta = wellmap.load('bradford_assay.toml', meta=True)
+    >>> meta.extras
     {'bradford': {'format': 'biotek', 'absorbance': '595/450'}}
 
 .. example:: bradford_standards.toml bradford_assay.toml

@@ -5,6 +5,9 @@ import string
 import functools
 import contextlib
 
+from difflib import get_close_matches
+from copy import deepcopy
+
 def require_well_locations(df):
     """
     Make sure that the given data frame has `plate`, `row_i`, and `col_j` columns.
@@ -577,6 +580,22 @@ def map_keys(dict, func, *, level=0):
         }
 
 
+def recursive_merge(config, defaults, overwrite=False):
+    for key, default in defaults.items():
+        if isinstance(default, dict):
+            if isinstance(config.get(key, {}), dict):
+                config.setdefault(key, {})
+                recursive_merge(config[key], default, overwrite)
+            elif overwrite:
+                config[key] = deepcopy(default)
+        else:
+            if overwrite or key not in config:
+                config[key] = default
+
+    # Modified in-place, but also returned for convenience.
+    return config
+
+
 def get_dotted_key(dict, key):
     result = dict
     subkeys = []
@@ -605,3 +624,41 @@ class LayoutError(Exception):
             return f"{self.toml_path}: {self.message}"
         else:
             return self.message
+
+class StyleAttributeError(AttributeError):
+
+    def __init__(self, unknown_attr, known_attrs, is_param_level=False):
+        self.unknown_attr = unknown_attr
+        self.known_attrs = known_attrs
+        self.is_param_level = is_param_level
+
+    def __str__(self):
+        return self.format()
+
+    def format(self, toml_syntax=False):
+        if toml_syntax:
+            if self.is_param_level:
+                attr_type = '[meta.param_styles]'
+            else:
+                attr_type = '[meta.style]'
+        else:
+            if self.is_param_level:
+                attr_type = 'param-level style'
+            else:
+                attr_type = 'style'
+
+        message = f"{self.unknown_attr!r} is not a valid {attr_type} attribute"
+
+        close_matches = get_close_matches(
+                self.unknown_attr,
+                self.known_attrs,
+                n=1,
+        )
+        if close_matches:
+            message += f"\nDid you mean: {close_matches[0]!r}"
+
+        return message
+
+    def as_layout_error(self):
+        return LayoutError(self.format(toml_syntax=True))
+

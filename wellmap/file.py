@@ -4,8 +4,12 @@ import sys, re, itertools, inspect
 import pandas as pd
 
 from pathlib import Path
+from dataclasses import dataclass
 from inform import plural
 from copy import deepcopy
+from warnings import warn
+from typing import Dict, Set, Any
+from .plot import Style
 from .util import *
 
 try:
@@ -32,9 +36,18 @@ except ModuleNotFoundError:
 #   represents a well, and each column represents one of the fields in the well 
 #   dictionaries.  Columns identifying the plate and well are also added.
 
-def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None, 
-        path_required=False, extras=False, report_dependencies=False, 
-        on_alert=None):
+def load(
+        toml_path,
+        *,
+        data_loader=None,
+        merge_cols=None,
+        path_guess=None, 
+        path_required=False,
+        on_alert=None,
+        meta=False,
+        extras=False,
+        report_dependencies=False, 
+):
     """
     Load a microplate layout from a TOML file.
 
@@ -100,13 +113,13 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
 
         - The data frame returned by **data_loader()** must be tidy_.  Briefly, 
           a data frame is tidy if each of its columns represents a single 
-          variable (e.g.  time, fluorescence) and each of its rows represents a 
+          variable (e.g. time, fluorescence) and each of its rows represents a 
           single observation.
 
         - The *path* column of the layout is automatically included in the 
           merge and never has to be specified (although it is not an error to 
-          do so).  This is makes sense because `load()` itself knows what path 
-          each data frame was loaded from.
+          do so).  The reason for this special-case is that `load()` itself 
+          knows what path each data frame was loaded from.
        
     :param str path_guess:
         Where to look for a data file if none is specified in the given TOML 
@@ -123,20 +136,20 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
         met.  Data files found via **path_guess** are acceptable for this 
         purpose.
 
+    :param bool meta:
+        If true, return a :class:`~wellmap.Meta` object containing miscellaneous 
+        information that was read from the TOML file but not part of the 
+        layout.  This includes (i) a dictionary with all the key/values pairs 
+        present in the TOML file but not part of the layout, (ii) a set of all 
+        the TOML files that were read in the process of loading the layout from 
+        the given **toml_path**, (iii) and a `Style` object describing how to 
+        plot the layout itself.
+
     :param bool extras:
-        If true, return a dictionary containing any key/value pairs present in 
-        the TOML file but not part of the layout.  Typically, this would be 
-        used to get information pertaining to the whole analysis and not any 
-        wells in particular (e.g. instruments used, preferred algorithms, 
-        plotting parameters, etc.).
+        `Deprecated <load-extras-deps>`.
 
     :param bool report_dependencies:
-        If true, return a set of all the TOML files that were read in the 
-        process of loading the layout from the given **toml_path**.  See the 
-        description of **dependencies** below for more details.  You can use 
-        this information in analysis scripts (e.g. in conjunction with 
-        :func:`os.path.getmtime`) to avoid repeating expensive analyses if the 
-        underlying layout hasn't changed.
+        `Deprecated <load-extras-deps>`.
 
     :param callable on_alert:
         A callback to invoke if the given TOML file contains a warning for the 
@@ -185,34 +198,18 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
           per well, e.g. a time course), a column for each experimental 
           condition described in the TOML file, and a column for each kind of 
           data loaded from the data files.  
-          
-        If **extras** was provided:
- 
-        - **extras** – A dictionary containing any key/value pairs present in 
-          the TOML file but not part of the layout.  For example, consider the 
-          following TOML file::
- 
-              a = 1
-              b = 2
-              well.A1.c = 3
- 
-          If we were to load this file with ``extras=True``, this return 
-          value would be ``{'a': 1, 'b': 2}``.
 
-        If **report_dependencies** was provided:
+        If **meta** was requested:
 
-        - **dependencies** – A set containing absolute paths to every layout 
-          file that was referenced by **toml_path**.  This includes 
-          **toml_path** itself, and the paths to any `included <meta.include>` 
-          or `concatenated <meta.concat>` layout files.  It does not include 
-          paths to `data files <meta.path>`, as these are included already in 
-          the *path* column of the **layout** or **merged** data frames.
+        - **meta** (:class:`~wellmap.Meta`) – As described above.
     """
 
     try:
         ## Parse the TOML file:
+        meta_requested = meta
         extras_requested = extras
-        config, paths, concats, extras, deps = config_from_toml(
+
+        config, paths, concats, meta = config_from_toml(
                 toml_path,
                 path_guess=path_guess,
                 on_alert=on_alert,
@@ -222,14 +219,25 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
         def augment_return_value(*args):
             """
             Helper function to work out which values to return, depending on 
-            whether or not the caller wants any "extras" (i.e. key/value pairs 
-            in the TOML file that wouldn't otherwise be parsed) or "deps" (i.e. 
-            all the layout files that this one depends on).
+            whether or not the caller wants any information beyond the 
+            layout itself.
             """
+            if meta_requested:
+                args += meta,
+
             if extras_requested:
-                args += extras,
+                if meta_requested:
+                    raise ValueError("Redundant to simultaneously request *meta* and *extras*")
+                else:
+                    warn("The *extras* argument to `wellmap.load()` is deprecated.  The *meta* argument should be used instead.\nhttps://wellmap.readthedocs.io/en/latest/deprecations.html#load-extras-deps", DeprecationWarning, stacklevel=3)
+                    args += meta.extras,
+
             if report_dependencies:
-                args += deps,
+                if meta_requested:
+                    raise ValueError("Redundant to simultaneously request *meta* and *report_dependencies*")
+                else:
+                    warn("The *report_dependencies* argument to `wellmap.load()` is deprecated.  The *meta* argument should be used instead.\nhttps://wellmap.readthedocs.io/en/latest/deprecations.html#load-extras-deps", DeprecationWarning, stacklevel=3)
+                    args += meta.dependencies,
 
             return args if len(args) != 1 else args[0]
 
@@ -239,7 +247,7 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
             (i.e. key/value pairs in the TOML file requested by the caller) to 
             the **data_loader** function.
             """
-            if not extras_requested:
+            if (not extras_requested) and (not meta_requested):
                 return {}
 
             sig = inspect.signature(data_loader)
@@ -252,7 +260,7 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
             }:
                 return {}
 
-            return {'extras': extras}
+            return {'extras': meta.extras}
 
         layout = table_from_config(config, paths)
         layout = pd.concat([layout, *concats], sort=False)
@@ -318,7 +326,14 @@ def load(toml_path, *, data_loader=None, merge_cols=None, path_guess=None,
         err.toml_path = err.toml_path or toml_path
         raise
 
-def config_from_toml(toml_path, *, shift=(0,0), path_guess=None, path_required=False, extra_keys=None, on_alert=None):
+def config_from_toml(
+        toml_path,
+        *,
+        shift=(0,0),
+        path_guess=None,
+        path_required=False,
+        on_alert=None,
+):
     """
     Create a config dictionary from the given TOML file.
 
@@ -331,8 +346,28 @@ def config_from_toml(toml_path, *, shift=(0,0), path_guess=None, path_required=F
         toml_data = tomllib.load(f)
 
     config = configdict(shift_config(toml_data, shift))
+    paths = PathManager(
+            config.meta.get('path'),
+            config.meta.get('paths'),
+            toml_path,
+            path_guess,
+    )
     concats = []
-    deps = {toml_path}
+    meta = Meta(
+            extras=config.user,
+            dependencies={toml_path},
+            style=Style(),
+    )
+
+    if 'style' in config.meta or 'param_styles' in config.meta:
+        # Need to do this before handling any included layouts.
+        try:
+            meta.style = Style(
+                    **config.meta.get('style', {}),
+                    by_param=config.meta.get('param_styles', {}),
+            )
+        except StyleAttributeError as err:
+            raise err.as_layout_error() from None
 
     def iter_include_paths():
 
@@ -375,6 +410,22 @@ def config_from_toml(toml_path, *, shift=(0,0), path_guess=None, path_required=F
             abs_shift = add_shifts(shift, rel_shift)
             yield abs_path, abs_shift
 
+    for subpath, subshift in iter_include_paths():
+        # The [meta.path] field in included files is currently ignored.  Not 
+        # for any philosophical reason, just because it would be tricky to 
+        # implement (and not very useful).  Note that the *path_required* 
+        # argument isn't provided to the recursive call; this is why.
+        subconfig, _, subconcats, submeta = config_from_toml(
+                subpath,
+                shift=subshift,
+                on_alert=on_alert,
+        )
+        recursive_merge(config, subconfig)
+        concats += subconcats
+        recursive_merge(meta.extras, submeta.extras)
+        meta.dependencies |= {subpath, *submeta.dependencies}
+        meta.style.merge(submeta.style)
+
     def iter_concat_paths():
         try:
             paths = config.meta['concat']
@@ -394,44 +445,21 @@ def config_from_toml(toml_path, *, shift=(0,0), path_guess=None, path_required=F
         for plate_name, path in paths:
             yield plate_name, resolve_path(toml_path, path)
 
-    # Find any non-wellmap fields requested by the caller.
-    extras = config.user
-
-    # Synthesize any available path information.
-    paths = PathManager(
-            config.meta.get('path'),
-            config.meta.get('paths'),
-            toml_path,
-            path_guess,
-    )
-
-    # Include one or more remote files if any are specified.  
-    for subpath, subshift in iter_include_paths():
-        subconfig, _, subconcats, subextras, subdeps = config_from_toml(
-                subpath,
-                shift=subshift,
-                extra_keys=extra_keys,
-                on_alert=on_alert,
-        )
-        recursive_merge(config, subconfig)
-        recursive_merge(extras, subextras)
-        concats += subconcats
-        deps |= {subpath, *subdeps}
-
-    # Load any files to be concatenated.
     for plate_name, path in iter_concat_paths():
-        df, subdeps = load(
+        df, submeta = load(
                 path,
                 path_guess=path_guess,
                 path_required=path_required,
-                report_dependencies=True,
+                meta=True,
                 on_alert=on_alert,
         )
-        if plate_name: df['plate'] = plate_name
-        deps |= {path, *subdeps}
-        concats.append(df)
+        if plate_name:
+            df['plate'] = plate_name
 
-    # Print out any messages contained in the file.
+        concats.append(df)
+        meta.dependencies |= {path, *submeta.dependencies}
+        # Should do something with style and extras, see #37.
+
     if 'alert' in config.meta:
         if on_alert:
             on_alert(toml_path, config.meta['alert'])
@@ -441,7 +469,7 @@ def config_from_toml(toml_path, *, shift=(0,0), path_guess=None, path_required=F
             print(config.meta['alert'], file=sys.stderr)
 
     config.pop('meta', None)
-    return config, paths, concats, extras, deps
+    return config, paths, concats, meta
 
 def shift_config(config, shift):
     if shift == (0, 0):
@@ -666,22 +694,6 @@ def table_from_wells(wells, index):
 
     return pd.DataFrame(table, columns=columns)
 
-
-def recursive_merge(config, defaults, overwrite=False):
-    for key, default in defaults.items():
-        if isinstance(default, dict):
-            if isinstance(config.get(key, {}), dict):
-                config.setdefault(key, {})
-                recursive_merge(config[key], default, overwrite)
-            elif overwrite:
-                config[key] = deepcopy(default)
-        else:
-            if overwrite or key not in config:
-                config[key] = default
-
-    # Modified in-place, but also returned for convenience.
-    return config
-
 def resolve_path(parent_path, child_path):
     parent_dir = Path(parent_path).parent
     child_path = Path(child_path)
@@ -690,6 +702,41 @@ def resolve_path(parent_path, child_path):
         return child_path
     else:
         return parent_dir / child_path
+
+@dataclass
+class Meta:
+    """
+    Miscellaneous information that was present in the TOML file(s) but not part 
+    of the layout itself.
+
+    The only way to get an instance of this class is by calling `load` with the 
+    ``meta=True`` argument.  You should never instantiate this class directly.
+    """
+
+    extras: Dict[str, Any]
+    """
+    A dictionary containing any key/value pairs present in the TOML file but 
+    not part of the layout.  See the :ref:`file format reference <extras>` for 
+    more information.
+    """
+
+    dependencies: Set[Path]
+    """
+    A set containing absolute paths to every layout file that was referenced by 
+    **toml_path**.  This includes **toml_path** itself, and the paths to any 
+    `included <meta.include>` or `concatenated <meta.concat>` layout files.  It 
+    does not include paths to `data files <meta.path>`, as these are already 
+    listed in the *path* column of the loaded data frame.  You can use this 
+    information in analysis scripts, in conjunction with `os.path.getmtime`, to 
+    reliably determine whether or not the layout could have changed, e.g. 
+    before repeating an expensive analysis.
+    """
+
+    style: Style
+    """
+    A `Style` object describing how the layout requests to be plotted.  The 
+    information in this object comes from `meta.style` and `meta.param_styles`.
+    """
 
 class PathManager:
 

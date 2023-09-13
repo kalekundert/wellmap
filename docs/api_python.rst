@@ -6,6 +6,7 @@ Python API
   wellmap.load
   wellmap.show
   wellmap.show_df
+  wellmap.Meta
   wellmap.Style
   wellmap.well_from_row_col
   wellmap.well_from_ij

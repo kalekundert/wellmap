@@ -218,7 +218,7 @@ test_load:
         > x = 1
 
     kwargs:
-      extras: True
+      meta: True
 
     expected:
       labels:
@@ -231,8 +231,9 @@ test_load:
           col_j: 0
           x: 1
 
-      extras:
-        a: 1
+      meta:
+        extras:
+          a: 1
   -
     id: extras-include
     files:
@@ -247,7 +248,7 @@ test_load:
         > b = 2
 
     kwargs:
-      extras: True
+      meta: True
 
     expected:
       labels:
@@ -260,11 +261,13 @@ test_load:
           col_j: 0
           x: 1
 
-      extras:
-        a: 1
-        b: 2
+      meta:
+        extras:
+          a: 1
+          b: 2
   -
     id: extras-concat
+    # Concatenated files are not searched for extras.
     files:
       main.toml:
         > a = 1
@@ -278,7 +281,7 @@ test_load:
         > x = 2
 
     kwargs:
-      extras: True
+      meta: True
 
     expected:
       labels:
@@ -299,8 +302,9 @@ test_load:
           col_j: 1
           x: 2
 
-      extras:
-        a: 1
+      meta:
+        extras:
+          a: 1
   -
     id: extras-not-requested
     files:
@@ -337,19 +341,19 @@ test_load:
     kwargs:
       -
         data_loader: pd.read_csv
-        extras: True
+        meta: True
       -
         data_loader: read_csv_check_extras_positional
-        extras: True
+        meta: True
       -
         data_loader: read_csv_check_extras_keyword
-        extras: True
+        meta: True
       -
         data_loader: read_csv_ignore_extras_variable
-        extras: True
+        meta: True
       -
         data_loader: read_csv_ignore_extras_variable_keyword
-        extras: True
+        meta: True
 
     expected:
       labels:
@@ -369,8 +373,9 @@ test_load:
           path: DIR/'main.csv'
           Data: 2
 
-      extras:
-        a: 1
+      meta:
+        extras:
+          a: 1
   -
     id: extras-merge-cols
     files:
@@ -387,7 +392,7 @@ test_load:
     kwargs:
       data_loader: read_csv_check_extras
       merge_cols: {'well': 'Well'}
-      extras: True
+      meta: True
 
     expected:
       labels+data:
@@ -403,10 +408,38 @@ test_load:
           x: 1
           Data: 2
 
+      meta:
+        extras:
+          a: 1
+  -
+    id: extras-deprecated
+    files:
+      main.toml:
+        > a = 1
+        > [well.A1]
+        > x = 1
+
+    kwargs:
+      extras: True
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+
       extras:
         a: 1
+
+    deprecated:
+      > https://wellmap.readthedocs.io/en/latest/deprecations.html#load-extras-deps
   -
-    id: extras-deps
+    id: extras-deps-deprecated
     files:
       main.toml:
         > a = 1
@@ -434,6 +467,9 @@ test_load:
       deps:
         - DIR/'main.toml'
 
+    deprecated:
+      > https://wellmap.readthedocs.io/en/latest/deprecations.html#load-extras-deps
+
   -
     id: deps
     files:
@@ -442,7 +478,7 @@ test_load:
         > x = 1
 
     kwargs:
-      report_dependencies: True
+      meta: True
 
     expected:
       labels:
@@ -454,8 +490,9 @@ test_load:
           row_i: 0
           col_j: 0
           x: 1
-      deps:
-        - DIR/'main.toml'
+      meta:
+        deps:
+          - DIR/'main.toml'
   -
     id: deps-include
     files:
@@ -470,7 +507,7 @@ test_load:
         > x = 2
 
     kwargs:
-      report_dependencies: True
+      meta: True
 
     expected:
       labels:
@@ -490,9 +527,10 @@ test_load:
           row_i: 0
           col_j: 1
           x: 2
-      deps:
-        - DIR/'main.toml'
-        - DIR/'include.toml'
+      meta:
+        deps:
+          - DIR/'main.toml'
+          - DIR/'include.toml'
   -
     id: deps-concat
     files:
@@ -507,7 +545,7 @@ test_load:
         > x = 2
 
     kwargs:
-      report_dependencies: True
+      meta: True
 
     expected:
       labels:
@@ -527,9 +565,91 @@ test_load:
           row_i: 0
           col_j: 1
           x: 2
+      meta:
+        deps:
+          - DIR/'main.toml'
+          - DIR/'concat.toml'
+  -
+    id: deps-deprecated
+    files:
+      main.toml:
+        > [well.A1]
+        > x = 1
+
+    kwargs:
+      report_dependencies: True
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
       deps:
         - DIR/'main.toml'
-        - DIR/'concat.toml'
+
+    deprecated:
+      > https://wellmap.readthedocs.io/en/latest/deprecations.html#load-extras-deps
+
+  -
+    id: style
+    files:
+      main.toml:
+        > [meta.style]
+        > superimpose_values = true
+        >
+        > [well.A1]
+        > x = 1
+
+    kwargs:
+      meta: True
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+
+      meta:
+        style:
+          superimpose_values: True
+  -
+    id: style-by-param
+    files:
+      main.toml:
+        > [meta.param_styles]
+        > x.superimpose_values = true
+        >
+        > [well.A1]
+        > x = 1
+
+    kwargs:
+      meta: True
+
+    expected:
+      labels:
+        -
+          well: 'A1'
+          well0: 'A01'
+          row: 'A'
+          col: '1'
+          row_i: 0
+          col_j: 0
+          x: 1
+
+      meta:
+        param_styles:
+          x:
+            superimpose_values: True
 
   -
     id: path-required-ok-meta-path

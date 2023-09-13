@@ -23,12 +23,18 @@ jobs:
     name: Test Python
 
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ['3.7', '3.x']
+        # Normally I just test the lowest and highest supported versions, but 
+        # this library installs different sets of dependencies for several 
+        # different versions of python, so I wanted to be safe and test 
+        # everything.
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.x']
         operating-system:
           - ubuntu-latest
           - macos-latest
           - windows-latest
+
 
     runs-on: ${{ matrix.operating-system }}
 
@@ -40,7 +46,13 @@ jobs:
       - name: Install test dependencies
         run: |
           pip install --upgrade pip
-          pip install '.[tests]'
+          pip install '.[test,doc]'
+      - name: Build the documentation
+        run: |
+          # Need to build the docs before running the tests, because some of 
+          # the doctests depend on generated example layouts.
+          cd docs
+          make
       - name: Run test suite
         run: |
           pytest tests --cov wellmap
@@ -55,7 +67,7 @@ jobs:
 
     strategy:
       matrix:
-        R: ['3.0', '3.6', '4.0']
+        R: ['3.0', '3.6', '4.0', '4.3']
 
     defaults:
       run:

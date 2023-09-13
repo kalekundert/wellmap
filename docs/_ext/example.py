@@ -3,6 +3,7 @@
 import os
 import wellmap
 import shlex
+import matplotlib.pyplot as plt
 
 from docutils import nodes
 from docutils.statemachine import StringList
@@ -18,6 +19,7 @@ class Example(SphinxDirective):
     final_argument_whitespace = True
     option_spec = {
             'params': lambda x: x.split(','),
+            'show': lambda x: int,
             'colors': lambda x: x,
             'no-figure': lambda x: x,
     }
@@ -34,8 +36,14 @@ class Example(SphinxDirective):
         if len(contents) != len(rel_paths):
             raise self.error(f"found {len(content)} TOML snippets, but {len(rel_paths)} paths.")
 
+        toml_paths = []
+        toml_abs_paths = []
+
         for rel_path, content in zip(rel_paths, contents):
             toml_path, toml_abs_path = self.env.relfn2path(rel_path)
+            toml_paths.append(toml_path)
+            toml_abs_paths.append(toml_abs_path)
+
             name = os.path.basename(toml_path)
 
             if content:
@@ -52,19 +60,22 @@ class Example(SphinxDirective):
 
         # Only make a figure for the last snippet.  
         if 'no-figure' not in self.options:
+            i = self.options.get('show', 0)
+            toml_path = toml_paths[i]
+            toml_abs_path = toml_abs_paths[i]
             svg_path = change_ext(toml_path, '.svg')
             svg_abs_path = change_ext(toml_abs_path, '.svg')
 
-            df, deps = wellmap.load(toml_abs_path, report_dependencies=True)
+            df, meta = wellmap.load(toml_abs_path, meta=True)
 
-            if any_deps_stale(svg_abs_path, deps):
+            if any_deps_stale(svg_abs_path, meta.dependencies):
                 logger.info(f"[example] rendering: {svg_path}")
                 params = self.options.get('params', [])
-                style = wellmap.Style(
-                        color_scheme=self.options.get('color', 'rainbow'),
-                )
-                fig = wellmap.show_df(df, params, style=style)
+                if 'color' in self.options:
+                    meta.style = self.options['color']
+                fig = wellmap.show_df(df, params, style=meta.style)
                 fig.savefig(svg_abs_path, bbox_inches='tight')
+                plt.close(fig)
 
             example_rst += f'''\
 .. figure:: /{svg_path}

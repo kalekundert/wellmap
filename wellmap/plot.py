@@ -4,7 +4,7 @@
 Visualize the plate layout described by a wellmap TOML file.
 
 Usage:
-    wellmap <toml> [<param>...] [-o <path>] [-p] [-c <color>] [-f]
+    wellmap <toml> [<param>...] [-o <path>] [-p] [-c <color>] [-s] [-f]
 
 Arguments:
     <toml>
@@ -59,6 +59,13 @@ Options:
         Colorcet colors:
         http://colorcet.pyviz.org/
 
+    -s --superimpose
+        Superimpose the exact value for each well (i.e. as a word/number) above 
+        the layout.  Note that if the values are too big, they might overlap 
+        neighboring wells, which could make things hard to read.  If you want 
+        more control over the exact formatting of these superimposed values, 
+        use the python/R API.
+
     -f --foreground
         Don't attempt to return the terminal to the user while the GUI runs.  
         This is meant to be used on systems where the program crashes if run in 
@@ -71,12 +78,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys, os
 
-from wellmap import LayoutError
 from inform import plural
 from matplotlib.colors import Normalize
+from collections.abc import Mapping
 from pathlib import Path
-from dataclasses import dataclass
 from .util import *
+
+try:
+    from typing import Dict, Annotated, get_origin
+except ImportError:
+    from typing_extensions import Dict, Annotated, get_origin
 
 def main():
     import docopt
@@ -92,8 +103,9 @@ def main():
                 sys.exit()
 
         style = Style()
-        default_color = 'dimgray' if args['--print'] else 'rainbow'
-        style.color_scheme = args['--color'] or default_color
+        if args['--print']: style.color_scheme = 'dimgray'
+        if args['--color']: style.color_scheme = args['--color']
+        if args['--superimpose']: style.superimpose_values = True
 
         fig = show(toml_path, args['<param>'], style=style)
 
@@ -117,7 +129,7 @@ def main():
         if show_gui:
             title = str(toml_path)
             if args['<param>']: title += f' [{", ".join(args["<param>"])}]'
-            fig.canvas.set_window_title(title)
+            fig.canvas.setWindowTitle(title)
             plt.show()
 
     except UsageError as err:
@@ -136,6 +148,12 @@ def show(toml_path, params=None, *, style=None):
     more convenient to make visualizations directly from python (e.g. when 
     working in a jupyter notebook).  That's what this function is for.
 
+    .. note::
+
+        Jupyter will display the layout twice when you use this function, 
+        unless you put a semicolon after it.  See :issue:`19` for more 
+        information.
+
     :param str,pathlib.Path toml_path:
         The path to a file describing the layout of one or more plates.  See 
         the :doc:`/file_format` page for details about this file.
@@ -153,7 +171,8 @@ def show(toml_path, params=None, *, style=None):
 
     :rtype: matplotlib.figure.Figure
     """
-    df = wellmap.load(toml_path)
+    df, meta = wellmap.load(toml_path, meta=True)
+    style = Style.from_merge(style or Style(), meta.style)
     return show_df(df, params, style=style)
 
 def show_df(df, cols=None, *, style=None):
@@ -274,9 +293,21 @@ def plot_plate(ax, df, plate, param, style, dims, colors):
     for _, well in q.iterrows():
         i = well['row_i'] - dims.i0
         j = well['col_j'] - dims.j0
-        matrix[i, j] = colors.transform(well[param])
+        matrix[i, j] = x = colors.transform(well[param])
 
-    # Plot a heatmap.
+        if style[param].superimpose_values:
+            bg = colors.cmap(colors.norm(x))
+            fg = choose_foreground_color(bg)
+
+            text = format(well[param], style[param].superimpose_format)
+            kwargs = {
+                    'color': fg,
+                    'horizontalalignment': 'center',
+                    'verticalalignment': 'center_baseline',
+                    **style[param].superimpose_kwargs,
+            }
+            ax.text(j, i, text, **kwargs)
+
     ax.imshow(
             matrix,
             norm=colors.norm,
@@ -441,6 +472,18 @@ def guess_param_label_width(df, params):
     plt.close(fig)
     return width
 
+def choose_foreground_color(bg_color):
+    # Decide whether to use white or black text, based on the background color.  
+    # The basic algorithm is to scale the primaries by their perceived 
+    # brightness, then to compare to a threshold value that generally works 
+    # well for monitors.
+    #
+    # https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
+
+    r, g, b = bg_color[:3]
+    grey = r * 0.299 + g * 0.587 + b * 0.114
+    return 'black' if grey > 0.588 else 'white'
+
 def get_colormap(name):
     try:
         return colorcet.cm[name]
@@ -461,26 +504,124 @@ def get_yticklabel_width(fig, ax):
 
     return width / dpi
 
-_dataclass_kwargs = {}
-if sys.version_info >= (3, 10):
-    _dataclass_kwargs['kw_only'] = True
+_by_param = object()
 
-@dataclass(**_dataclass_kwargs)
+def _find_param_level_attrs(cls):
+    cls._param_level_attrs = []
+
+    for name, annot in cls.__annotations__.items():
+        if get_origin(annot) is Annotated and _by_param in annot.__metadata__:
+            cls._param_level_attrs.append(name)
+
+    return cls
+
+def _find_mutable_defaults(cls):
+    cls._default_factories = {}
+
+    for name, annotation in cls.__annotations__.items():
+        if get_origin(annotation) is Annotated:
+            annotation = annotation.__origin__
+
+        if annotation in [list, dict]:
+            cls._default_factories[name] = annotation
+
+    return cls
+
+def _fix_init_signature(cls):
+    from inspect import Signature, Parameter
+
+    # This is just for the benefit of code editing/documentation tools.  
+    # Changing the signature like this doesn't affect how the constructor 
+    # behaves.
+
+    init_params = [
+            Parameter('self', kind=Parameter.POSITIONAL_OR_KEYWORD),
+    ]
+
+    for name, annotation in cls.__annotations__.items():
+        try:
+            default_factory = cls._default_factories[name]
+        except KeyError:
+            default = getattr(cls, name)
+        else:
+            default = default_factory()
+
+        if get_origin(annotation) is Annotated:
+            annotation = annotation.__origin__
+
+        param = Parameter(
+                name=name,
+                kind=Parameter.KEYWORD_ONLY,
+                default=default,
+                annotation=annotation,
+        )
+        init_params.append(param)
+
+    param = Parameter(
+            name='by_param',
+            kind=Parameter.KEYWORD_ONLY,
+            default={},
+            annotation=Dict[str, dict],
+    )
+    init_params.append(param)
+
+    cls.__init__.__signature__ = Signature(init_params)
+    return cls
+
+@_fix_init_signature
+@_find_param_level_attrs
+@_find_mutable_defaults
 class Style:
     """
     Describe how to plot well layouts.
 
     Style objects exist to be passed to `show()` or `show_df()`, where they 
-    determine various aspects of the plots' appearances.
+    determine various aspects of the plots' appearances.  You can create/modify 
+    style objects yourself (see examples below), or you can load them from TOML 
+    files via the ``meta=True`` argument to `load`.
 
-    .. warning::
+    Examples:
+    
+        Specify a color scheme (via constructor)::
 
-        When constructing style objects, use keyword arguments instead of 
-        positional arguments.  The order of the arguments is not guaranteed and 
-        may change in any minor version of wellmap!  You'll get an immediate 
-        error if you try to use positional arguments in python≥3.10, but before 
-        then it's possible to shoot yourself in the foot.
+            >>> Style(color_scheme='coolwarm')
+
+        Specify a color scheme (via attribute)::
+            
+            >>> style = Style()
+            >>> style.color_scheme = 'coolwarm'
+
+        Specify a color scheme for only a specific parameter (via constructor)::
+
+            >>> Style(by_param={'param': {'color_scheme': 'coolwarm'}})
+
+        Specify a color scheme for only a specific parameter (via attribute)::
+
+            >>> style = Style()
+            >>> style['param'].color_scheme = 'coolwarm'
     """
+
+    # This class is pretty complicated, because it has to achieve all of the 
+    # following:
+    #
+    # - User-facing API: This class is meant to be used directly by end users, 
+    #   so it needs a nice API.  My goal was to make it feel like a data class, 
+    #   e.g. a constructor with a correct signature, a meaningful `repr()`, 
+    #   attribute-style accessors, etc.
+    #
+    # - Merging: There are multiple places where we need to merge one style 
+    #   into another, e.g. when one layout with a style includes another layout 
+    #   with a style.  Doing this requires keeping track of what values were 
+    #   actually specified by the user, as opposed to having default values.  
+    #
+    # - Error checking: We don't want to silently do nothing if the user 
+    #   specifies a style option that doesn't exist (e.g. due to a 
+    #   misspelling).  So this class needs to be aware of what options actually 
+    #   exist, and raise an error whenever an unknown option is encountered.
+    #
+    # - Parameter-level options: Some style options can have different values 
+    #   for each parameter in a layout, e.g. `color_scheme` and 
+    #   `superimpose_values`.
 
     cell_size: float = 0.25
     """
@@ -528,7 +669,7 @@ class Style:
     The space between the layouts and the bottom edge of the figure, in inches.
     """
 
-    color_scheme: str = 'rainbow'
+    color_scheme: Annotated[str, _by_param] = 'rainbow'
     """
     The name of the color scheme to use.  Each different value for each 
     different parameter will be assigned a color from this scheme.  Any 
@@ -538,28 +679,217 @@ class Style:
     .. _colorcet: http://colorcet.pyviz.org/
     """
 
-    def __post_init__(self):
-        self.params = {}
+    superimpose_values: Annotated[bool, _by_param] = False
+    """
+    Whether or not to write exact values (i.e. as words/numbers) above each 
+    well in the layout.  Use True/False to enable/disable this behavior for all 
+    parameters, or use a container (e.g. list, set) to enable it only for 
+    specific parameter names.
+    """
 
-    def __getitem__(self, param):
-        try:
-            return self.params[param]
-        except KeyError:
-            self.params[param] = ps = ParamStyle(self)
-            return ps
+    superimpose_format: Annotated[str, _by_param] = ''
+    """
+    The `format string 
+    <https://docs.python.org/3/library/string.html#formatspec>`_ to use when 
+    superimposing values over each well, e.g. 
+    """
 
+    superimpose_kwargs: Annotated[dict, _by_param] = None
+    """
+    Any keyword arguments to pass on to `matplotlib.text.Text` when rendering 
+    the superimposed values over each well.
+    """
 
-class ParamStyle:
-    # It might be worth distinguishing between settings that can/can't be given 
-    # on a per-parameter basis.  That would involve this class raising an 
-    # exception when trying to set an invalid attribute.  Right now, anything 
-    # goes.
+    def __init__(self, **kwargs):
+        self._style = {}
+        self._param_styles = {}
+        self._mutable_defaults = {}
 
-    def __init__(self, style):
-        self.style = style
+        # Assign each attribute one at a time, to reuse the same error-checking 
+        # logic that gets applied normally.
+
+        by_param = kwargs.pop('by_param', {})
+
+        for name, value in kwargs.items():
+            setattr(self, name, value)
+
+        for param, style in by_param.items():
+            if not isinstance(style, Mapping):
+                raise ValueError(f"expected *by_param* to be a dict of dicts, got: {by_param!r}")
+            for name, value in style.items():
+                setattr(self[param], name, value)
+
+    def __eq__(self, other):
+
+        # Make sure that default values are handled correctly by actually
+        # looking up each attribute through the normal channels.
+
+        def get_all_attrs(style, params):
+            base = {
+                    k: getattr(style, k)
+                    for k in style.__class__.__annotations__
+            }
+            by_param = {
+                    k1: {
+                        k2: getattr(style[k1], k2)
+                        for k2 in self._param_level_attrs
+                    }
+                    for k1 in params
+            }
+            return base, by_param
+
+        params = set(self._param_styles) | set(other._param_styles)
+
+        return (
+                self.__class__ is other.__class__ and
+                get_all_attrs(self, params) == get_all_attrs(other, params)
+        )
+
+    def __repr__(self):
+        kwargs = []
+        order = {
+                name: i
+                for i, name in enumerate(self.__class__.__annotations__)
+        }
+
+        mutable_defaults = {
+                k: v
+                for k, v in self._mutable_defaults.items()
+                if v
+        }
+        non_default_styles = {**mutable_defaults, **self._style}
+
+        for name in sorted(non_default_styles, key=lambda x: order[x]):
+            kwargs.append(f'{name}={non_default_styles[name]!r}')
+
+        if self._param_styles:
+            kwargs.append(f'by_param={self._param_styles!r}')
+
+        return f'{self.__class__.__name__}({", ".join(kwargs)})'
+
+    def __getattribute__(self, name):
+        cls = super().__getattribute__('__class__')
+
+        # We need `__getattribute__()` instead of `__getattr__()` because there 
+        # are class-level attributes with the same names as the instance-level 
+        # attributes that we want to generate dynamically.
+
+        if name in cls.__annotations__:
+            try:
+                return self._style[name]
+            except KeyError:
+                pass
+
+            if name in cls._default_factories:
+                try:
+                    return self._mutable_defaults[name]
+                except KeyError:
+                    default = cls._default_factories[name]()
+                    self._mutable_defaults[name] = default
+                    return default
+
+            return getattr(self.__class__, name)
+
+        else:
+            return super().__getattribute__(name)
 
     def __getattr__(self, name):
-        return getattr(self.style, name)
+        known_names = self.__class__.__annotations__
+        raise StyleAttributeError(name, known_names)
+
+    def __setattr__(self, name, value):
+        known_names = self.__class__.__annotations__
+
+        if name.startswith('_'):
+            super().__setattr__(name, value)
+        elif name in known_names:
+            self._style[name] = value
+            self._mutable_defaults.pop(name, None)
+        else:
+            raise StyleAttributeError(name, known_names)
+
+    def __getitem__(self, param):
+        """
+        Get the style for a specific parameter.
+
+        The following style options can be specified on a per-parameter basis:
+
+        - `color_scheme`
+        - `superimpose_values`
+        - `superimpose_format`
+        - `superimpose_kwargs`
+
+        This method will return an object that allows getting an setting 
+        options specific to the given parameter.  Specifically, the object will 
+        have an attribute corresponding to each of the above options.  If no 
+        parameter-specific value has been specified for an option, its value 
+        will default to that in the parent `Style` object.
+        """
+        return Style._ParamStyle(self, param)
+
+    def merge(self, other):
+        """
+        Merge the options from another style object into this one.
+
+        If both styles specify the same option, for value from this style will 
+        be used (i.e. the value won't change).  The `superimpose_kwargs` option 
+        (which is a dictionary) is merged recursively in this same manner.
+        """
+        recursive_merge(self._style, other._style)
+        recursive_merge(self._param_styles, other._param_styles)
+        recursive_merge(self._mutable_defaults, other._mutable_defaults)
+
+        for key in set(self._style) & set(self._mutable_defaults):
+            recursive_merge(self._style[key], self._mutable_defaults[key])
+            del self._mutable_defaults[key]
+
+    @classmethod
+    def from_merge(cls, *others):
+        """
+        Combine all of the given styles into a single object.
+
+        If multiple styles specify the same option, the earlier value will be 
+        used.  The `merge` for more details.
+        """
+        style = cls()
+        for other in others:
+            style.merge(other)
+        return style
+
+    class _ParamStyle:
+
+        def __init__(self, style, param):
+            self._style = style
+            self._param = param
+
+        def __repr__(self):
+            return f'{self._style}[{self._param!r}]'
+
+        def __getattr__(self, name):
+            if name in self._style._param_level_attrs:
+                try:
+                    return self._style._param_styles[self._param][name]
+                except KeyError:
+                    return getattr(self._style, name)
+
+            else:
+                raise StyleAttributeError(
+                        name,
+                        self._style._param_level_attrs,
+                        is_param_level=True,
+                )
+
+        def __setattr__(self, name, value):
+            if name.startswith('_'):
+                super().__setattr__(name, value)
+            elif name in self._style._param_level_attrs:
+                self._style._param_styles.setdefault(self._param, {})[name] = value
+            else:
+                raise StyleAttributeError(
+                        name,
+                        self._style._param_level_attrs,
+                        is_param_level=True,
+                )
 
 
 class Dimensions:

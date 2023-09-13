@@ -23,4 +23,5 @@
    command_line
    well_formats
    versions
+   deprecations
 

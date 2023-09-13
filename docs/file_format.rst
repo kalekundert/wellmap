@@ -2,15 +2,15 @@
 File format
 ***********
 
-The basic organization of a :mod:`wellmap` file is as follows: first you specify 
-a group of wells, then you specify the experimental parameters associated with 
-those wells.  For example, the following snippet specifies that well A1 has a 
-concentration of 100:
+The basic organization of a :mod:`wellmap` file is as follows: first you 
+specify a group of wells, then you specify the experimental parameters 
+associated with those wells.  For example, the following snippet specifies that 
+well A1 has a concentration of 100:
 
 .. code-block:: toml
 
   [well.A1]
-  conc = 100
+  conc_uM = 100
 
 The file format is based on TOML, so refer to the `TOML documentation <toml>`_ 
 for a complete description of the basic syntax.  Typically, square brackets 
@@ -21,12 +21,16 @@ wells.  Note however that all of the following are equivalent:
 .. code-block:: toml
 
   [well.A1]
-  conc = 100
+  conc_uM = 100
+
+.. code-block:: toml
 
   [well]
-  A1.conc = 100
+  A1.conc_uM = 100
 
-  well.A1.conc = 100
+.. code-block:: toml
+
+  well.A1.conc_uM = 100
   
 Most of this document focuses on describing the various ways to succinctly 
 specify different groups of wells, e.g. `row`, `col`, `block`, etc.  There is 
@@ -34,7 +38,7 @@ no need to specify the size of the plate.  The data frame returned by `load()`
 will contain a row for each well implied by the layout file.
 
 Experimental parameters can be specified by setting any `key`_ associated with 
-a well group (e.g. ``conc`` in the above examples) to a scalar value (e.g.  
+a well group (e.g. ``conc_uM`` in the above examples) to a scalar value (e.g.  
 string_, integer_, float_, boolean_, date_, time_, etc.).  There are no 
 restrictions on what these parameters can be named, although complex names 
 (e.g. with spaces or punctuation) may need to be quoted.  The data frame 
@@ -46,10 +50,11 @@ parameter; missing values will be represented in the data frame by ``nan``.
 
 [meta]
 ======
-Miscellaneous fields that affect how :mod:`wellmap` parses the file.  This is the 
-only section that does not describe the organization of any wells.
+Miscellaneous fields that affect how :mod:`wellmap` parses the file.  This is 
+the only section that does not describe the organization of any wells.
 
 .. note::
+
     All paths specified in this section can either be absolute (if they begin 
     with a '/') or relative (if they don't).  Relative paths are considered 
     relative to the directory containing the TOML file itself, regardless of 
@@ -131,37 +136,32 @@ layout expands on the first by specifying which sample is in each row.  Note
 that the first layout could not be used on its own because it doesn't specify 
 any rows:
 
-.. example:: file_format/serial_dilution.toml file_format/meta_include.toml
-
-  [col]
-  1.conc = 1e4
-  2.conc = 1e3
-  3.conc = 1e2
-  4.conc = 1e1
-  5.conc = 1e0
-  6.conc = 0
-
-  --EOF--
+.. example:: file_format/meta_include.toml file_format/serial_dilution.toml
 
   [meta]
   include = 'serial_dilution.toml'
 
-  [row.'A,B']
+  [row.A-B]
   sample = 'α'
 
-  [row.'C,D']
+  [row.C-D]
   sample = 'β'
+
+  --EOF--
+
+  [col]
+  1.conc_uM = 1e4
+  2.conc_uM = 1e3
+  3.conc_uM = 1e2
+  4.conc_uM = 1e1
+  5.conc_uM = 1e0
+  6.conc_uM = 0
 
 The following layouts demonstrate the *shift* option.  Note that both layouts 
 specify the same 2x2 block, but the block from the included file is moved down 
 and to the right in the final layout:
 
-.. example:: file_format/shift_parent.toml file_format/meta_include_shift.toml
-
-  [block.2x2.A1]
-  x = 2
-  
-  --EOF--
+.. example:: file_format/meta_include_shift.toml file_format/shift_parent.toml
   
   [meta.include]
   path = 'shift_parent.toml'
@@ -170,6 +170,11 @@ and to the right in the final layout:
   [block.2x2.A1]
   x = 1
 
+  --EOF--
+
+  [block.2x2.A1]
+  x = 2
+  
 .. _meta.concat:
 
 meta.concat
@@ -195,7 +200,13 @@ names specified in the layouts themselves.
 The first two layouts describe the same experiment with different samples.  The 
 third layout combines the first two for easier analysis.
 
-.. example:: file_format/expt_1.toml file_format/expt_2.toml file_format/concat.toml
+.. example:: file_format/meta_concat.toml file_format/expt_1.toml file_format/expt_2.toml
+
+  [meta.concat]
+  X = 'expt_1.toml'
+  Y = 'expt_2.toml'
+
+  --EOF--
 
   [block.4x4.A1]
   sample = 'α'
@@ -205,11 +216,83 @@ third layout combines the first two for easier analysis.
   [block.4x4.A1]
   sample = 'β'
 
-  --EOF--
+.. _meta.style:
 
-  [meta.concat]
-  X = 'expt_1.toml'
-  Y = 'expt_2.toml'
+meta.style
+----------
+A table of settings that affect how the layout is visualized.  This includes 
+colors, dimensions, labels, etc.  See `Style` for a complete list of the 
+available settings.
+
+Note that these settings are only meant to be used when visualizing the layout 
+itself.  Analysis scripts that want to give layout authors ways to control
+the style of their outputs should use |extras| for that purpose.  Only the 
+exact settings understood by wellmap are allowed in `meta.style`.  That said, 
+if you are writing a script that involves visualizing layouts, you can access, 
+modify, and use the `Style` object specified by this section of the TOML file 
+by passing the **meta** argument to `load()`.
+
+Styles specified in included layouts are merged recursively in the same way 
+that |extras| are.  Styles specified in concatenated files are currently 
+ignored.  It would be a very difficult to concatenate styles in a completely 
+general manner, so for now I'm not even trying to support this.  Let me know 
+(by opening an issue_ on Github) if you have a need for this, though; I'd be 
+interested to hear about it.
+
+.. rubric:: Example:
+
+The following layout superimposes the names of the samples above the wells in 
+the layout:
+
+.. example:: file_format/meta_style_superimpose.toml
+
+  [meta.style]
+  superimpose_values = true
+
+  [well]
+  A1.sample = 'α'
+  A2.sample = 'β'
+  A3.sample = 'γ'
+
+The following layout uses a different color scheme:
+
+.. example:: file_format/meta_style_colors.toml
+
+  [meta.style]
+  color_scheme = 'coolwarm'
+
+  [well]
+  A1.sample = 'α'
+  A2.sample = 'β'
+  A3.sample = 'γ'
+
+.. _meta.param_styles:
+
+meta.param_styles
+-----------------
+Similar to `meta.style`, but for settings that can be applied on a 
+per-parameter basis.  See `Style[] <Style.__getitem__>` for more information.
+
+.. rubric:: Example:
+
+The following layout superimposes the names of the samples, but not the 
+concentrations, above the wells in the layout:
+
+.. example:: file_format/meta_param_styles.toml
+
+  [meta.param_styles]
+  sample.superimpose_values = true
+
+  [row]
+  A.sample = 'α'
+  B.sample = 'β'
+  C.sample = 'γ'
+  
+  [col]
+  1.conc_uM = 0
+  2.conc_uM = 1
+  3.conc_uM = 10
+  4.conc_uM = 100
 
 .. _meta.alert:
 
@@ -219,6 +302,7 @@ A message that should be printed to the terminal every time this file is
 loaded.  For example, if something went wrong during the experiment that would 
 affect how the data is interpreted, put that here to be reminded of that every 
 time you look at the data.
+
 
 .. _expt:
 
@@ -233,32 +317,23 @@ easier to write reusable analysis scripts, because the scripts can rely on
 every layout specifying every relevant parameter, not only those parameters 
 that are being varied.
 
-Avoid using this section for metadata such as your name, the date, the name of 
-the experiment, etc.  While this kind of metadata does apply to every well, it 
-doesn't affect how the data will be analyzed.  Including it here needlessly 
-bloats the data frame returned by `load()`.  It's better to put this 
-information in top-level key/value pairs (e.g. outside of any well group).  
-Analysis scripts can still access this information using the **extras** 
-argument to the `load()` function, but it will not clutter the data frame used 
-for analysis.
+It can be hard to decide whether a certain piece of information belongs in 
+|extras| or `expt`.  The general rule is that `expt` is for parameters that 
+describe the contents of the wells, while |extras| is for parameters that 
+describe how the analysis should be performed.  See the |extras| section for an 
+in-depth discussion about this.
 
 Note that the :prog:`wellmap` command by default only displays experimental 
 parameters that have at least two different values across the whole layout, 
 which normally excludes `expt` parameters.  To see such a parameter anyways, 
-provide its name as one of the ``<attr>`` arguments.
+provide its name as one of the ``<param>`` arguments.
 
 .. rubric:: Example:
 
-This layout demonstrates the difference between `expt` parameters and metadata.  
-All of the wells on this plate have the same sample, but the sample is relevant 
-to the analysis and might vary in other layouts analyzed by the same script.  
-In contrast, the name and date are just (useful) metadata.
+The following layout specifies the same sample for every well:
 
 .. example:: file_format/expt.toml
   :params: sample
-
-  name = "Kale Kundert"
-  date = 2020-05-26
 
   [expt]
   sample = 'α'
@@ -288,7 +363,7 @@ in the same well groups (e.g. ``[row.A]``) outside the plate.  Refer to the
 
 The following layout shows how to define parameters that apply to:
 
-- All plates (conc).
+- All plates (conc_uM).
 - One specific plate (sample=α).
 - Part of one specific plate (sample=β,γ).
 
@@ -304,10 +379,10 @@ The following layout shows how to define parameters that apply to:
   sample = 'γ'
 
   [col.'1,3']
-  conc = 0
+  conc_uM = 0
 
   [col.'2,4']
-  conc = 100
+  conc_uM = 100
 
   # Without this, plate X wouldn't have any rows.
   [row.'A,B,C,D']
@@ -335,7 +410,7 @@ The following layout specifies a different sample for each row:
   D.sample = 'δ'
 
   # Indicate how many columns there are.
-  [col.'1,2,3,4']
+  [col.1-4]
 
 The following layout uses the `pattern syntax`_ to specify the same sample in 
 multiple rows:
@@ -349,7 +424,7 @@ multiple rows:
   sample = 'β'
 
   # Indicate how many columns there are.
-  [col.'1,2,3,4']
+  [col.1-4]
 
 .. _col:
 
@@ -504,6 +579,151 @@ multiple wells:
   [well.'A1,D4,...,D4']
   sample = 'α'
 
+.. _extras:
+
+"Extras"
+========
+Any tables or key/value pairs that are present in the TOML file, but that 
+aren't part of any of the sections described above, are considered "extras".  
+Wellmap doesn't interpret these values itself, but analysis scripts can access 
+them via the **meta** argument to `load()`.  The idea is that different 
+analysis scripts might expect layout authors to provide different kinds of 
+extra information, e.g. instruments used, preferred algorithms, plotting 
+parameters, etc.
+
+Extras in included files are recursively merged into the extras in the main 
+file.  If the same key is specified in both files, the value in the main file 
+that will be used.  If the same key is specified in more than one included 
+file, the value from the last file will be used.  Think of the contents of any 
+included files as being literally present in the main file, but with lower 
+priority in case of conflicts.  See below for an example showing exactly how 
+this works.
+
+Extras in concatenated files are currently ignored.  This is not ideal.  I'd 
+like to make this information available to analysis scripts, but I haven't 
+settled on a good way to do it yet.  See :issue:`37` for more information.
+
+It can be hard to decide whether a certain piece of information belongs in 
+|extras| or `expt`.  Both apply to all wells in the layout, in some sense.  The 
+key difference is that `expt` parameters end up in the layout data frame, while 
+|extras| end up in their own separate dictionary.  This means that you should:
+
+- Use `expt` for parameters that (i) describe the contents of the wells and/or 
+  (ii) could plausibly vary on a per-well basis.  A good example of this might 
+  be temperature.  Even if you always run all of your experiments at 37°C, 
+  temperature is a physical property of the contents of the wells.  It's 
+  possible that you might someday want to compare your normal plates to a plate 
+  measured at 4°C, in which case you'll want all of your layout data frames to 
+  have a temperature column.
+
+- Use |extras| for metadata that could only ever have a single value for a 
+  particular analysis (but could vary between analyses).  A good example might 
+  be an option that controls the colors used to represent particular groups of 
+  wells.  Each group can only have a single color, so it wouldn't make sense 
+  for this information to be copied into every row of the layout data frame.  
+  Note also that extras are not required to be scalar, while `expt` parameters 
+  are.
+
+.. rubric:: Examples:
+
+- The following layout shows the difference between an `expt` parameter and an 
+  "extra" value:
+
+  .. example:: file_format/expt_extras.toml
+  
+    [color]
+    'α' = 'black'
+    'β' = 'blue'
+    'γ' = 'red'
+  
+    [expt]
+    temp_C = 37
+  
+    [row]
+    A.sample = 'α'
+    B.sample = 'β'
+    C.sample = 'γ'
+  
+    [col]
+    1.conc_uM = 0
+    2.conc_uM = 1
+    3.conc_uM = 10
+    4.conc_uM = 100
+  
+  The ``sample``, ``conc_uM``, and ``temp_C`` parameters are all part of the 
+  layout, because they are associated with specific wells.  Only the ``color`` 
+  table is an extra.  We can access all of this information using `load()`:
+  
+  .. code-block:: pycon
+  
+    >>> import wellmap
+    >>> df, meta = wellmap.load('expt_extras.toml', meta=True)
+    >>> df
+       well well0 row col  row_i  col_j sample  conc_uM  temp_C
+    0    A1   A01   A   1      0      0      α        0      37
+    1    A2   A02   A   2      0      1      α        1      37
+    2    A3   A03   A   3      0      2      α       10      37
+    3    A4   A04   A   4      0      3      α      100      37
+    4    B1   B01   B   1      1      0      β        0      37
+    5    B2   B02   B   2      1      1      β        1      37
+    6    B3   B03   B   3      1      2      β       10      37
+    7    B4   B04   B   4      1      3      β      100      37
+    8    C1   C01   C   1      2      0      γ        0      37
+    9    C2   C02   C   2      2      1      γ        1      37
+    10   C3   C03   C   3      2      2      γ       10      37
+    11   C4   C04   C   4      2      3      γ      100      37
+    >>> meta.extras
+    {'color': {'α': 'black', 'β': 'blue', 'γ': 'red'}}
+  
+  Note that ``color`` doesn't affect the visualization of the layout produced 
+  by wellmap (shown above).  If you want to control those colors, use the 
+  `meta.style` settings.
+
+- The following layout shows how extras from included files are merged:
+
+  .. example:: file_format/extras_main.toml file_format/extras_include_1.toml file_format/extras_include_2.toml
+    :no-figure:
+  
+    [meta]
+    include = [
+        'extras_include_1.toml',
+        'extras_include_2.toml',
+    ]
+    
+    [color]
+    'α' = 'black'
+
+    # Can't load a layout with no wells/parameters.
+    [well.A1]
+    sample = 'α'
+
+    --EOF--
+  
+    [color]
+    'α' = 'red'
+    'β' = 'red'
+    'γ' = 'red'
+
+    --EOF--
+  
+    [color]
+    'α' = 'blue'
+    'β' = 'blue'
+
+  .. code-block:: pycon
+  
+    >>> import wellmap
+    >>> df, meta = wellmap.load('extras_main.toml', meta=True)
+    >>> meta.extras
+    {'color': {'α': 'black', 'β': 'blue', 'γ': 'red'}}
+
+  This example illustrates what it means to merge recursively.  Even though all 
+  the files specify ``color``, the colors aren't just taken from the main file.  
+  Instead, the merge sees that ``color`` is a table and considers key/value 
+  pairs from each file.   Note also that values in the main file supercede all 
+  the others, and values in earlier included files supercede those in later 
+  ones.
+  
 .. _pattern:
 
 Pattern syntax
@@ -634,7 +854,7 @@ following layout:
   [well.A1]
   sample = 'α'
 
-  [well.'A1,A2']
+  [well.A1-A2]
   sample = 'β'
 
   [well.A2]

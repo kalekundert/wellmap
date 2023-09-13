@@ -8,6 +8,7 @@ from .param_helpers import *
 
 @parametrize_from_file(
         schema=[
+            style,
             error_or(
                 'config', 'concats', 'extras', 'deps', 'alerts',
                 globals=with_wellmap,
@@ -23,7 +24,7 @@ from .param_helpers import *
         ],
         indirect=['files'],
 )
-def test_config_from_toml(files, kwargs, config, concats, extras, deps, alerts, error, tmp_path, capsys):
+def test_config_from_toml(files, kwargs, config, concats, extras, deps, style, alerts, error, tmp_path, capsys):
     kwargs = with_py.eval(kwargs)
     config = with_py.eval(config)
     extras = with_py.eval(extras)
@@ -41,7 +42,7 @@ def test_config_from_toml(files, kwargs, config, concats, extras, deps, alerts, 
         alert['path'] = tmp_path / alert['path']
 
     with error:
-        config_out, _, concats_out, extras_out, deps_out = \
+        config_out, _, concats_out, meta_out = \
                 config_from_toml(tmp_path / 'main.toml', **kwargs)
 
         stderr = capsys.readouterr().err
@@ -49,15 +50,16 @@ def test_config_from_toml(files, kwargs, config, concats, extras, deps, alerts, 
 
         assert config_out == {**config, **extras}
         assert concats_out == unordered(concats)
-        assert extras_out == extras
-        assert deps_out == deps
+        assert meta_out.extras == extras
+        assert meta_out.dependencies == deps
+        assert meta_out.style == style
 
-        # Test the default alert handler:
+        # Default alert handler:
         for alert in alerts:
             assert alert['path'].name in stderr
             assert alert['message'] in stderr
 
-        # Test a custom alert handler:
+        # Custom alert handler:
         if alerts:
             actual_alerts = []
             def on_alert(toml_path, message):

@@ -39,7 +39,7 @@
   margin: 4px;
   align-self: flex-start;
   flex: 1 0 200px;      /* Let the code grow, but don't let it take less than 
-                         * 300px. */
+                         * 200px. */
   min-width: 0;         /* By default, flex-box items have "min-width: auto".  
                          * This is in contrast to normal elements, which 
                          * default to "min-width: 0".  This difference prevents 
@@ -78,6 +78,7 @@
 }
 
 /* Make inline code stand out less */
+
 .rst-content code.literal {
   color: #404040;
 }
@@ -103,6 +104,7 @@
 }
 
 /* Make filename captions look nicer. */
+
 .rst-content .code-block-caption {
   padding-top: 0.5em;
   padding-bottom: 0.5em;
@@ -116,24 +118,23 @@
 
 /* Miscellaneous spacing fixes. */
 
-.rst-content .section ol li ul {
-  margin-bottom: 12px;
-}
-
 .rst-content .field-list ul li ul>li>p {
   margin-bottom: 0 !important;
+}
+
+.rst-content .field-list ul.simple ul {
+  /* `merge_col` parameter of `wellmap.load()` */
+  /* This style would mess up the formatting of the "Precedence rules" section 
+   * if applied to broadly. */
+  margin-bottom: 12px !important;
 }
 
 .rst-content th p {
   margin-bottom: 0px;
 }
 
-.rst-content .section ul li p:last-of-type {
-  /* Precedence rules */
-  margin-bottom: 0;
+.rst-content ul.paragraph-list li p {
+  /* Bradford example */
+  margin-bottom: 12px !important;
 }
 
-.rst-content .section ul.paragraph-list li p {
-  /* Bradford example */
-  margin-bottom: 12px;
-}

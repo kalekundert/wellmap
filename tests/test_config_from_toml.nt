@@ -7,6 +7,81 @@ test_config_from_toml:
     extras:
       a: 1
   -
+    id: style
+    files:
+      main.toml:
+        > [meta.style]
+        > cell_size = 1
+        > pad_width = 2
+        > pad_height = 3
+        > bar_width = 4
+        > bar_pad_width = 5
+        > top_margin = 6
+        > left_margin = 7
+        > right_margin = 8
+        > bottom_margin = 9
+        > color_scheme = 'viridis'
+        > superimpose_values = true
+        > superimpose_format = '.1f'
+        > superimpose_kwargs.color = 'red'
+    style:
+      cell_size: 1
+      pad_width: 2
+      pad_height: 3
+      bar_width: 4
+      bar_pad_width: 5
+      top_margin: 6
+      left_margin: 7
+      right_margin: 8
+      bottom_margin: 9
+      color_scheme: 'viridis'
+      superimpose_values: True
+      superimpose_format: '.1f'
+      superimpose_kwargs: {'color': 'red'}
+  -
+    id: style-by-param
+    files:
+      main.toml:
+        > [meta.param_styles.x]
+        > color_scheme = 'viridis'
+        > superimpose_values = true
+        > superimpose_format = '.1f'
+        > superimpose_kwargs.color = 'red'
+        > [meta.param_styles.y]
+        > color_scheme = 'inferno'
+        > superimpose_values = true
+        > superimpose_format = '.2f'
+        > superimpose_kwargs.color = 'blue'
+    param_styles:
+      x:
+        color_scheme: 'viridis'
+        superimpose_values: True
+        superimpose_format: '.1f'
+        superimpose_kwargs: {'color': 'red'}
+      y:
+        color_scheme: 'inferno'
+        superimpose_values: True
+        superimpose_format: '.2f'
+        superimpose_kwargs: {'color': 'blue'}
+  -
+    id: style-err-unknown-attr
+    files:
+      main.toml:
+        > [meta.style]
+        > unknown_attr = 1
+    error:
+      type: LayoutError
+      message: 'unknown_attr' is not a valid [meta.style] attribute
+  -
+    id: style-err-unknown-attr-by-param
+    files:
+      main.toml:
+        > [meta.param_styles.x]
+        > unknown_attr = 1
+    error:
+      type: LayoutError
+      message: 'unknown_attr' is not a valid [meta.param_styles] attribute
+  -
     id: alert
     files:
       main.toml:
@@ -262,6 +337,65 @@ test_config_from_toml:
       a: 1
       b: 2
       c: 3
+  -
+    id: include-style
+    files:
+      main.toml:
+        > [meta]
+        > include = 'style.toml'
+      style.toml:
+        > [meta.style]
+        > cell_size = 1
+    style:
+      cell_size: 1
+  -
+    id: include-style-merge
+    files:
+      main.toml:
+        > [meta]
+        > include = 'style.toml'
+        > style.pad_width = 1
+      style.toml:
+        > [meta]
+        > style.pad_width = 2
+        > style.pad_height = 2
+    style:
+      pad_width: 1
+      pad_height: 2
+  -
+    id: include-style-merge-by-param
+    files:
+      main.toml:
+        > [meta]
+        > include = 'style.toml'
+        > [meta.param_styles]
+        > x.color_scheme = 'viridis'
+      style.toml:
+        > [meta.param_styles]
+        > x.color_scheme = 'inferno'
+        > x.superimpose_values = true
+    param_styles:
+      x:
+        color_scheme: 'viridis'
+        superimpose_values: True
+  -
+    id: include-style-nested
+    files:
+      main.toml:
+        > [meta]
+        > include = 'style_2.toml'
+        > style.cell_size = 1
+      style_2.toml:
+        > [meta]
+        > include = 'style_3.toml'
+        > style.pad_width = 2
+      style_3.toml:
+        > [meta]
+        > style.pad_height = 3
+    style:
+      cell_size: 1
+      pad_width: 2
+      pad_height: 3
   -
     id: include-alert
     files:
@@ -600,4 +734,3 @@ test_config_from_toml:
     error:
       type: wellmap.LayoutError
       message: expected 'meta.concat' to be string, list, or dictionary, not: 0
-
