@@ -101,7 +101,7 @@ def update_toml_file(toml_abs_path, content):
         pass
 
     os.makedirs(os.path.dirname(toml_abs_path), exist_ok=True)
-    with open(toml_abs_path, 'w') as f:
+    with open(toml_abs_path, 'w', encoding='utf-8') as f:
         f.write(content)
 
 def any_deps_stale(svg_abs_path, toml_abs_paths):
