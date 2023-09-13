@@ -74,7 +74,7 @@ class Example(SphinxDirective):
                 if 'color' in self.options:
                     meta.style = self.options['color']
                 fig = wellmap.show_df(df, params, style=meta.style)
-                fig.savefig(svg_abs_path, bbox_inches='tight')
+                fig.savefig(svg_abs_path, bbox_inches='tight', transparent=True)
                 plt.close(fig)
 
             example_rst += f'''\
