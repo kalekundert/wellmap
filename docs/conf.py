@@ -19,14 +19,15 @@ html_static_path = ['_static']
 extensions = [
         '_ext.example',
         '_ext.hidden_section',
+        'myst_parser',
+        'sphinxcontrib.programoutput',
         'sphinx.ext.autodoc',
         'sphinx.ext.autosummary',
         'sphinx.ext.intersphinx',
         'sphinx.ext.napoleon',
         'sphinx.ext.viewcode',
-        'sphinxcontrib.programoutput',
         'sphinx_issues',
-        'myst_parser',
+        'sphinx_rtd_theme',
 ]
 autodoc_default_options = {
         'members': True,
