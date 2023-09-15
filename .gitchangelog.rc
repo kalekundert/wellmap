@@ -1,0 +1,22 @@
+section_regexps = [
+    ('New Features', [
+        r'^feat:([^\n]*)$',
+     ]),
+    ('Bug Fixes', [
+        r'^fix:([^\n]*)$',
+     ]),
+]
+subject_process = (
+    strip |
+    ReSub(r'^(feat|fix):\s*', '') |
+    ReSub(r' `(show\(attrs=...\))` ', r' ``\1`` ') |
+    ucfirst |
+    final_dot
+)
+body_process = (
+    ReSub(r'([Ff]ix(es)?\s+)#(\d+)', r'\1:issue:`\3`') |
+    ReSub(r' `(extras|report_dependencies|meta)` ', r' **\1** ')
+)
+tag_filter_regexp = r'^v[0-9]+\.[0-9]+\.[0-9]+$'
+output_engine = makotemplate("docs/changelog.rst.mako")
+

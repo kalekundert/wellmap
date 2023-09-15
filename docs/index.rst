@@ -22,6 +22,6 @@
    api_r
    command_line
    well_formats
-   versions
+   changelog
    deprecations
 

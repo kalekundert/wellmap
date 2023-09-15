@@ -19,7 +19,6 @@ html_static_path = ['_static']
 extensions = [
         '_ext.example',
         '_ext.hidden_section',
-        'myst_parser',
         'sphinxcontrib.programoutput',
         'sphinx.ext.autodoc',
         'sphinx.ext.autosummary',
