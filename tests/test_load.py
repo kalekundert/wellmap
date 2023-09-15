@@ -2,12 +2,18 @@
 
 import wellmap
 import pytest
+import sys
 import re
 
 from pytest_unordered import unordered
-from more_itertools import zip_equal
 from contextlib import nullcontext
 from .param_helpers import *
+
+if sys.version_info >= (3, 10, 0):
+    from functools import partial
+    zip_equal = partial(zip, strict=True)
+else:
+    from more_itertools import zip_equal
 
 @parametrize_from_file(
         schema=[

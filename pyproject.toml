@@ -53,8 +53,7 @@ wellmap = "wellmap.plot:main"
 
 [tool.pytest.ini_options]
 filterwarnings = [
-    'ignore::DeprecationWarning',
-    'ignore:A private pytest class or function was used.:pytest.PytestDeprecationWarning',
+    'ignore:A private pytest class or function was used.',
 ]
 addopts = "--doctest-glob='*.rst'"
 

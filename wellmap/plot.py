@@ -458,6 +458,8 @@ def guess_param_label_width(df, params):
     # can't test that, but if this ends up being a problem, I probably need to 
     # wrap this is a try/except block and fall back to guessing a width based 
     # on the number of characters in the string representation of each label.
+    #
+    # https://stackoverflow.com/questions/22667224/get-text-bounding-box-independent-of-backend
 
     width = 0
     fig, ax = plt.subplots()
@@ -467,7 +469,7 @@ def guess_param_label_width(df, params):
         ax.set_yticks(range(len(labels)))
         ax.set_yticklabels(labels)
 
-        width = max(width, get_yticklabel_width(fig, ax))
+        width = max(width, get_yticklabel_width(ax))
 
     plt.close(fig)
     return width
@@ -490,18 +492,16 @@ def get_colormap(name):
     except KeyError:
         return plt.get_cmap(name)
 
-def get_yticklabel_width(fig, ax):
+def get_yticklabel_width(ax):
     # With some backends, getting the renderer like this may trigger a warning 
     # and cause matplotlib to drop down to the Agg backend.
-    from matplotlib import tight_layout
-    renderer = tight_layout.get_renderer(fig)
-
+    fig = ax.get_figure()
+    renderer = fig.canvas.get_renderer()
     width = max(
             artist.get_window_extent(renderer).width
             for artist in ax.get_yticklabels()
     )
-    dpi = ax.get_figure().get_dpi()
-
+    dpi = fig.get_dpi()
     return width / dpi
 
 _by_param = object()
