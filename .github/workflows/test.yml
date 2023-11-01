@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: '3.x'
       - run: pip install ruff
-      - run: ruff check --format=github wellmap
+      - run: ruff check --output-format=github wellmap
     
   test-python:
     name: Test Python
